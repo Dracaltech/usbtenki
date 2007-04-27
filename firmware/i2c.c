@@ -1,0 +1,110 @@
+#include <avr/io.h>
+#include <util/twi.h>
+
+#include "i2c.h"
+
+void i2c_init(void)
+{
+	/* Use internal pullups */
+	PORTC |= (1<<5)|(1<<4);
+
+	/* This gives roughly 30 khz with a 16mhz xtal */
+	TWBR = 255;
+	TWSR &= ~((1<<TWPS1)|(1<<TWPS0));
+}
+
+int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data, 
+								int rd_len, unsigned char *rd_data)
+{
+	int ret =0;
+
+	if (wr_len==0 && rd_len==0)
+		return -1;
+
+	if (wr_len != 0)
+	{
+		// Send a start condition
+		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
+
+		while (!(TWCR & (1<<TWINT))) 
+			{ /* do nothing */ }
+		if ((TWSR & 0xF8) != TW_START)
+			return 1;	/* Failed */
+
+		TWDR = (addr<<1) | 0;	/* Address + write(0) */
+		TWCR = (1<<TWINT)|(1<<TWEN);
+		
+		while (!(TWCR & (1<<TWINT))) 
+			{ /* do nothing */ }
+
+		/* TWSR can be:
+		 * TW_MT_SLA_ACK, TW_MT_SLA_NACK or TW_MR_ARB_LOST */
+		if ((TWSR & 0xF8) != TW_MT_SLA_ACK) {
+			ret = 2;
+			goto err;
+		}
+		
+		while (wr_len--)
+		{
+			TWDR = *wr_data;
+			TWCR = (1<<TWINT)|(1<<TWEN);
+
+			while (!(TWCR & (1<<TWINT))) 
+				{ /* do nothing */ }
+
+			wr_data++;
+		}
+	} // if (wr_len != 0)
+
+	if (rd_len != 0)
+	{
+		/* Do a repeated start condition */
+		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
+		while (!(TWCR & (1<<TWINT))) 
+			{ /* do nothing */ }
+		if (TWSR != TW_REP_START) {
+			ret = 3;
+			goto err;
+		}
+
+		TWDR = (addr<<1) | 1;	/* Address + read(1) */
+		TWCR = (1<<TWINT)|(1<<TWEN);
+		
+		while (!(TWCR & (1<<TWINT))) 
+			{ /* do nothing */ }
+
+		/* TWSR can be:
+		 * TW_MR_SLA_ACK, TW_MR_SLA_NACK or TW_MR_ARB_LOST */
+		if (TWSR != TW_MR_SLA_ACK) {
+			ret = 4;
+			goto err;
+		}
+
+		while (rd_len--)
+		{
+
+			if (rd_len)
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWEA);		
+			else
+				TWCR = (1<<TWINT)|(1<<TWEN);		
+			
+			while (!(TWCR & (1<<TWINT))) 
+					{ /* do nothing */ }
+
+			*rd_data = TWDR;
+			rd_data++;
+		}
+	} // if (rd_len != 0)
+
+
+	TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN);
+
+	return 0;
+
+err:
+
+	TWCR = (1<<TWINT)|(1<<TWSTO)|(1<<TWEN);
+
+	return ret;
+}
+
