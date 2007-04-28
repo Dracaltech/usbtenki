@@ -6,6 +6,7 @@
 
 #include "usbdrv.h"
 #include "oddebug.h"
+#include "usbconfig.h"
 
 #include "mcp9800.h"
 #include "i2c.h"
@@ -17,12 +18,25 @@ int usbCfgSerialNumberStringDescriptor[] PROGMEM = {
 };
 #define MCP9800_ADDR	(MCP9800_ADDR_BASE + 7)
 
+#define CHIP_ID			USBTEMP_CHIP_MCP9800
+#define NUM_CHANNELS	1
+
 static char g_auto_mode = 1;
+
+static unsigned char xor_buf(unsigned char *buf, int len)
+{
+	unsigned char x=0;
+	while (len--) {
+		x ^= *buf;
+		buf++;
+	}
+	return x;
+}
 
 uchar   usbFunctionSetup(uchar data[8])
 {
-	static uchar    replyBuf[3];
-	int replen=0;
+	static uchar    replyBuf[8];
+	int replen=0, res;
 
 	g_auto_mode = 0;
 	
@@ -30,15 +44,31 @@ uchar   usbFunctionSetup(uchar data[8])
 
 	switch (data[1])
 	{
-		case USBTEMP_ECHO:
-        	replyBuf[0] = data[2];
-	        replyBuf[1] = data[3];
-			replen = 2;
-			break;
 		case USBTEMP_GET_RAW:
-			replyBuf[0] = 
-				mcp9800_readRegister(MCP9800_ADDR, MCP9800_REG_TEMP,
+			replyBuf[0] = USBTEMP_GET_RAW;
+			res = mcp9800_readRegister(MCP9800_ADDR, MCP9800_REG_TEMP,
 													&replyBuf[1], 2);
+			if (res) {
+				replyBuf[0] = USBTEMP_ERROR;
+				replen = 1;
+				break;
+			}
+
+			replyBuf[3] = xor_buf(replyBuf, 3);	
+			replen = 4;
+			break;
+
+		case USBTEMP_GET_CHIP_ID:
+			replyBuf[0] = USBTEMP_GET_CHIP_ID;
+			replyBuf[1] = CHIP_ID;
+			replyBuf[2] = xor_buf(replyBuf, 2);
+			replen = 3;
+			break;
+
+		case USBTEMP_GET_NUM_CHANNELS:
+			replyBuf[0] = USBTEMP_GET_NUM_CHANNELS;
+			replyBuf[1] = NUM_CHANNELS;
+			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;
 			break;
     }
