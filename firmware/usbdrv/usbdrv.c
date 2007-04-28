@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: usbdrv.c,v 1.1 2007-04-27 02:20:38 raph Exp $
+ * This Revision: $Id: usbdrv.c,v 1.2 2007-04-28 20:36:21 raph Exp $
  */
 
 #include "iarcompat.h"
@@ -325,7 +325,7 @@ uchar           replyLen = 0, flags = USB_FLG_USE_DEFAULT_RW;
 /* We use if() cascades because the compare is done byte-wise while switch()
  * is int-based. The if() cascades are therefore more efficient.
  */
-    DBG2(0x10 + ((usbRxToken >> 6) & 3), data, len);
+    DBG2(0x10 + ((usbRxToken >> 6) & 3), data, len);    /* setup=0x10, in=0x11, out=0x13 */
 #if USB_CFG_IMPLEMENT_FN_WRITEOUT
     if(usbRxToken & 0x80){
         usbFunctionWriteOut(data, len);

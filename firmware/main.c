@@ -12,10 +12,6 @@
 #include "i2c.h"
 #include "usbtemp_cmds.h"
 
-int usbCfgSerialNumberStringDescriptor[] PROGMEM = {
-	USB_STRING_DESCRIPTOR_HEADER(USB_CFG_SERIAL_NUMBER_LENGTH),
-	'1', '0', '0', '0'
-};
 #define MCP9800_ADDR	(MCP9800_ADDR_BASE + 7)
 
 #define CHIP_ID			USBTEMP_CHIP_MCP9800

@@ -113,3 +113,10 @@ Scroll down to the bottom to see the most recent changes.
     application code to reset data toggling on interrupt pipes.
 
 * Release 2006-07-18
+
+  - Added an #if !defined __ASSEMBLER__ to the warning in usbdrv.h. This fixes
+    an assembler error.
+  - usbDeviceDisconnect() takes pull-up resistor to high impedance now.
+
+* Release 2007-02-01
+

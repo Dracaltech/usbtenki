@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: usbdrv.h,v 1.1 2007-04-27 02:20:38 raph Exp $
+ * This Revision: $Id: usbdrv.h,v 1.2 2007-04-28 20:36:21 raph Exp $
  */
 
 #ifndef __usbdrv_h_included__
@@ -128,7 +128,7 @@ messages, even if they address another (low-speed) device on the same bus.
 /* --------------------------- Module Interface ---------------------------- */
 /* ------------------------------------------------------------------------- */
 
-#define USBDRV_VERSION  20060718
+#define USBDRV_VERSION  20070201
 /* This define uniquely identifies a driver version. It is a decimal number
  * constructed from the driver's release date in the form YYYYMMDD. If the
  * driver's behavior or interface changes, you can use this constant to
@@ -272,7 +272,8 @@ extern void usbFunctionWriteOut(uchar *data, uchar len);
  * USB bus. It is only available if you have defined the constants
  * USB_CFG_PULLUP_IOPORT and USB_CFG_PULLUP_BIT in usbconfig.h.
  */
-#define usbDeviceDisconnect()   (USB_PULLUP_OUT &= ~(1<<USB_CFG_PULLUP_BIT))
+#define usbDeviceDisconnect()   ((USB_PULLUP_DDR &= ~(1<<USB_CFG_PULLUP_BIT)), \
+                                  (USB_PULLUP_OUT &= ~(1<<USB_CFG_PULLUP_BIT)))
 /* This macro (intended to look like a function) disconnects the device from
  * the USB bus. It is only available if you have defined the constants
  * USB_CFG_PULLUP_IOPORT and USB_CFG_PULLUP_BIT in usbconfig.h.
@@ -457,7 +458,7 @@ int usbDescriptorStringSerialNumber[];
 /* ------------------------- Constant definitions -------------------------- */
 /* ------------------------------------------------------------------------- */
 
-#if !defined USB_CFG_VENDOR_ID || !defined USB_CFG_DEVICE_ID
+#if !defined __ASSEMBLER__ && (!defined USB_CFG_VENDOR_ID || !defined USB_CFG_DEVICE_ID)
 static uchar Warning_You_should_define_USB_CFG_VENDOR_ID_and_USB_CFG_DEVICE_ID_in_usbconfig_h;
 /* The unused variable above should generate a warning on all compilers. IAR cc
  * does not understand the "#warning" preprocessor direcetive.

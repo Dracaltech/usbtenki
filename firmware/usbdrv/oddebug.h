@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: oddebug.h,v 1.1 2007-04-27 02:20:38 raph Exp $
+ * This Revision: $Id: oddebug.h,v 1.2 2007-04-28 20:36:21 raph Exp $
  */
 
 #ifndef __oddebug_h_included__
