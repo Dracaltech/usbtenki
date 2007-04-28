@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 			hdl = usb_open(dev);
 			if (!hdl) {
 				printf("\n");
-				printf("    Error, cannot open device\n");
+				printf("    Error, cannot open device (%s)\n", usb_strerror());
 				continue;
 			}
 
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 
 	hdl = usb_open(dev);
 	if (!hdl) {
-		printf("Error\n");
+		printf("USB Error: %s\n", usb_strerror());
 		return 1;
 	}
 
@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 
 	res = usb_claim_interface(hdl, 0);
 	if (res<0) {
-		printf("USB Error (usb_claim_interface: %d)\n", res);
+		printf("USB Error (usb_claim_interface: %s)\n", usb_strerror());
 		return 2;
 	}	
 
@@ -186,6 +186,8 @@ int main(int argc, char **argv)
 	}
 
 	// TODO: Release interface, close device.
+	usb_release_interface(hdl, 0);
+	usb_close(hdl);
 
 	return res;
 }
