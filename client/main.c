@@ -1,3 +1,21 @@
+/* usbtempctl: A command-line tool for reading raphnet.net's USB sensors.
+ * Copyright (C) 2007  Raphael Assenat <raph@raphnet.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <usb.h>
@@ -11,8 +29,9 @@ int g_verbose = 0;
 
 static void printUsage(void)
 {
-	printf("Usage: ./usbtemp [options]\n");
+	printf("Usage: ./usbtempctl [options]\n");
 	printf("\nValid options:\n");
+	printf("    -V          Display version information\n");
 	printf("    -v          Verbose mode\n");
 	printf("    -h          Displays help\n");
 	printf("    -l          List available sensors\n");
@@ -22,6 +41,14 @@ static void printUsage(void)
 	printf("    -f          Display temperature in Farenheit\n");
 	printf("    -k          Display temperature in Kelvins\n");
 	printf("    -a num      Do an average of n samples (default: %d)\n", DEFAULT_NUM_SAMPLES);
+}
+
+static void printVersion(void)
+{
+	printf("USBTempctl version %s, Copyright (C) 2007, Raphael Assenat\n\n", VERSION);
+	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
+	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
+	printf("http://www.gnu.org/licenses/gpl.html\n");
 }
 
 int main(int argc, char **argv)
@@ -38,13 +65,16 @@ int main(int argc, char **argv)
 	char *use_serial = NULL;
 	int list_mode = 0;
 
-	while (-1 != (res=getopt(argc, argv, "hvlcfks:i:a:")))
+	while (-1 != (res=getopt(argc, argv, "Vhvlcfks:i:a:")))
 	{
 		switch (res)
 		{
 			case 'v':
 				g_verbose = 1;
 				break;
+			case 'V':
+				printVersion();
+				return 0;
 			case 'h':
 				printUsage();
 				return 0;

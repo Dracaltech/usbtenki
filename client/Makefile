@@ -1,12 +1,12 @@
 CC=gcc
 LD=$(CC)
 
-CFLAGS=-Wall -g -O  -I../common
+CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.0\"
 LDFLAGS=-lusb -lm
 
 PREFIX=/usr/local
 
-PROG=control
+PROG=usbtempctl
 
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 

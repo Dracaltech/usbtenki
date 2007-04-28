@@ -1,0 +1,7 @@
+
+First make sure you have libusb installed (lib _and_ development files). 
+Then, type make. 
+
+Enjoy.
+
+
