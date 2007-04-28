@@ -238,7 +238,8 @@ int usbtemp_printTemperature(usb_dev_handle *hdl, int id, int fmt, int n_avg)
 
 					if (n_raw!=2)
 						goto wrongData;
-
+					
+					/* The sensor will be initailized in 12 bits mode  */
 					t = (raw_data[0] << 4) | (raw_data[1]>>4);
 					temperature = ((float)t) * pow(2.0,-4.0);
 					chip_fmt = TEMPFMT_CELCIUS;
