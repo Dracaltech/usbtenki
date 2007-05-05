@@ -9,12 +9,21 @@
 #include "usbconfig.h"
 
 #include "mcp9800.h"
+#include "lm75.h"
 #include "i2c.h"
 #include "usbtemp_cmds.h"
 
 #define MCP9800_ADDR	(MCP9800_ADDR_BASE + 7)
+#define LM75_ADDR		(MCP9800_ADDR_BASE + 7)
 
-#define CHIP_ID			USBTEMP_CHIP_MCP9800
+#if defined(USE_MCP9800)
+	#define CHIP_ID			USBTEMP_CHIP_MCP9800
+#elif defined(USE_LM75)
+	#define CHIP_ID			USBTEMP_CHIP_LM75
+#else
+	#error NO USE_CHIPXXX defined
+#endif
+
 #define NUM_CHANNELS	1
 
 static char g_auto_mode = 1;
@@ -41,9 +50,16 @@ uchar   usbFunctionSetup(uchar data[8])
 	switch (data[1])
 	{
 		case USBTEMP_GET_RAW:
+			if (data[2] != 0) 
+				break;
 			replyBuf[0] = USBTEMP_GET_RAW;
+			#if defined(USE_MCP9800)
 			res = mcp9800_readRegister(MCP9800_ADDR, MCP9800_REG_TEMP,
 													&replyBuf[1], 2);
+			#elif defined(USE_LM75)
+			res = lm75_readRegister(LM75_ADDR, LM75_REG_TEMP,
+													&replyBuf[1], 2);
+			#endif
 			if (res) {
 				replyBuf[0] = USBTEMP_ERROR;
 				replen = 1;
@@ -55,6 +71,8 @@ uchar   usbFunctionSetup(uchar data[8])
 			break;
 
 		case USBTEMP_GET_CHIP_ID:
+			if (data[2] != 0) 
+				break;
 			replyBuf[0] = USBTEMP_GET_CHIP_ID;
 			replyBuf[1] = CHIP_ID;
 			replyBuf[2] = xor_buf(replyBuf, 2);
@@ -85,8 +103,14 @@ int main(void)
 	DDRC = 0x00;
 
 	i2c_init();
+
+#if defined(USE_MCP9800)
 	if (mcp9800_configure(MCP9800_ADDR, MCP9800_CFG_12BITS))
 		while(1) { /* watchdog will reset me! */ }
+#elif defined(USE_LM75)
+	if (lm75_configure(MCP9800_ADDR, 0))
+		while(1) { }
+#endif
 	
 
 	/* 1101 1000 bin: activate pull-ups except on USB lines

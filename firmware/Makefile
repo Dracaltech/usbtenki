@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.2 2007-04-28 22:14:15 raph Exp $
+# This Revision: $Id: Makefile,v 1.3 2007-05-05 01:58:57 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -17,13 +17,14 @@ COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common #-DDEBUG_LEVE
 # NEVER compile the final product with debugging! Any debug output will
 # distort timing so that the specs can't be met.
 
-OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o main.o mcp9800.o i2c.o
+COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o i2c.o 
+SENSOR_OBJECTS = mcp9800.o lm75.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 
 # symbolic targets:
-all:	main.hex
+all: mcp9800.hex lm75.hex 
 
 .c.o:
 	$(COMPILE) -c $< -o $@
@@ -39,28 +40,35 @@ all:	main.hex
 	$(COMPILE) -S $< -o $@
 
 flash:	all
-	#$(UISP) --erase --upload --verify if=main.hex
-	$(UISP) --erase --upload if=main.hex
+	#$(UISP) --erase --upload --verify if=mcp9800.hex
+	$(UISP) --erase --upload if=mcp9800.hex
 
 fuse:
 	$(UISP) --wr_fuse_h=0xc9 --wr_fuse_l=0x9f
 
 clean:
-	rm -f main.hex main.lst main.obj main.cof main.list main.map main.eep.hex main.bin *.o usbdrv/*.o main.s usbdrv/oddebug.s usbdrv/usbdrv.s
+	rm -f mcp9800.hex mcp9800.lst mcp9800.obj mcp9800.cof mcp9800.list mcp9800.map mcp9800.eep.hex mcp9800.elf *.o usbdrv/*.o mcp9800.s usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # file targets:
-main.bin:	$(OBJECTS)
-	$(COMPILE) -o main.bin $(OBJECTS)
+mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o main_mcp9800.o
+	$(COMPILE) -o $@ $^
 
-main.hex:	main.bin
-	rm -f main.hex main.eep.hex
-	avr-objcopy -j .text -j .data -O ihex main.bin main.hex
-	./checksize main.bin
+lm75.elf: $(COMMON_OBJECTS) lm75.o main_lm75.o
+	$(COMPILE) -o $@ $^
+
+
+
+%.hex: %.elf
+	rm -f $@
+	avr-objcopy -j .text -j .data -O ihex $< $@
+	./checksize $<
+
+#main.hex:	main.elf
+#	rm -f main.hex main.eep.hex
+#	avr-objcopy -j .text -j .data -O ihex main.elf main.hex
+#	./checksize main.elf
 # do the checksize script as our last action to allow successful compilation
 # on Windows with WinAVR where the Unix commands will fail.
 
-disasm:	main.bin
-	avr-objdump -d main.bin
-
-cpp:
-	$(COMPILE) -E main.c
+#cpp:
+#	$(COMPILE) -E main.c

@@ -6,7 +6,6 @@
 int mcp9800_writeRegister(char i2c_addr, char reg_addr, unsigned char *dat, char len)
 {
 	unsigned char tmp[len+1];
-	int i;
 	tmp[0] = reg_addr & 0x03;
 	memcpy(&tmp[1], dat, len);
 	return i2c_transaction(i2c_addr, len + 1, tmp, 0, NULL);
