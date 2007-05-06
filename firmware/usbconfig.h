@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2006 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: usbconfig.h,v 1.2 2007-04-28 20:36:21 raph Exp $
+ * This Revision: $Id: usbconfig.h,v 1.3 2007-05-06 18:20:06 raph Exp $
  */
 
 #ifndef __usbconfig_h_included__
@@ -136,7 +136,7 @@ USB driver configuration for AVR-Doper
  */
 #define USB_CFG_DEVICE_NAME     'U','S','B','_','T','e','m','p'
 #define USB_CFG_DEVICE_NAME_LEN  8
-#define USB_CFG_SERIAL_NUMBER   '1', '0', '0', '0' 
+#define USB_CFG_SERIAL_NUMBER   '1', '0', '0', '1' 
 #define USB_CFG_SERIAL_NUMBER_LEN   4
 #define USB_CFG_DEVICE_CLASS        0xff
 #define USB_CFG_DEVICE_SUBCLASS     0

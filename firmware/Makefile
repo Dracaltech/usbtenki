@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.3 2007-05-05 01:58:57 raph Exp $
+# This Revision: $Id: Makefile,v 1.4 2007-05-06 18:20:05 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -17,14 +17,14 @@ COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common #-DDEBUG_LEVE
 # NEVER compile the final product with debugging! Any debug output will
 # distort timing so that the specs can't be met.
 
-COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o i2c.o 
-SENSOR_OBJECTS = mcp9800.o lm75.o
+COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o i2c.o main.o
+SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 
 # symbolic targets:
-all: mcp9800.hex lm75.hex 
+all: mcp9800.hex lm75.hex sensirion.hex
 
 .c.o:
 	$(COMPILE) -c $< -o $@
@@ -41,7 +41,9 @@ all: mcp9800.hex lm75.hex
 
 flash:	all
 	#$(UISP) --erase --upload --verify if=mcp9800.hex
-	$(UISP) --erase --upload if=mcp9800.hex
+#	$(UISP) --erase --upload if=mcp9800.hex
+#	$(UISP) --erase --upload if=lm75.hex
+	$(UISP) --erase --upload if=sensirion.hex
 
 fuse:
 	$(UISP) --wr_fuse_h=0xc9 --wr_fuse_l=0x9f
@@ -56,6 +58,8 @@ mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o main_mcp9800.o
 lm75.elf: $(COMMON_OBJECTS) lm75.o main_lm75.o
 	$(COMPILE) -o $@ $^
 
+sensirion.elf: $(COMMON_OBJECTS) sensirion_serial.o interface_sensirion.o
+	$(COMPILE) -o $@ $^
 
 
 %.hex: %.elf
