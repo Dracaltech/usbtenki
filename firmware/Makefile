@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.4 2007-05-06 18:20:05 raph Exp $
+# This Revision: $Id: Makefile,v 1.5 2007-05-08 01:45:35 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -13,15 +13,17 @@ UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
 # to a Keyspan USB to serial converter to a Mac running Mac OS X.
 # Choose your favorite programmer and interface.
 
-COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common #-DDEBUG_LEVEL=2
+SERNUMBER=
+
+COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common \
+		-DSERIAL_NUMBER=\'B\',\'0\',\'0\',\'0\',\'0\',\'1\' #-DDEBUG_LEVEL=2
 # NEVER compile the final product with debugging! Any debug output will
 # distort timing so that the specs can't be met.
 
-COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o i2c.o main.o
+COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o 
 SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
-
 
 # symbolic targets:
 all: mcp9800.hex lm75.hex sensirion.hex
@@ -41,9 +43,9 @@ all: mcp9800.hex lm75.hex sensirion.hex
 
 flash:	all
 	#$(UISP) --erase --upload --verify if=mcp9800.hex
-#	$(UISP) --erase --upload if=mcp9800.hex
+	$(UISP) --erase --upload if=mcp9800.hex
 #	$(UISP) --erase --upload if=lm75.hex
-	$(UISP) --erase --upload if=sensirion.hex
+#	$(UISP) --erase --upload if=sensirion.hex
 
 fuse:
 	$(UISP) --wr_fuse_h=0xc9 --wr_fuse_l=0x9f

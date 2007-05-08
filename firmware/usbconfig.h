@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2006 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: usbconfig.h,v 1.3 2007-05-06 18:20:06 raph Exp $
+ * This Revision: $Id: usbconfig.h,v 1.4 2007-05-08 01:45:35 raph Exp $
  */
 
 #ifndef __usbconfig_h_included__
@@ -121,7 +121,7 @@ USB driver configuration for AVR-Doper
 
 #define  USB_CFG_VENDOR_ID       0x81, 0x17 /* Mecanique */
 #define  USB_CFG_DEVICE_ID       0x98, 0x0a 
-#define USB_CFG_DEVICE_VERSION  0x00, 0x01
+#define USB_CFG_DEVICE_VERSION  0x01, 0x01
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     'r','a','p','h','n','e','t','.','n','e','t'
@@ -136,8 +136,8 @@ USB driver configuration for AVR-Doper
  */
 #define USB_CFG_DEVICE_NAME     'U','S','B','_','T','e','m','p'
 #define USB_CFG_DEVICE_NAME_LEN  8
-#define USB_CFG_SERIAL_NUMBER   '1', '0', '0', '1' 
-#define USB_CFG_SERIAL_NUMBER_LEN   4
+//#define USB_CFG_SERIAL_NUMBER   '1', '0', '0', '1' 
+//#define USB_CFG_SERIAL_NUMBER_LEN   4
 #define USB_CFG_DEVICE_CLASS        0xff
 #define USB_CFG_DEVICE_SUBCLASS     0
 /* See USB specification if you want to conform to an existing device class.
@@ -201,7 +201,7 @@ USB driver configuration for AVR-Doper
 #define USB_CFG_DESCR_PROPS_STRING_0                0
 #define USB_CFG_DESCR_PROPS_STRING_VENDOR           0
 #define USB_CFG_DESCR_PROPS_STRING_PRODUCT          0
-#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    0
+#define USB_CFG_DESCR_PROPS_STRING_SERIAL_NUMBER    (USB_PROP_LENGTH(7*2))
 #define USB_CFG_DESCR_PROPS_HID                     0
 #define USB_CFG_DESCR_PROPS_HID_REPORT              0
 #define USB_CFG_DESCR_PROPS_UNKNOWN                 0
