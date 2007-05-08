@@ -232,6 +232,7 @@ int usbtemp_printTemperature(usb_dev_handle *hdl, int id, int fmt, int n_avg)
 	float temperature;
 	float accm;
 	int chip_fmt = TEMPFMT_FAHRENHEIT;
+	int is_humidity=0;
 
 	chip = usbtemp_getChipID(hdl, id);
 	if (chip<0) 
@@ -263,6 +264,58 @@ int usbtemp_printTemperature(usb_dev_handle *hdl, int id, int fmt, int n_avg)
 				}
 				break;
 
+			case USBTEMP_CHIP_LM75:
+				{
+					signed short t;
+
+					if (n_raw!=2)
+						goto wrongData;
+					
+					/* The sensor only supports 9 bits */
+					t = (raw_data[0] << 1) | (raw_data[1]>>7);
+					temperature = ((float)t) * pow(2.0,-1.0);
+					chip_fmt = TEMPFMT_CELCIUS;
+
+				}
+				break;
+
+			case USBTEMP_CHIP_SHT_TEMP:
+				{
+					unsigned  short t;
+
+					if (n_raw!=2)
+						goto wrongData;
+
+					t = (raw_data[0]<<8) | raw_data[1];
+//					temperature = ((float)t) * pow(2.0,-6.0);
+				
+					temperature = -40.0 + 0.01  * (float)t;
+
+					chip_fmt = TEMPFMT_CELCIUS;
+				}
+				break;
+
+			case USBTEMP_CHIP_SHT_RH:
+				{
+					float c1 = -4.0;
+					float c2 = 0.0405;
+					float c3 = -2.8 * powf(10.0, -6.0);
+					float sorh;
+
+					if (n_raw!=2)
+						goto wrongData;
+
+					sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
+				
+					temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
+
+					chip_fmt = TEMPFMT_CELCIUS;
+					is_humidity = 1;
+				}
+
+
+				break;
+
 			default:
 				printf("hex: ");
 				for (i=0; i<n_raw; i++) {
@@ -279,7 +332,12 @@ int usbtemp_printTemperature(usb_dev_handle *hdl, int id, int fmt, int n_avg)
 	
 	accm /= n_avg;
 
-	printTempFmt(accm, chip_fmt, fmt);
+	if (is_humidity) {
+		printf("%.2f\n", accm);		
+	}
+	else {
+		printTempFmt(accm, chip_fmt, fmt);
+	}
 
 	return 0;
 
@@ -298,6 +356,11 @@ const char *chipToString(int id)
 			return "LM75 I2C Temperature sensor";
 		case USBTEMP_CHIP_LM92:
 			return "LM92 I2C Temperature sensor";
+		case USBTEMP_CHIP_SHT_TEMP:
+			return "Sensirion SHT1x/7x Temperature";
+		case USBTEMP_CHIP_SHT_RH:
+			return "Sensirion SHT1x/7x Relative Humidity";
+
 	}
 	return "unknown";
 }
