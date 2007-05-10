@@ -10,7 +10,7 @@
 #include "interface.h"
 
 #include "i2c.h"
-#include "usbtemp_cmds.h"
+#include "usbtenki_cmds.h"
 
 static char g_auto_mode = 1;
 
@@ -35,15 +35,15 @@ uchar   usbFunctionSetup(uchar data[8])
 
 	switch (data[1])
 	{
-		case USBTEMP_GET_RAW:
+		case USBTENKI_GET_RAW:
 			if (data[2] >= sensors_getNumChannels()) 
 				break;
 
-			replyBuf[0] = USBTEMP_GET_RAW;
+			replyBuf[0] = USBTENKI_GET_RAW;
 			res = sensors_getRaw(data[2], &replyBuf[1]);
 
 			if (res<0) {
-				replyBuf[0] = USBTEMP_ERROR;
+				replyBuf[0] = USBTENKI_ERROR;
 				replen = 1;
 				break;
 			}
@@ -52,18 +52,18 @@ uchar   usbFunctionSetup(uchar data[8])
 			replen = res + 2;
 			break;
 
-		case USBTEMP_GET_CHIP_ID:
+		case USBTENKI_GET_CHIP_ID:
 			if (data[2] >= sensors_getNumChannels()) 
 				break;
 
-			replyBuf[0] = USBTEMP_GET_CHIP_ID;
+			replyBuf[0] = USBTENKI_GET_CHIP_ID;
 			replyBuf[1] = sensors_getChipID(data[2]);
 			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;
 			break;
 
-		case USBTEMP_GET_NUM_CHANNELS:
-			replyBuf[0] = USBTEMP_GET_NUM_CHANNELS;
+		case USBTENKI_GET_NUM_CHANNELS:
+			replyBuf[0] = USBTENKI_GET_NUM_CHANNELS;
 			replyBuf[1] = sensors_getNumChannels();
 			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;

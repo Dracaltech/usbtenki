@@ -1,5 +1,5 @@
 #include "interface.h"
-#include "usbtemp_cmds.h"
+#include "usbtenki_cmds.h"
 #include "i2c.h"
 #include "lm75.h"
 
@@ -19,7 +19,7 @@ int sensors_getNumChannels(void)
 
 int sensors_getChipID(unsigned char id)
 {
-	return USBTEMP_CHIP_LM75;
+	return USBTENKI_CHIP_LM75;
 }
 
 int sensors_getRaw(unsigned char id, unsigned char *dst)

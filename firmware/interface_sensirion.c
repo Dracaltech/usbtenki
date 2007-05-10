@@ -1,5 +1,5 @@
 #include "interface.h"
-#include "usbtemp_cmds.h"
+#include "usbtenki_cmds.h"
 #include "sensirion_serial.h"
 
 int sensors_init(void)
@@ -17,8 +17,8 @@ int sensors_getChipID(unsigned char id)
 {
 	switch (id)
 	{
-		case 0: return USBTEMP_CHIP_SHT_TEMP;
-		case 1: return USBTEMP_CHIP_SHT_RH;
+		case 0: return USBTENKI_CHIP_SHT_TEMP;
+		case 1: return USBTENKI_CHIP_SHT_RH;
 	}
 	return -1;
 }
