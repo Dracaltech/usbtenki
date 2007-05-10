@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.5 2007-05-08 01:45:35 raph Exp $
+# This Revision: $Id: Makefile,v 1.6 2007-05-10 12:15:31 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -41,11 +41,18 @@ all: mcp9800.hex lm75.hex sensirion.hex
 .c.s:
 	$(COMPILE) -S $< -o $@
 
-flash:	all
-	#$(UISP) --erase --upload --verify if=mcp9800.hex
+flash:
+	echo "flash_sensirion | flash_lm75 | flash_mcp9800 ?"
+
+flash_sensirion:	sensirion.hex
+	$(UISP) --erase --upload if=sensirion.hex
+
+flash_mcp9800:	mcp9800.hex
 	$(UISP) --erase --upload if=mcp9800.hex
-#	$(UISP) --erase --upload if=lm75.hex
-#	$(UISP) --erase --upload if=sensirion.hex
+
+flash_lm75: lm75.hex
+	$(UISP) --erase --upload if=lm75.hex
+	
 
 fuse:
 	$(UISP) --wr_fuse_h=0xc9 --wr_fuse_l=0x9f

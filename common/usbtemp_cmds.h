@@ -34,6 +34,9 @@
 #define USBTEMP_CHIP_MCP9800	0x00
 #define USBTEMP_CHIP_LM75		0x01
 #define USBTEMP_CHIP_LM92		0x02
+#define USBTEMP_CHIP_SHT_TEMP	0x03
+#define USBTEMP_CHIP_SHT_RH		0x04
+
 
 #endif // _usbtemp_h__
 
