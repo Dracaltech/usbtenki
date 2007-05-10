@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.6 2007-05-10 12:15:31 raph Exp $
+# This Revision: $Id: Makefile,v 1.7 2007-05-10 23:21:07 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -61,10 +61,10 @@ clean:
 	rm -f mcp9800.hex mcp9800.lst mcp9800.obj mcp9800.cof mcp9800.list mcp9800.map mcp9800.eep.hex mcp9800.elf *.o usbdrv/*.o mcp9800.s usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # file targets:
-mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o main_mcp9800.o
+mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o interface_mcp9800.o
 	$(COMPILE) -o $@ $^
 
-lm75.elf: $(COMMON_OBJECTS) lm75.o main_lm75.o
+lm75.elf: $(COMMON_OBJECTS) lm75.o interface_lm75.o
 	$(COMPILE) -o $@ $^
 
 sensirion.elf: $(COMMON_OBJECTS) sensirion_serial.o interface_sensirion.o
