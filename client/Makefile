@@ -6,7 +6,7 @@ LDFLAGS=-lusb -lm
 
 PREFIX=/usr/local
 
-PROG=usbtempctl
+PROG=usbtenkiget
 
 OBJS=$(patsubst %.c,%.o,$(wildcard *.c))
 

@@ -1,4 +1,4 @@
-/* usbtempctl: A command-line tool for reading raphnet.net's USB sensors.
+/* usbtenkiget: A command-line tool for USBTenki sensors.
  * Copyright (C) 2007  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
@@ -20,27 +20,28 @@
 #include <string.h>
 #include <usb.h>
 
-#include "usbtemp.h"
+#include "usbtenki.h"
 
 #define DEFAULT_CHANNEL_ID	0
 #define DEFAULT_NUM_SAMPLES 1
+#define MAX_CHANNELS		256
 
 int g_verbose = 0;
 
 static void printUsage(void)
 {
-	printf("Usage: ./usbtempctl [options]\n");
+	printf("Usage: ./usbtenkiget [options]\n");
 	printf("\nValid options:\n");
 	printf("    -V          Display version information\n");
 	printf("    -v          Verbose mode\n");
 	printf("    -h          Displays help\n");
 	printf("    -l          List available sensors\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first sensor found.\n");
-	printf("    -i id       Use specific channel id. Default: %d\n", DEFAULT_CHANNEL_ID);
-	printf("    -c          Display temperature in celcius (default)\n");
+	printf("    -i id<,id,id...>  Use specific channel(s) id(s). Default: %d\n", DEFAULT_CHANNEL_ID);
+	printf("    -c          Display temperature in Celcius (default)\n");
 	printf("    -f          Display temperature in Farenheit\n");
 	printf("    -k          Display temperature in Kelvins\n");
-	printf("    -a num      Do an average of n samples (default: %d)\n", DEFAULT_NUM_SAMPLES);
+//	printf("    -a num      Do an average of n samples (default: %d)\n", DEFAULT_NUM_SAMPLES);
 }
 
 static void printVersion(void)
@@ -51,19 +52,27 @@ static void printVersion(void)
 	printf("http://www.gnu.org/licenses/gpl.html\n");
 }
 
+
 int main(int argc, char **argv)
 {
 	usb_dev_handle *hdl;
 	struct usb_device *cur_dev, *dev=NULL;
-	int res;
-	struct USBtemp_list_ctx rgblistctx;
-	struct USBtemp_info info;
+	int res, i;
+	struct USBTenki_list_ctx rgblistctx;
+	struct USBTenki_info info;
 
-	int channel_id = DEFAULT_CHANNEL_ID;
 	int temp_format = TEMPFMT_CELCIUS;
 	int num_samples_avg = DEFAULT_NUM_SAMPLES;
 	char *use_serial = NULL;
 	int list_mode = 0;
+
+	int requested_channels[MAX_CHANNELS];
+	int num_requested_channels= 1;
+	
+	struct USBTenki_channel channels[MAX_CHANNELS];
+	int num_channels=0;
+
+	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
 	while (-1 != (res=getopt(argc, argv, "Vhvlcfks:i:a:")))
 	{
@@ -80,11 +89,36 @@ int main(int argc, char **argv)
 				return 0;
 			case 'i':
 				{
+					char *p;
 					char *e;
-					channel_id = strtol(optarg, &e, 0);
-					if (e==optarg || channel_id < 0) {
-						fprintf(stderr, "Bad channel id\n");
-						return -1;
+					num_requested_channels = 0;
+					p = optarg;
+					while(1) {
+						if (num_requested_channels >= MAX_CHANNELS) {
+							fprintf(stderr,"too many channels\n");
+							return -1;
+						}
+
+						requested_channels[num_requested_channels] = strtol(p, &e, 0);
+						if (e==p) {
+							fprintf(stderr, "Error in channel list\n");
+							return -1;
+						}
+						
+						num_requested_channels++;
+						
+						if (*e==0)
+							break;
+					
+						if (*e==',') {
+							e++;
+						}
+						else {
+							fprintf(stderr, "Error in channel list\n");
+							return -1;
+						}
+
+						p = e;
 					}
 				}
 				break;
@@ -125,7 +159,11 @@ int main(int argc, char **argv)
 	if (g_verbose) {
 		printf("Arguments {\n");
 		printf("  verbose: yes\n");
-		printf("  channel id: %d\n", channel_id);
+		printf("  channel id(s): ");
+		for (i=0; i<num_requested_channels; i++) {
+			printf("%d ", requested_channels[i]);
+		}
+		printf("\n");
 		printf("  temp_format: %d\n", temp_format);
 		printf("  num_samples_avg: %d\n", num_samples_avg);
 		printf("  list_mode: %d\n", list_mode);
@@ -138,9 +176,9 @@ int main(int argc, char **argv)
 	usb_find_busses();
 	usb_find_devices();
 
-	usbtemp_initListCtx(&rgblistctx);
+	usbtenki_initListCtx(&rgblistctx);
 
-	while ((cur_dev=usbtemp_listDevices(&info, &rgblistctx)))
+	while ((cur_dev=usbtenki_listDevices(&info, &rgblistctx)))
 	{
 		if (use_serial) {
 			if (strcmp(use_serial, info.str_serial)==0) {
@@ -168,11 +206,11 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			n_channels = usbtemp_getNumChannels(hdl);
+			n_channels = usbtenki_getNumChannels(hdl);
 			printf("Channels: %d\n", n_channels);
 			
 			for (i=0; i<n_channels; i++) {
-				chip_id = usbtemp_getChipID(hdl, i);
+				chip_id = usbtenki_getChipID(hdl, i);
 				printf("    Channel %d: %s\n", i, chipToString(chip_id));
 			}
 			
@@ -186,7 +224,7 @@ int main(int argc, char **argv)
 		if (use_serial)
 			printf("Device with serial '%s' not found\n", use_serial);
 		else
-			printf("No raphnet.net's usbtemp device found\n");
+			printf("No device found\n");
 		return 1;
 	}
 
@@ -210,12 +248,44 @@ int main(int argc, char **argv)
 	}	
 
 
-	res = usbtemp_printTemperature(hdl, channel_id, temp_format, num_samples_avg);
-	if (res) {
-		printf("Error (get_temp: %d)\n", res);
+	res = usbtenki_listChannels(hdl, channels, MAX_CHANNELS);
+	if (res<0) {
+		goto err;
+	}
+	num_channels = res;
+	if (g_verbose)
+		printf("Device has a total of %d channels\n", num_channels);
+
+	res = usbtenki_readChannelList(hdl, requested_channels, num_requested_channels, channels, num_channels);
+	if (res<0) {
+		goto err;
+	}
+	
+	if (g_verbose)
+		printf("%d requested channels read successfully\n", num_requested_channels);
+
+
+	for (i=0; i<num_requested_channels; i++) {
+		int j;
+		struct USBTenki_channel *chn;
+
+		chn = NULL;
+		for (j=0; j<num_channels; j++) {
+			chn = &channels[j];
+			if (chn->channel_id == requested_channels[i]) 
+				break;
+		}
+
+		if (!chn || !chn->data_valid) {
+			fprintf(stderr, "Internal error");
+			res = -2;
+			goto err;
+		}
+
+		printf("%.2f\n" , chn->converted_data);
 	}
 
-	// TODO: Release interface, close device.
+err:
 	usb_release_interface(hdl, 0);
 	usb_close(hdl);
 
