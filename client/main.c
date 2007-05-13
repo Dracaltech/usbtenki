@@ -49,7 +49,6 @@ static void printUsage(void)
 	printf("    -c          Display temperature in Celcius (default)\n");
 	printf("    -f          Display temperature in Farenheit\n");
 	printf("    -k          Display temperature in Kelvins\n");
-//	printf("    -a num      Do an average of n samples (default: %d)\n", DEFAULT_NUM_SAMPLES);
 }
 
 static void printVersion(void)
@@ -69,7 +68,6 @@ int main(int argc, char **argv)
 	struct USBTenki_list_ctx rgblistctx;
 	struct USBTenki_info info;
 
-	int num_samples_avg = DEFAULT_NUM_SAMPLES;
 	char *use_serial = NULL;
 	int list_mode = 0;
 
@@ -127,16 +125,6 @@ int main(int argc, char **argv)
 					}
 				}
 				break;
-			case 'a':
-				{
-					char *e;
-					num_samples_avg = strtol(optarg, &e, 0);
-					if (e==optarg || num_samples_avg <= 0) {
-						fprintf(stderr, "Bad number of samples\n");
-						return -1;
-					}
-				}
-				break;			
 			case 's':
 				use_serial = optarg;	
 				break;
@@ -170,7 +158,6 @@ int main(int argc, char **argv)
 		}
 		printf("\n");
 		printf("  g_temp_format: %d\n", g_temp_format);
-		printf("  num_samples_avg: %d\n", num_samples_avg);
 		printf("  list_mode: %d\n", list_mode);
 		if (use_serial)
 			printf("  use_serial: %s\n", use_serial);
@@ -331,6 +318,12 @@ int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 			chn.channel_id = USBTENKI_VIRTUAL_HUMIDEX;
 			chn.chip_id = chn.channel_id;
 			
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+
+			chn.channel_id = USBTENKI_VIRTUAL_HEAT_INDEX;
+			chn.chip_id = chn.channel_id;
+
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
 				return -1;
 
@@ -497,6 +490,47 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 						chn->data_valid = 1;
 						chn->converted_data = T + h;
 						chn->converted_unit = TENKI_UNIT_CELCIUS;
+					}
+					break;
+
+				case USBTENKI_VIRTUAL_HEAT_INDEX:
+					{
+						struct USBTenki_channel *temp_chn, *rh_chn;
+						float T, R, HI;
+
+						if (g_verbose)
+							printf("Processing dew point virtual channel\n");
+
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																USBTENKI_CHIP_SHT_TEMP);
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																	USBTENKI_CHIP_SHT_RH);
+	
+						if (temp_chn == NULL || rh_chn == NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						T = temp_chn->converted_data;
+						T =  usbtenki_convertTemperature(T, TENKI_UNIT_CELCIUS, 
+															TENKI_UNIT_FAHRENHEIT);
+						R = rh_chn->converted_data;
+		
+						/* Formula source: 
+						 * http://www.crh.noaa.gov/jkl/?n=heat_index_calculator */
+						HI = 	-42.379 + 
+								2.04901523 * T + 
+								10.14333127 * R - 
+								0.22475541 * T * R - 
+								6.83783 * pow(10,-3) * pow(T, 2) - 
+								5.481717 * pow(10,-2) * pow(R, 2) + 
+								1.22874 * pow(10,-3) * pow(T, 2) * R + 
+								8.5282 * pow(10,-4) * T * pow(R, 2) - 
+								1.99 * pow(10,-6) * pow(T,2) * pow(R,2);
+
+						chn->data_valid = 1;
+						chn->converted_data = HI;
+						chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
 					}
 					break;
 			}
