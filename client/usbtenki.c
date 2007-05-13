@@ -340,6 +340,46 @@ const char *chipToString(int id)
 	return "unknown";
 }
 
+const char *chipToShortString(int id)
+{
+	switch(id)
+	{
+		case USBTENKI_CHIP_MCP9800:
+			return "Temperature";
+		case USBTENKI_CHIP_LM75:
+			return "Temperature";
+		case USBTENKI_CHIP_LM92:
+			return "Temperature";
+		case USBTENKI_CHIP_SHT_TEMP:
+			return "Temperature";
+		case USBTENKI_CHIP_SHT_RH:
+			return "Relative Humidity";
+
+		/* Virtual channels and chipID have the same vales */
+		case USBTENKI_VIRTUAL_DEW_POINT:
+			return "Dew point";
+		case USBTENKI_VIRTUAL_HUMIDEX:
+			return "Humidex";
+		case USBTENKI_VIRTUAL_HEAT_INDEX:
+			return "Heat index";
+
+	}
+	return "unknown";
+}
+
+const char *unitToString(int unit)
+{
+	switch(unit)
+	{
+		case TENKI_UNIT_RH: return "%";
+		case TENKI_UNIT_CELCIUS: return "°C";
+		case TENKI_UNIT_KELVIN: return "°K";
+		case TENKI_UNIT_FAHRENHEIT: return "°F";
+	}
+
+	return "";
+}
+
 /**
  * \param hdl Handle
  * \param channel_ids Array of channel IDs

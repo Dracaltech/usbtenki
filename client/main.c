@@ -31,6 +31,7 @@
 
 int g_verbose = 0;
 int g_temp_format = TENKI_UNIT_CELCIUS;
+int g_pretty = 0;
 
 int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
@@ -49,6 +50,7 @@ static void printUsage(void)
 	printf("    -c          Display temperature in Celcius (default)\n");
 	printf("    -f          Display temperature in Farenheit\n");
 	printf("    -k          Display temperature in Kelvins\n");
+	printf("    -p          Enable pretty output\n");
 }
 
 static void printVersion(void)
@@ -77,7 +79,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vhvlcfks:i:a:")))
+	while (-1 != (res=getopt(argc, argv, "Vhvlcfks:i:p")))
 	{
 		switch (res)
 		{
@@ -141,6 +143,9 @@ int main(int argc, char **argv)
 				break;
 			case 'l':
 				list_mode = 1;
+				break;
+			case 'p':
+				g_pretty = 1;
 				break;
 
 			case '?':
@@ -577,7 +582,6 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	for (i=0; i<num_req_chns; i++) {
 		int j;
 		struct USBTenki_channel *chn;
-		float display_value;
 
 		/* find the requested channel */
 		chn = NULL;
@@ -593,14 +597,33 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 			return -2;
 		}
 
-		display_value = usbtenki_convertTemperature(chn->converted_data, 
-													chn->converted_unit,
-													g_temp_format);
-		printf("%.2f" , display_value);
-		if (i<num_req_chns-1)
-			printf(", ");
+		/* Perform temperature format conversion */
+		switch (chn->converted_unit)
+		{
+			case TENKI_UNIT_FAHRENHEIT:
+			case TENKI_UNIT_CELCIUS:
+			case TENKI_UNIT_KELVIN:
+				chn->converted_data = usbtenki_convertTemperature(chn->converted_data, 
+																	chn->converted_unit,
+																			g_temp_format);
+				chn->converted_unit = g_temp_format;
+				break;
+		}
+
+		if (g_pretty) {
+			printf("%s: %.2f %s\n", 
+					chipToShortString(chn->chip_id),
+					chn->converted_data, 
+					unitToString(chn->converted_unit));
+		}
+		else {
+			printf("%.2f" , chn->converted_data);
+			if (i<num_req_chns-1)
+				printf(", ");
+		}
 	}
-	printf("\n");
+	if (!g_pretty)
+		printf("\n");
 	
 	return 0;
 }
