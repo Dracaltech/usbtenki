@@ -25,9 +25,10 @@
 #define ID_STRING		"USBTenki"
 #define OLD_ID_STRING	"USB_Temp"
 
-#define TEMPFMT_CELCIUS		0x00
-#define TEMPFMT_FAHRENHEIT	0x01
-#define TEMPFMT_KELVIN		0x02
+#define TENKI_UNIT_CELCIUS		0x00
+#define TENKI_UNIT_FAHRENHEIT	0x01
+#define TENKI_UNIT_KELVIN		0x02
+#define TENKI_UNIT_RH			0x03
 
 struct USBTenki_info {
 	char str_prodname[256];
@@ -47,6 +48,7 @@ struct USBTenki_channel {
 	unsigned char raw_data[8];
 	int raw_length;
 	float converted_data;
+	int converted_unit;
 };
 
 void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx);
@@ -62,8 +64,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn);
 int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray, int arr_size);
 int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total);
 int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn);
-int usbtenki_printTemperature(usb_dev_handle *hdl, int id, int fmt);
 
+float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 
 #endif // _rgbleds_h__

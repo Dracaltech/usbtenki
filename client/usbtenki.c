@@ -180,43 +180,43 @@ int usbtenki_getChipID(usb_dev_handle *hdl, int id)
 	return dst[0];	
 }
 
-static float convertTemperature(float temperature, int src_fmt, int print_fmt)
+float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt)
 {
 	float converted = temperature;
 
 	switch (src_fmt)
 	{
-		case TEMPFMT_CELCIUS:
-			switch(print_fmt)
+		case TENKI_UNIT_CELCIUS:
+			switch(dst_fmt)
 			{
-				case TEMPFMT_FAHRENHEIT:
+				case TENKI_UNIT_FAHRENHEIT:
 					converted = (temperature * 1.8) + 32.0;
 					break;
-				case TEMPFMT_KELVIN:
+				case TENKI_UNIT_KELVIN:
 					converted = temperature + 273.15;
 					break;
 			}
 			break;
 
-		case TEMPFMT_FAHRENHEIT:
-			switch(print_fmt)
+		case TENKI_UNIT_FAHRENHEIT:
+			switch(dst_fmt)
 			{
-				case TEMPFMT_CELCIUS:
+				case TENKI_UNIT_CELCIUS:
 					converted = (temperature - 32.0) / 1.8;
 					break;
-				case TEMPFMT_KELVIN:
+				case TENKI_UNIT_KELVIN:
 					converted = (temperature + 459.67) / 1.8;
 					break;
 			}
 			break;
 
-		case TEMPFMT_KELVIN:
-			switch(print_fmt)
+		case TENKI_UNIT_KELVIN:
+			switch(dst_fmt)
 			{
-				case TEMPFMT_CELCIUS:
+				case TENKI_UNIT_CELCIUS:
 					converted = temperature - 273.15;
 
-				case TEMPFMT_FAHRENHEIT:
+				case TENKI_UNIT_FAHRENHEIT:
 					converted = (temperature * 1.8) - 459.67;
 					break;
 			}
@@ -230,8 +230,7 @@ static float convertTemperature(float temperature, int src_fmt, int print_fmt)
 int usbtenki_convertRaw(struct USBTenki_channel *chn)
 {
 	float temperature;
-	int chip_fmt = TEMPFMT_FAHRENHEIT;
-	int is_humidity=0;
+	int chip_fmt = TENKI_UNIT_KELVIN;
 	unsigned char *raw_data;
 
 	raw_data = chn->raw_data;
@@ -248,7 +247,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				/* The sensor will be initailized in 12 bits mode  */
 				t = (raw_data[0] << 4) | (raw_data[1]>>4);
 				temperature = ((float)t) * pow(2.0,-4.0);
-				chip_fmt = TEMPFMT_CELCIUS;
+				chip_fmt = TENKI_UNIT_CELCIUS;
 			}
 			break;
 
@@ -262,7 +261,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				/* The sensor only supports 9 bits */
 				t = (raw_data[0] << 1) | (raw_data[1]>>7);
 				temperature = ((float)t) * pow(2.0,-1.0);
-				chip_fmt = TEMPFMT_CELCIUS;
+				chip_fmt = TENKI_UNIT_CELCIUS;
 
 			}
 			break;
@@ -279,7 +278,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			
 				temperature = -40.0 + 0.01  * (float)t;
 
-				chip_fmt = TEMPFMT_CELCIUS;
+				chip_fmt = TENKI_UNIT_CELCIUS;
 			}
 			break;
 
@@ -296,7 +295,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
 			
 				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
-				is_humidity = 1;
+				chip_fmt = TENKI_UNIT_RH;
 			}
 			break;
 
@@ -306,6 +305,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 	}
 
 	chn->converted_data = temperature;
+	chn->converted_unit = chip_fmt;
 
 	return 0;
 
@@ -314,120 +314,6 @@ wrongData:
 	return -1;
 }
 
-#ifdef BLAK
-int usbtenki_printTemperature(usb_dev_handle *hdl, int id, int fmt)
-{
-	unsigned char raw_data[8];
-	int n_raw, i, chip;
-	float temperature;
-	int chip_fmt = TEMPFMT_FAHRENHEIT;
-	int is_humidity=0;
-
-	chip = usbtenki_getChipID(hdl, id);
-	if (chip<0) 
-		return chip;
-	
-	if (g_verbose)
-		printf("Chip id: 0x%02x\n", chip);
-
-	n_raw = usbtenki_getRaw(hdl, id, raw_data);
-	if (n_raw<0)
-		return n_raw;
-
-	switch (chip)
-	{
-		case USBTENKI_CHIP_MCP9800:
-			{
-				signed short t;
-
-				if (n_raw!=2)
-					goto wrongData;
-				
-				/* The sensor will be initailized in 12 bits mode  */
-				t = (raw_data[0] << 4) | (raw_data[1]>>4);
-				temperature = ((float)t) * pow(2.0,-4.0);
-				chip_fmt = TEMPFMT_CELCIUS;
-			}
-			break;
-
-		case USBTENKI_CHIP_LM75:
-			{
-				signed short t;
-
-				if (n_raw!=2)
-					goto wrongData;
-				
-				/* The sensor only supports 9 bits */
-				t = (raw_data[0] << 1) | (raw_data[1]>>7);
-				temperature = ((float)t) * pow(2.0,-1.0);
-				chip_fmt = TEMPFMT_CELCIUS;
-
-			}
-			break;
-
-		case USBTENKI_CHIP_SHT_TEMP:
-			{
-				unsigned  short t;
-
-				if (n_raw!=2)
-					goto wrongData;
-
-				t = (raw_data[0]<<8) | raw_data[1];
-//					temperature = ((float)t) * pow(2.0,-6.0);
-			
-				temperature = -40.0 + 0.01  * (float)t;
-
-				chip_fmt = TEMPFMT_CELCIUS;
-			}
-			break;
-
-		case USBTENKI_CHIP_SHT_RH:
-			{
-				float c1 = -4.0;
-				float c2 = 0.0405;
-				float c3 = -2.8 * powf(10.0, -6.0);
-				float sorh;
-
-				if (n_raw!=2)
-					goto wrongData;
-
-				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
-			
-				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
-
-				chip_fmt = TEMPFMT_CELCIUS;
-				is_humidity = 1;
-			}
-
-
-			break;
-
-		default:
-			printf("hex: ");
-			for (i=0; i<n_raw; i++) {
-				printf("%02x ", raw_data[i]);
-			}
-			printf("\n");
-			return 0;
-			break;
-
-	}
-		
-
-	if (is_humidity) {
-		printf("%.2f\n", temperature);		
-	}
-	else {
-		printTempFmt(temperature, chip_fmt, fmt);
-	}
-
-	return 0;
-
-wrongData:
-	fprintf(stderr, "Wrong data received\n");
-	return -1;
-}
-#endif
 
 const char *chipToString(int id)
 {
@@ -444,6 +330,12 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_SHT_RH:
 			return "Sensirion SHT1x/7x Relative Humidity";
 
+		/* Virtual channels and chipID have the same vales */
+		case USBTENKI_VIRTUAL_DEW_POINT:
+			return "Dew point";
+		case USBTENKI_VIRTUAL_HUMIDEX:
+			return "Humidex";
+
 	}
 	return "unknown";
 }
@@ -459,17 +351,22 @@ const char *chipToString(int id)
  */
 int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total)
 {
-	int i, j;
+	int i, j, res;
 
 	for (i=0; i<num; i++)
 	{
+		// skip virtual channels
+		if (channel_ids[i]>=USBTENKI_VIRTUAL_START)
+			continue;
+
 		// Look for the destination
 		for (j=0; j<dst_total; j++) {
 			if (channel_ids[i] == dst[j].channel_id) 
 				break;
 		}
 		if (j==dst_total) {
-			fprintf(stderr, "Invalid channel ID requested\n");
+			fprintf(stderr, "Invalid channel ID (%d) requested\n", channel_ids[i]);
+			continue;
 		}
 
 		if (dst[j].data_valid)
@@ -480,7 +377,11 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
 			return dst[j].raw_length;		
 		
 		dst[j].data_valid = 1;
-		usbtenki_convertRaw(&dst[j]);
+		res = usbtenki_convertRaw(&dst[j]);
+		if (res==-1) {
+			fprintf(stderr, "Failed to convert raw value from chip %d, channel: %d\n",
+								dst[j].chip_id, dst[j].channel_id);
+		}
 	}
 
 	return 0;
@@ -496,6 +397,8 @@ int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray
 		dstArray->channel_id = i;
 		dstArray->chip_id = usbtenki_getChipID(hdl, i);
 		dstArray->data_valid = 0;
+
+		dstArray++;
 	}
 
 	if (n_channels > arr_size)
