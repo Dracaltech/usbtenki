@@ -304,7 +304,7 @@ int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 	/* Dew point, humidex and heat index from Temp+RH for sensirion sht1x/7x */
 	if (1)
 	{
-		int hfound, tfound;
+		int hfound=0, tfound=0;
 		for (i=0; i<real_channels; i++)
 		{
 			if (channels[i].chip_id == USBTENKI_CHIP_SHT_TEMP)
