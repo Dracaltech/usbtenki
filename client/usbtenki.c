@@ -335,6 +335,8 @@ const char *chipToString(int id)
 			return "Dew point";
 		case USBTENKI_VIRTUAL_HUMIDEX:
 			return "Humidex";
+		case USBTENKI_VIRTUAL_HEAT_INDEX:
+			return "Heat index";
 
 	}
 	return "unknown";

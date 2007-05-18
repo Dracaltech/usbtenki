@@ -216,14 +216,16 @@ int main(int argc, char **argv)
 				printf("Channels: %d\n", n_channels);
 				for (i=0; i<n_channels; i++) {
 					if (tmpchannels[i].channel_id >= USBTENKI_VIRTUAL_START) {
-						printf("    Virtual Channel %d: %s\n",
+						printf("    Virtual Channel %d: %s [%s]\n",
 								tmpchannels[i].channel_id,
-								chipToString(tmpchannels[i].chip_id));
+								chipToString(tmpchannels[i].chip_id),
+								chipToShortString(tmpchannels[i].chip_id));
 					}
 					else {
-						printf("    Channel %d: %s\n",
+						printf("    Channel %d: %s [%s]\n",
 								tmpchannels[i].channel_id,
-								chipToString(tmpchannels[i].chip_id));
+								chipToString(tmpchannels[i].chip_id),
+								chipToShortString(tmpchannels[i].chip_id));
 					}
 				}
 
