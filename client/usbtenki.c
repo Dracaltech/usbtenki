@@ -393,9 +393,12 @@ const char *chipToString(int id)
 			return "Humidex";
 		case USBTENKI_VIRTUAL_HEAT_INDEX:
 			return "Heat index";
+		
+		case USBTENKI_CHIP_NONE:
+			return "Unused/unconfigured";
 
 	}
-	return "unknown";
+	return "unkown";
 }
 
 const char *chipToShortString(int id)
@@ -430,6 +433,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_VIRTUAL_HEAT_INDEX:
 			return "Heat index";
 
+		case USBTENKI_CHIP_NONE:
+			return "N/A";
 	}
 	return "unknown";
 }
