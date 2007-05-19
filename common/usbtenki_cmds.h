@@ -31,6 +31,30 @@
  */
 #define USBTENKI_GET_RAW			0x10
 
+/* Set the serial number characters one by one.
+ *   request: USBTENKI_SET_SERIAL
+ *   value: Low byte is character index. 
+ *   		0xff means done, write to eeprom and become live.
+ *   		High byte is the character itself.
+ *
+ * Returned data:
+ * [0xf0] [lrc]
+ */
+#define USBTENKI_SET_SERIAL			0xf0
+
+/* Set the chip type that corresponds to an
+ * ADC channel (on the MCU).
+ *
+ *   request: USBTENKI_SET_ADC_CHIP
+ *   value: Low byte is adc channel (0-5)
+ *          High byte is the chipid. (or Hidden)
+ *
+ * Returned data:
+ * [0xf1] [lrc]
+ */
+#define USBTENKI_SET_ADC_CHIP		0xf1
+
+
 #define USBTENKI_CHIP_MCP9800	0x00
 #define USBTENKI_CHIP_LM75		0x01
 #define USBTENKI_CHIP_LM92		0x02
@@ -43,6 +67,10 @@
 #define USBTENKI_MCU_ADC3		0x83
 #define USBTENKI_MCU_ADC4		0x84
 #define USBTENKI_MCU_ADC5		0x85
+
+#define USBTENKI_CHIP_MPX4115	0x90
+
+#define USBTENKI_CHIP_NONE		0xFF
 
 /* High channel numbers used in client. Not
  * real channels.. */
