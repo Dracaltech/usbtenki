@@ -44,7 +44,7 @@ static void printUsage(void)
 	printf("    -V          Display version information\n");
 	printf("    -v          Verbose mode\n");
 	printf("    -h          Displays help\n");
-	printf("    -l          List available sensors\n");
+	printf("    -l          List and display info about available sensors\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first sensor found.\n");
 	printf("    -i id<,id,id...>  Use specific channel(s) id(s) or 'a' for all. Default: %d\n", DEFAULT_CHANNEL_ID);
 	printf("    -c          Display temperature in Celcius (default)\n");

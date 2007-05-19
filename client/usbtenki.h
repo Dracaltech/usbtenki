@@ -25,11 +25,14 @@
 #define ID_STRING		"USBTenki"
 #define OLD_ID_STRING	"USB_Temp"
 
-#define TENKI_UNIT_CELCIUS		0x00
-#define TENKI_UNIT_FAHRENHEIT	0x01
-#define TENKI_UNIT_KELVIN		0x02
-#define TENKI_UNIT_RH			0x03
-#define TENKI_UNIT_RAW			0x04
+#define TENKI_UNIT_RAW			0x00
+
+#define TENKI_UNIT_CELCIUS		0x01
+#define TENKI_UNIT_FAHRENHEIT	0x02
+#define TENKI_UNIT_KELVIN		0x03
+#define TENKI_UNIT_RH			0x04
+
+#define TENKI_UNIT_KPA			0x05
 
 struct USBTenki_info {
 	char str_prodname[256];

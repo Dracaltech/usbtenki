@@ -299,6 +299,34 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_MPX4115:
+			{
+				float vout, vs, p;
+				unsigned short adc_out;
+
+				/* -- Sensor formulas:
+				 *   "Vout = Vs * (.009 * P -0.095)"
+				 *   where Vs is 5.1 Vdc. Output is ratiometric
+				 *   to Vs between 4.85 and 5.35 volts.
+				 *
+				 * -- Atmel adc:
+				 *   In 10 bit mode, 0x000 represents ground and 0x3ff represents
+				 *   the selected reference voltage (VCC in our case) minus one
+				 *   LSB.
+				 * 
+				 * The ADC reference voltage is the same as the sensor's Vs,
+				 * So Vs does not really matter here.
+				 */
+				vs = 5.0;
+				adc_out = raw_data[0] << 8 | raw_data[1];
+				vout = (adc_out * vs) / 1024.0;
+				p = ((vout/vs)+0.095)/.009;
+
+				temperature = p;
+				chip_fmt = TENKI_UNIT_KPA;
+			}
+			break;
+
 		case USBTENKI_MCU_ADC0:
 		case USBTENKI_MCU_ADC1:
 		case USBTENKI_MCU_ADC2:
@@ -310,8 +338,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			break;
 
 		default:
-			printf("Unknown chip id 0x%02x\n", chn->chip_id);
-			return -1;
+			temperature = raw_data[0] << 8 | raw_data[1];
+			chip_fmt = TENKI_UNIT_RAW;
+			//printf("Unknown chip id 0x%02x\n", chn->chip_id);
+			break;
 	}
 
 	chn->converted_data = temperature;
@@ -353,6 +383,9 @@ const char *chipToString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Microcontroller ADC channel 5";
 
+		case USBTENKI_CHIP_MPX4115:
+			return "MPX4115 Absolute air pressure sensor";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -386,6 +419,9 @@ const char *chipToShortString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Raw ADC output";
 
+		case USBTENKI_CHIP_MPX4115:
+			return "Pressure";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -407,6 +443,7 @@ const char *unitToString(int unit)
 		case TENKI_UNIT_KELVIN: return "°K";
 		case TENKI_UNIT_FAHRENHEIT: return "°F";
 		case TENKI_UNIT_RAW: return "(raw)";
+		case TENKI_UNIT_KPA: return "kPa";
 	}
 
 	return "";
