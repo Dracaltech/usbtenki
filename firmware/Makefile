@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.7 2007-05-10 23:21:07 raph Exp $
+# This Revision: $Id: Makefile,v 1.8 2007-05-19 22:39:55 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -15,12 +15,9 @@ UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
 
 SERNUMBER=
 
-COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common \
-		-DSERIAL_NUMBER=\'B\',\'0\',\'0\',\'0\',\'0\',\'1\' #-DDEBUG_LEVEL=2
-# NEVER compile the final product with debugging! Any debug output will
-# distort timing so that the specs can't be met.
+COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common 
 
-COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o 
+COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o
 SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
@@ -28,7 +25,10 @@ SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # symbolic targets:
 all: mcp9800.hex lm75.hex sensirion.hex
 
-.c.o:
+%.o: %.c
+	$(COMPILE) -c $< -o $@
+
+%.o: %.c %.h
 	$(COMPILE) -c $< -o $@
 
 .S.o:

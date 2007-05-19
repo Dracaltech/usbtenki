@@ -10,11 +10,12 @@
 #include "interface.h"
 
 #include "i2c.h"
+#include "eeprom.h"
+#include "serno.h"
 #include "usbtenki_cmds.h"
 
 static char g_auto_mode = 1;
 
-static int num_adc_channels=1;
 
 static unsigned char xor_buf(unsigned char *buf, int len)
 {
@@ -32,6 +33,7 @@ uchar   usbFunctionSetup(uchar data[8])
 	int replen=0, res;
 	int total_channels;
 	int sensors_channels;
+	int num_adc_channels=sizeof(g_eeprom_data.adc_chips);
 
 	g_auto_mode = 0;
 	sensors_channels = sensors_getNumChannels();
@@ -91,6 +93,29 @@ uchar   usbFunctionSetup(uchar data[8])
 			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;
 			break;
+
+		case USBTENKI_SET_SERIAL:
+			if (data[2] == 0xff) {
+				serno_store();
+			} else {
+				serno_setChar(data[2], data[3]);
+			}
+			replyBuf[0] = USBTENKI_SET_SERIAL;
+			replyBuf[1] = xor_buf(replyBuf, 1);
+			replen = 2;
+			break;
+
+		case USBTENKI_SET_ADC_CHIP:
+			if (data[2] >= num_adc_channels)
+				break;
+
+			g_eeprom_data.adc_chips[data[2]] = data[3];
+			eeprom_commit();
+
+			replyBuf[0] = USBTENKI_SET_ADC_CHIP;
+			replyBuf[1] = xor_buf(replyBuf, 1);
+			replen = 2;
+			break;
     }
 	
 	return replen;
@@ -114,7 +139,8 @@ int main(void)
 	ADCSRA = (1<<ADEN) | 
 		(1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
 	
-
+	eeprom_init();
+	serno_init();
 	i2c_init();
 
 	if (sensors_init()) {
