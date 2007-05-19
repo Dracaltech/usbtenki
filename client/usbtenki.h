@@ -29,6 +29,7 @@
 #define TENKI_UNIT_FAHRENHEIT	0x01
 #define TENKI_UNIT_KELVIN		0x02
 #define TENKI_UNIT_RH			0x03
+#define TENKI_UNIT_RAW			0x04
 
 struct USBTenki_info {
 	char str_prodname[256];

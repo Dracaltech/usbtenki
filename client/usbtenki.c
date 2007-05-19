@@ -299,6 +299,16 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_MCU_ADC0:
+		case USBTENKI_MCU_ADC1:
+		case USBTENKI_MCU_ADC2:
+		case USBTENKI_MCU_ADC3:
+		case USBTENKI_MCU_ADC4:
+		case USBTENKI_MCU_ADC5:
+			temperature = raw_data[0] << 8 | raw_data[1];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
 		default:
 			printf("Unknown chip id 0x%02x\n", chn->chip_id);
 			return -1;
@@ -330,6 +340,19 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_SHT_RH:
 			return "Sensirion SHT1x/7x Relative Humidity";
 
+		case USBTENKI_MCU_ADC0:
+			return "Microcontroller ADC channel 0";
+		case USBTENKI_MCU_ADC1:
+			return "Microcontroller ADC channel 1";
+		case USBTENKI_MCU_ADC2:
+			return "Microcontroller ADC channel 2";
+		case USBTENKI_MCU_ADC3:
+			return "Microcontroller ADC channel 3";
+		case USBTENKI_MCU_ADC4:
+			return "Microcontroller ADC channel 4";
+		case USBTENKI_MCU_ADC5:
+			return "Microcontroller ADC channel 5";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -347,15 +370,21 @@ const char *chipToShortString(int id)
 	switch(id)
 	{
 		case USBTENKI_CHIP_MCP9800:
-			return "Temperature";
 		case USBTENKI_CHIP_LM75:
-			return "Temperature";
 		case USBTENKI_CHIP_LM92:
-			return "Temperature";
 		case USBTENKI_CHIP_SHT_TEMP:
 			return "Temperature";
+		
 		case USBTENKI_CHIP_SHT_RH:
 			return "Relative Humidity";
+		
+		case USBTENKI_MCU_ADC0:
+		case USBTENKI_MCU_ADC1:
+		case USBTENKI_MCU_ADC2:
+		case USBTENKI_MCU_ADC3:
+		case USBTENKI_MCU_ADC4:
+		case USBTENKI_MCU_ADC5:
+			return "Raw ADC output";
 
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
@@ -377,6 +406,7 @@ const char *unitToString(int unit)
 		case TENKI_UNIT_CELCIUS: return "°C";
 		case TENKI_UNIT_KELVIN: return "°K";
 		case TENKI_UNIT_FAHRENHEIT: return "°F";
+		case TENKI_UNIT_RAW: return "(raw)";
 	}
 
 	return "";

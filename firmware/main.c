@@ -14,6 +14,8 @@
 
 static char g_auto_mode = 1;
 
+static int num_adc_channels=1;
+
 static unsigned char xor_buf(unsigned char *buf, int len)
 {
 	unsigned char x=0;
@@ -28,24 +30,41 @@ uchar   usbFunctionSetup(uchar data[8])
 {
 	static uchar    replyBuf[8];
 	int replen=0, res;
+	int total_channels;
+	int sensors_channels;
 
 	g_auto_mode = 0;
+	sensors_channels = sensors_getNumChannels();
+	total_channels = sensors_channels + num_adc_channels;
 	
     usbMsgPtr = replyBuf;
 
 	switch (data[1])
 	{
 		case USBTENKI_GET_RAW:
-			if (data[2] >= sensors_getNumChannels()) 
+			if (data[2] >= total_channels) 
 				break;
 
 			replyBuf[0] = USBTENKI_GET_RAW;
-			res = sensors_getRaw(data[2], &replyBuf[1]);
 
-			if (res<0) {
-				replyBuf[0] = USBTENKI_ERROR;
-				replen = 1;
-				break;
+			if (data[2] >= sensors_channels)
+			{
+				ADCSRA |= (1<<ADSC); /* start conversion */
+				while (!(ADCSRA & (1<<ADIF))) 
+					{ /* do nothing... */ };
+				replyBuf[2] = ADCL;
+				replyBuf[1] = ADCH;
+				res = 2;
+			}
+			else
+			{
+				res = sensors_getRaw(data[2], &replyBuf[1]);
+
+				if (res<0) {
+					replyBuf[0] = USBTENKI_ERROR;
+					replen = 1;
+					break;
+				}
 			}
 
 			replyBuf[res+1] = xor_buf(replyBuf, res+1);	
@@ -53,18 +72,22 @@ uchar   usbFunctionSetup(uchar data[8])
 			break;
 
 		case USBTENKI_GET_CHIP_ID:
-			if (data[2] >= sensors_getNumChannels()) 
+			if (data[2] >= total_channels) 
 				break;
 
 			replyBuf[0] = USBTENKI_GET_CHIP_ID;
-			replyBuf[1] = sensors_getChipID(data[2]);
+			if (data[2] >= sensors_channels) {
+				replyBuf[1] = USBTENKI_MCU_ADC0 + (data[2]-sensors_channels);
+			} else {
+				replyBuf[1] = sensors_getChipID(data[2]);
+			}
 			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;
 			break;
 
 		case USBTENKI_GET_NUM_CHANNELS:
 			replyBuf[0] = USBTENKI_GET_NUM_CHANNELS;
-			replyBuf[1] = sensors_getNumChannels();
+			replyBuf[1] = total_channels;
 			replyBuf[2] = xor_buf(replyBuf, 2);
 			replen = 3;
 			break;
@@ -84,6 +107,13 @@ int main(void)
 	// all input by default
 	PORTC= 0xff;
 	DDRC = 0x00;
+
+	/* Use AVCC (usb 5 volts) and select ADC0. */
+	ADMUX = (1<<REFS0);
+	/* Enable ADC and setup prescaler to /128 (gives 93khz) */
+	ADCSRA = (1<<ADEN) | 
+		(1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
+	
 
 	i2c_init();
 

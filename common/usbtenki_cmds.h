@@ -37,6 +37,13 @@
 #define USBTENKI_CHIP_SHT_TEMP	0x03
 #define USBTENKI_CHIP_SHT_RH	0x04
 
+#define USBTENKI_MCU_ADC0		0x80
+#define USBTENKI_MCU_ADC1		0x81
+#define USBTENKI_MCU_ADC2		0x82
+#define USBTENKI_MCU_ADC3		0x83
+#define USBTENKI_MCU_ADC4		0x84
+#define USBTENKI_MCU_ADC5		0x85
+
 /* High channel numbers used in client. Not
  * real channels.. */
 #define USBTENKI_VIRTUAL_START		0x100
