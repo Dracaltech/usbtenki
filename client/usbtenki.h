@@ -56,6 +56,8 @@ void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx);
 struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, 
 										struct USBTenki_list_ctx *ctx);
 
+int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
+										int id, unsigned char *dst);
 int usbtenki_getRaw(usb_dev_handle *hdl, int id, unsigned char *dst);
 int usbtenki_getChipID(usb_dev_handle *hdl, int id);
 int usbtenki_getNumChannels(usb_dev_handle *hdl);

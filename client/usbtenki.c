@@ -102,7 +102,7 @@ jumpin:
 
 
 
-static int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
+int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
 										int id, unsigned char *dst)
 {
 	unsigned char buffer[8];
