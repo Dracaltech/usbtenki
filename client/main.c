@@ -46,7 +46,7 @@ static void printUsage(void)
 	printf("    -h          Displays help\n");
 	printf("    -l          List available sensors\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first sensor found.\n");
-	printf("    -i id<,id,id...>  Use specific channel(s) id(s). Default: %d\n", DEFAULT_CHANNEL_ID);
+	printf("    -i id<,id,id...>  Use specific channel(s) id(s) or 'a' for all. Default: %d\n", DEFAULT_CHANNEL_ID);
 	printf("    -c          Display temperature in Celcius (default)\n");
 	printf("    -f          Display temperature in Farenheit\n");
 	printf("    -k          Display temperature in Kelvins\n");
@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 
 	int requested_channels[MAX_CHANNELS];
 	int num_requested_channels= 1;
+	int use_all_channels = 0;
 	
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
@@ -96,6 +97,15 @@ int main(int argc, char **argv)
 				{
 					char *p;
 					char *e;
+	
+					if (*optarg == 'a') 
+					{
+						num_requested_channels = 0;
+						use_all_channels = 1;
+						break;
+					}
+
+
 					num_requested_channels = 0;
 					p = optarg;
 					while(1) {
@@ -157,6 +167,7 @@ int main(int argc, char **argv)
 	if (g_verbose) {
 		printf("Arguments {\n");
 		printf("  verbose: yes\n");
+		printf("  use_all_channels: %d\n", use_all_channels);
 		printf("  channel id(s): ");
 		for (i=0; i<num_requested_channels; i++) {
 			printf("%d ", requested_channels[i]);
@@ -562,6 +573,37 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	if (g_verbose)
 		printf("Device has a total of %d channels\n", num_channels);
 
+	/* Add virtual channels to the list, depending on the real
+	 * channels already present. (eg: Dew point and humidex can
+	 * only be calculated with temperature and humidity readings. */
+	addVirtualChannels(channels, &num_channels, MAX_CHANNELS);
+
+	/* When user request all channels, num_req_chns is 0. Generate a 
+	 * list of requested channels using all available real and
+	 * virtual channels */
+	if (!num_req_chns) {
+		for (num_req_chns=0; 
+				num_req_chns<MAX_CHANNELS && num_req_chns<num_channels; 
+				num_req_chns++) {
+			requested_channels[num_req_chns] = channels[num_req_chns].channel_id;
+		}
+	}
+
+	/* Check if the channels requested channel(s) are available */
+	for (i=0; i<num_req_chns; i++)
+	{
+		 int j;
+		 for (j=0; j<num_channels; j++) {
+		 	if (channels[j].channel_id == requested_channels[i])
+				break;
+		 }
+		 if (j==num_channels) {
+		 	fprintf(stderr, "Requested channel %d does not exist.\n", 
+								requested_channels[i]);
+			return -1;
+		 }
+	}
+
 	/* Read all requested, real channels */
 	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns, 
 													channels, num_channels);
@@ -572,10 +614,6 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	if (g_verbose)
 		printf("%d requested channels read successfully\n", num_req_chns);
 
-	/* Add virtual channels to the list, depending on the real
-	 * channels already present. (eg: Dew point and humidex can
-	 * only be calculated with temperature and humidity readings. */
-	addVirtualChannels(channels, &num_channels, MAX_CHANNELS);
 
 	/* Compute virtual channels. The may read additional non-user requeted
 	 * data from the device. */
