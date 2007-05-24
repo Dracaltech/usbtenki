@@ -32,7 +32,14 @@
 #define TENKI_UNIT_KELVIN		0x03
 #define TENKI_UNIT_RH			0x04
 
-#define TENKI_UNIT_KPA			0x05
+#define TENKI_UNIT_KPA			0x10
+#define TENKI_UNIT_HPA			0x11
+#define TENKI_UNIT_BAR			0x12
+#define TENKI_UNIT_AT			0x13
+#define TENKI_UNIT_ATM			0x14
+#define TENKI_UNIT_TORR			0x15
+#define TENKI_UNIT_PSI			0x16
+
 
 struct USBTenki_info {
 	char str_prodname[256];
@@ -72,6 +79,7 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
 int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn);
 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
+float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 const char *chipToShortString(int id);
 const char *unitToString(int unit);

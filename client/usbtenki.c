@@ -180,6 +180,61 @@ int usbtenki_getChipID(usb_dev_handle *hdl, int id)
 	return dst[0];	
 }
 
+float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt)
+{
+	float pascals;
+
+	if (src_fmt == dst_fmt)
+		return pressure;
+
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_KPA:
+			pascals = pressure * 1000.0;
+			break;
+
+		case TENKI_UNIT_HPA:
+			pascals = pressure * 100.0;
+			break;
+
+		case TENKI_UNIT_BAR:
+			pascals = pressure * 100000.0;
+			break;
+
+		case TENKI_UNIT_AT:
+			pascals = pressure * 98066.5;
+			break;
+
+		case TENKI_UNIT_ATM:
+			pascals = pressure * 101325;
+			break;
+
+		case TENKI_UNIT_TORR:
+			pascals = pressure * 133.322;
+			break;
+
+		case TENKI_UNIT_PSI:
+			pascals = pressure * 6894.76;
+			break;
+
+		default:
+			return pressure;
+	}
+
+	switch (dst_fmt)
+	{
+		case TENKI_UNIT_KPA: return pascals / 1000.0;
+		case TENKI_UNIT_HPA: return pascals / 100.0;
+		case TENKI_UNIT_BAR: return pascals / 100000.0;
+		case TENKI_UNIT_AT: return pascals / 98066.5;
+		case TENKI_UNIT_ATM: return pascals / 101325.0;
+		case TENKI_UNIT_TORR: return pascals / 133.322;
+		case TENKI_UNIT_PSI: return pascals / 6894.76;
+	}
+
+	return pressure;
+}
+
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt)
 {
 	float converted = temperature;
@@ -449,6 +504,12 @@ const char *unitToString(int unit)
 		case TENKI_UNIT_FAHRENHEIT: return "°F";
 		case TENKI_UNIT_RAW: return "(raw)";
 		case TENKI_UNIT_KPA: return "kPa";
+		case TENKI_UNIT_HPA: return "hPa";
+		case TENKI_UNIT_BAR: return "bar";
+		case TENKI_UNIT_AT: return "at";
+		case TENKI_UNIT_ATM: return "atm";
+		case TENKI_UNIT_TORR: return "Torr";
+		case TENKI_UNIT_PSI: return "psi";
 	}
 
 	return "";

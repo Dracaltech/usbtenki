@@ -33,7 +33,7 @@ uchar   usbFunctionSetup(uchar data[8])
 	int replen=0, res;
 	int total_channels;
 	int sensors_channels;
-	int num_adc_channels=sizeof(g_eeprom_data.adc_chips);
+	int num_adc_channels=EEPROM_ADC_CHIPS_SIZE;
 
 	g_auto_mode = 0;
 	sensors_channels = sensors_getNumChannels();
@@ -79,7 +79,7 @@ uchar   usbFunctionSetup(uchar data[8])
 
 			replyBuf[0] = USBTENKI_GET_CHIP_ID;
 			if (data[2] >= sensors_channels) {
-				replyBuf[1] = USBTENKI_MCU_ADC0 + (data[2]-sensors_channels);
+				replyBuf[1] = g_eeprom_data.adc_chips[(data[2]-sensors_channels)];
 			} else {
 				replyBuf[1] = sensors_getChipID(data[2]);
 			}

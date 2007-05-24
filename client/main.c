@@ -24,6 +24,8 @@
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
 
+#define ARRAY_SIZE(arr) ( sizeof(arr) / sizeof(*(arr)))
+
 #define DEFAULT_CHANNEL_ID	0
 #define DEFAULT_NUM_SAMPLES 1
 #define MAX_CHANNELS		256
@@ -31,7 +33,9 @@
 
 int g_verbose = 0;
 int g_temp_format = TENKI_UNIT_CELCIUS;
+int g_pressure_format = TENKI_UNIT_KPA;
 int g_pretty = 0;
+int g_full_display_mode = 0;
 
 int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
@@ -45,12 +49,19 @@ static void printUsage(void)
 	printf("    -v          Verbose mode\n");
 	printf("    -h          Displays help\n");
 	printf("    -l          List and display info about available sensors\n");
-	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first sensor found.\n");
+	printf("    -f          Full list mode. (shows unused/unconfigured channels)\n");
+	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first.\n");
 	printf("    -i id<,id,id...>  Use specific channel(s) id(s) or 'a' for all. Default: %d\n", DEFAULT_CHANNEL_ID);
-	printf("    -c          Display temperature in Celcius (default)\n");
-	printf("    -f          Display temperature in Farenheit\n");
-	printf("    -k          Display temperature in Kelvins\n");
+
+	printf("    -T unit     Select the temperature unit to use. Default: Celcius\n");
+	printf("    -P unit     Select the pressure unit to use. Default: kPa\n");
+
 	printf("    -p          Enable pretty output\n");
+
+	printf("\nValid temperature units:\n");
+	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
+	printf("\nValid pressure units:\n");
+	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi\n");
 }
 
 static void printVersion(void)
@@ -80,19 +91,28 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vhvlcfks:i:p")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p")))
 	{
 		switch (res)
 		{
-			case 'v':
-				g_verbose = 1;
-				break;
 			case 'V':
 				printVersion();
 				return 0;
+			case 'v':
+				g_verbose = 1;
+				break;
 			case 'h':
 				printUsage();
-				return 0;
+				return 0;			
+			case 'l':
+				list_mode = 1;
+				break;			
+			case 'f':
+				g_full_display_mode = 1;
+				break;			
+			case 's':
+				use_serial = optarg;	
+				break;			
 			case 'i':
 				{
 					char *p;
@@ -137,23 +157,52 @@ int main(int argc, char **argv)
 					}
 				}
 				break;
-			case 's':
-				use_serial = optarg;	
-				break;
 			
+			case 'T':
+				if (strcasecmp(optarg, "Celcius")==0 || 
+						strcasecmp(optarg, "C")==0)
+					g_temp_format = TENKI_UNIT_CELCIUS;
+				else if (strcasecmp(optarg, "Fahrenheit")==0 ||
+						strcasecmp(optarg, "F")==0)
+					g_temp_format = TENKI_UNIT_FAHRENHEIT;
+				else if (strcasecmp(optarg, "Kelvin")==0 ||
+						strcasecmp(optarg, "K")==0)
+					g_temp_format = TENKI_UNIT_KELVIN;
+				else {
+					fprintf(stderr, "Unknown temperature format: '%s'\n",
+										optarg);
+					return -1;
+				}					
 				break;
-			case 'c':
-				g_temp_format = TENKI_UNIT_CELCIUS;
+	
+			case 'P':
+				{
+					struct {
+						const char *name;
+						int fmt;
+					} tbl[] = { 
+						{ "kpa", TENKI_UNIT_KPA },
+						{ "hpa", TENKI_UNIT_HPA },
+						{ "bar", TENKI_UNIT_BAR },
+						{ "at", TENKI_UNIT_AT },
+						{ "atm", TENKI_UNIT_ATM },
+						{ "torr", TENKI_UNIT_TORR },
+						{ "psi", TENKI_UNIT_PSI },
+					};
+					
+					for (i=0; i<ARRAY_SIZE(tbl); i++) {
+						if (strcasecmp(tbl[i].name, optarg)==0) {
+							g_pressure_format = tbl[i].fmt;
+							break;
+						}
+					}
+					if (i==ARRAY_SIZE(tbl)) {
+						fprintf(stderr, 
+							"Unknown pressure format: '%s'\n", optarg);
+					}
+				}
 				break;
-			case 'f':
-				g_temp_format = TENKI_UNIT_FAHRENHEIT;
-				break;
-			case 'k':
-				g_temp_format = TENKI_UNIT_KELVIN;
-				break;
-			case 'l':
-				list_mode = 1;
-				break;
+
 			case 'p':
 				g_pretty = 1;
 				break;
@@ -233,6 +282,10 @@ int main(int argc, char **argv)
 								chipToShortString(tmpchannels[i].chip_id));
 					}
 					else {
+						if (!g_full_display_mode && 
+							tmpchannels[i].chip_id == USBTENKI_CHIP_NONE)
+							continue;
+
 						printf("    Channel %d: %s [%s]\n",
 								tmpchannels[i].channel_id,
 								chipToString(tmpchannels[i].chip_id),
@@ -582,10 +635,14 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	 * list of requested channels using all available real and
 	 * virtual channels */
 	if (!num_req_chns) {
-		for (num_req_chns=0; 
-				num_req_chns<MAX_CHANNELS && num_req_chns<num_channels; 
-				num_req_chns++) {
-			requested_channels[num_req_chns] = channels[num_req_chns].channel_id;
+		for (i=0; i<num_channels; i++) {
+
+			if (!g_full_display_mode && 
+					channels[i].chip_id == USBTENKI_CHIP_NONE)
+				continue; // skip unused channels unless in full list
+
+			requested_channels[num_req_chns] = channels[i].channel_id;
+			num_req_chns++;
 		}
 	}
 
@@ -637,7 +694,7 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 			return -2;
 		}
 
-		/* Perform temperature format conversion */
+		/* Perform format conversion */
 		switch (chn->converted_unit)
 		{
 			case TENKI_UNIT_FAHRENHEIT:
@@ -648,7 +705,22 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 																			g_temp_format);
 				chn->converted_unit = g_temp_format;
 				break;
+
+			case TENKI_UNIT_KPA:
+			case TENKI_UNIT_HPA:
+			case TENKI_UNIT_BAR:
+			case TENKI_UNIT_AT:
+			case TENKI_UNIT_ATM:
+			case TENKI_UNIT_TORR:
+			case TENKI_UNIT_PSI:
+				chn->converted_data = usbtenki_convertPressure(chn->converted_data, 
+																chn->converted_unit,
+																	g_pressure_format);
+				chn->converted_unit = g_pressure_format;
+				break;
+
 		}
+
 
 		if (g_pretty) {
 			printf("%s: %.2f %s\n", 

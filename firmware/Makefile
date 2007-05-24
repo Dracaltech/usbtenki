@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.8 2007-05-19 22:39:55 raph Exp $
+# This Revision: $Id: Makefile,v 1.9 2007-05-24 01:38:43 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -54,8 +54,21 @@ flash_lm75: lm75.hex
 	$(UISP) --erase --upload if=lm75.hex
 	
 
+#
+# Fuse high byte = 0xC1
+#  | RSTDISBL | WDTON | SPIEN | CKOPT | EESAVE | BOOTSZ1-0 | BOOTRST |
+#  |    1         1       0       0       0       0    0        1
+#
+# EESAVE: Eeprom not erased when doing a chip erase (flashing)!
+#
+# Fuse low byte = 0x1f
+#  | BODLEVEL | BODEN | SUT1 | SUT0 | CKSEL3   2   1   0   |
+#  |    0         0      0       1      1      1   1   1   |
+#       
+# BODLEVEL: Brownout at 4 volts.
+#
 fuse:
-	$(UISP) --wr_fuse_h=0xc9 --wr_fuse_l=0x9f
+	$(UISP) --wr_fuse_h=0xc1 --wr_fuse_l=0x1f
 
 clean:
 	rm -f mcp9800.hex mcp9800.lst mcp9800.obj mcp9800.cof mcp9800.list mcp9800.map mcp9800.eep.hex mcp9800.elf *.o usbdrv/*.o mcp9800.s usbdrv/oddebug.s usbdrv/usbdrv.s
