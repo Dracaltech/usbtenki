@@ -12,6 +12,7 @@
 #include "i2c.h"
 #include "eeprom.h"
 #include "serno.h"
+#include "adc.h"
 #include "usbtenki_cmds.h"
 
 static char g_auto_mode = 1;
@@ -51,11 +52,19 @@ uchar   usbFunctionSetup(uchar data[8])
 
 			if (data[2] >= sensors_channels)
 			{
-				ADCSRA |= (1<<ADSC); /* start conversion */
-				while (!(ADCSRA & (1<<ADIF))) 
-					{ /* do nothing... */ };
-				replyBuf[2] = ADCL;
-				replyBuf[1] = ADCH;
+				unsigned short val;
+//				ADCSRA |= (1<<ADSC); /* start conversion */
+//				while (!(ADCSRA & (1<<ADIF))) 
+//					{ /* do nothing... */ };
+//				replyBuf[2] = ADCL;
+//				replyBuf[1] = ADCH;
+				// Take 5 samples at 10ms intervals and
+				// average them.
+				val = adc_sample(data[2] - sensors_channels,
+								5,
+								10);
+				replyBuf[1] = val >> 8;
+				replyBuf[2] = val & 0xff;
 				res = 2;
 			}
 			else
@@ -133,12 +142,7 @@ int main(void)
 	PORTC= 0xff;
 	DDRC = 0x00;
 
-	/* Use AVCC (usb 5 volts) and select ADC0. */
-	ADMUX = (1<<REFS0);
-	/* Enable ADC and setup prescaler to /128 (gives 93khz) */
-	ADCSRA = (1<<ADEN) | 
-		(1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
-	
+	adc_init();
 	eeprom_init();
 	serno_init();
 	i2c_init();

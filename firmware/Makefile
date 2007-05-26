@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.9 2007-05-24 01:38:43 raph Exp $
+# This Revision: $Id: Makefile,v 1.10 2007-05-26 01:13:07 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -15,9 +15,9 @@ UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
 
 SERNUMBER=
 
-COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common 
+COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common -DF_CPU=12000000UL
 
-COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o
+COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o adc.o
 SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
