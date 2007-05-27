@@ -6,7 +6,7 @@ LDFLAGS=-lusb -lm
 
 PREFIX=/usr/local
 
-PROG=usbtenkiget
+PROGS=usbtenkiget usbtenkisetup
 
 .PHONY : clean install
 
@@ -22,7 +22,7 @@ usbtenkisetup: usbtenki.o usbtenkisetup.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f *.o $(PROG)
+	rm -f *.o $(PROGS)
 
 install:
 	@echo "Install not done yet. Sorry"

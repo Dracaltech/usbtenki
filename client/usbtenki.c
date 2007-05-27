@@ -368,13 +368,17 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				 *   In 10 bit mode, 0x000 represents ground and 0x3ff represents
 				 *   the selected reference voltage (VCC in our case) minus one
 				 *   LSB.
+				 *
+				 * The code in the Atmel averages multiple samples and
+				 * outputs a 16 bit value. 
 				 * 
 				 * The ADC reference voltage is the same as the sensor's Vs,
 				 * So Vs does not really matter here.
 				 */
 				vs = 5.0;
 				adc_out = raw_data[0] << 8 | raw_data[1];
-				vout = (adc_out * vs) / 1024.0;
+				//vout = (adc_out * vs) / 1024.0;
+				vout = (adc_out * vs) / (float)0xffff;
 				p = ((vout/vs)+0.095)/.009;
 
 				temperature = p;
