@@ -36,6 +36,7 @@ int g_temp_format = TENKI_UNIT_CELCIUS;
 int g_pressure_format = TENKI_UNIT_KPA;
 int g_pretty = 0;
 int g_full_display_mode = 0;
+int g_7bit_clean = 0;
 
 int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
@@ -57,6 +58,7 @@ static void printUsage(void)
 	printf("    -P unit     Select the pressure unit to use. Default: kPa\n");
 
 	printf("    -p          Enable pretty output\n");
+	printf("    -7          Use 7 bit clean output (no fancy degree symbols)\n");
 
 	printf("\nValid temperature units:\n");
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
@@ -91,7 +93,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7")))
 	{
 		switch (res)
 		{
@@ -104,6 +106,9 @@ int main(int argc, char **argv)
 			case 'h':
 				printUsage();
 				return 0;			
+			case '7':
+				g_7bit_clean = 1;
+				break;
 			case 'l':
 				list_mode = 1;
 				break;			
@@ -726,7 +731,7 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 			printf("%s: %.2f %s\n", 
 					chipToShortString(chn->chip_id),
 					chn->converted_data, 
-					unitToString(chn->converted_unit));
+					unitToString(chn->converted_unit, g_7bit_clean));
 		}
 		else {
 			printf("%.2f" , chn->converted_data);

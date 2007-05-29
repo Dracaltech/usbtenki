@@ -498,14 +498,14 @@ const char *chipToShortString(int id)
 	return "unknown";
 }
 
-const char *unitToString(int unit)
+const char *unitToString(int unit, int no_fancy_chars)
 {
 	switch(unit)
 	{
 		case TENKI_UNIT_RH: return "%";
-		case TENKI_UNIT_CELCIUS: return "°C";
-		case TENKI_UNIT_KELVIN: return "°K";
-		case TENKI_UNIT_FAHRENHEIT: return "°F";
+		case TENKI_UNIT_CELCIUS: return no_fancy_chars ? "C" : "°C";
+		case TENKI_UNIT_KELVIN: return no_fancy_chars ? "K" : "°K";
+		case TENKI_UNIT_FAHRENHEIT: return no_fancy_chars ? "F" : "°F";
 		case TENKI_UNIT_RAW: return "(raw)";
 		case TENKI_UNIT_KPA: return "kPa";
 		case TENKI_UNIT_HPA: return "hPa";
