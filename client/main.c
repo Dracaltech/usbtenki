@@ -38,6 +38,8 @@ int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_7bit_clean = 0;
 
+int g_num_attempts = 1;
+
 int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 																	int max_channels);
@@ -53,6 +55,7 @@ static void printUsage(void)
 	printf("    -f          Full list mode. (shows unused/unconfigured channels)\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first.\n");
 	printf("    -i id<,id,id...>  Use specific channel(s) id(s) or 'a' for all. Default: %d\n", DEFAULT_CHANNEL_ID);
+	printf("    -R num      If an USB command fails, retry it num times before bailing out\n");
 
 	printf("    -T unit     Select the temperature unit to use. Default: Celcius\n");
 	printf("    -P unit     Select the pressure unit to use. Default: kPa\n");
@@ -93,10 +96,13 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:")))
 	{
 		switch (res)
 		{
+			case 'R':
+				g_num_attempts = atoi(optarg) + 1;
+				break;
 			case 'V':
 				printVersion();
 				return 0;
@@ -449,7 +455,7 @@ static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBT
 				return &channels[i];
 			}				
 
-			res = usbtenki_readChannelList(hdl, &requested_channel_id, 1, channels, num_channels);
+			res = usbtenki_readChannelList(hdl, &requested_channel_id, 1, channels, num_channels, g_num_attempts);
 			if (res!=0) {
 				fprintf(stderr, "Failed to read channel %d data from device! (%d)\n",
 					requested_channel_id, res);
@@ -668,7 +674,7 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 
 	/* Read all requested, real channels */
 	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns, 
-													channels, num_channels);
+													channels, num_channels, g_num_attempts);
 	if (res<0) {
 		return -1;
 	}

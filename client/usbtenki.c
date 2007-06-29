@@ -101,7 +101,6 @@ jumpin:
 }
 
 
-
 int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
 										int id, unsigned char *dst)
 {
@@ -528,9 +527,10 @@ const char *unitToString(int unit, int no_fancy_chars)
  *
  * dst must have been setup by usbtenki_listChannels() first!
  */
-int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total)
+int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts)
 {
 	int i, j, res;
+	int n;
 
 	for (i=0; i<num; i++)
 	{
@@ -551,9 +551,19 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
 		if (dst[j].data_valid)
 			continue; /* already done */
 
-		dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data);
-		if (dst[j].raw_length<0)
+		for (n=0; n<num_attempts; n++) {
+			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data);
+			if (dst[j].raw_length<0) {
+				usleep(200);
+				continue;
+			}
+			break;
+		}
+		
+		/* all attempts failed? */
+		if (n==num_attempts) {
 			return dst[j].raw_length;		
+		}
 		
 		dst[j].data_valid = 1;
 		res = usbtenki_convertRaw(&dst[j]);

@@ -75,7 +75,7 @@ int usbtenki_getNumChannels(usb_dev_handle *hdl);
 int usbtenki_convertRaw(struct USBTenki_channel *chn);
 
 int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray, int arr_size);
-int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total);
+int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
 int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn);
 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
