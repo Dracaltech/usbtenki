@@ -68,7 +68,11 @@
 #define USBTENKI_MCU_ADC4		0x84
 #define USBTENKI_MCU_ADC5		0x85
 
+
 #define USBTENKI_CHIP_MPX4115	0x90
+
+/* Ratiometric volts measurement */
+#define USBTENKI_CHIP_VOLTS		0x91
 
 #define USBTENKI_CHIP_NONE		0xFF
 
