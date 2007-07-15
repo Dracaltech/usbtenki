@@ -5,10 +5,11 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.10 2007-05-26 01:13:07 raph Exp $
+# This Revision: $Id: Makefile,v 1.11 2007-07-15 22:00:51 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
+VERIFY = --verify
 # The two lines above are for "uisp" and the AVR910 serial programmer connected
 # to a Keyspan USB to serial converter to a Mac running Mac OS X.
 # Choose your favorite programmer and interface.
@@ -23,7 +24,7 @@ SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800.hex lm75.hex sensirion.hex
+all: mcp9800.hex lm75.hex sensirion.hex adc.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -45,14 +46,16 @@ flash:
 	echo "flash_sensirion | flash_lm75 | flash_mcp9800 ?"
 
 flash_sensirion:	sensirion.hex
-	$(UISP) --erase --upload if=sensirion.hex
+	$(UISP) --erase --upload $(VERIFY) if=sensirion.hex
 
 flash_mcp9800:	mcp9800.hex
-	$(UISP) --erase --upload if=mcp9800.hex
+	$(UISP) --erase --upload $(VERIFY) if=mcp9800.hex
 
 flash_lm75: lm75.hex
-	$(UISP) --erase --upload if=lm75.hex
-	
+	$(UISP) --erase --upload $(VERIFY) if=lm75.hex
+
+flash_adc: adc.hex
+	$(UISP) --erase --upload $(VERIFY) if=adc.hex
 
 #
 # Fuse high byte = 0xC1
@@ -83,6 +86,8 @@ lm75.elf: $(COMMON_OBJECTS) lm75.o interface_lm75.o
 sensirion.elf: $(COMMON_OBJECTS) sensirion_serial.o interface_sensirion.o
 	$(COMPILE) -o $@ $^
 
+adc.elf: $(COMMON_OBJECTS) interface_dummy.o
+	$(COMPILE) -o $@ $^ 
 
 %.hex: %.elf
 	rm -f $@
