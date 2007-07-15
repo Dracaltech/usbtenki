@@ -40,6 +40,7 @@
 #define TENKI_UNIT_TORR			0x15
 #define TENKI_UNIT_PSI			0x16
 
+#define TENKI_UNIT_VOLTS		0x20
 
 struct USBTenki_info {
 	char str_prodname[256];

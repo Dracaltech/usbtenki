@@ -385,6 +385,24 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_VOLTS:
+			{
+				unsigned short adc_out;
+				float vs;
+				
+				/*The code in the Atmel averages multiple samples and
+				 * outputs a 16 bit value. 
+				 * 
+				 * The ADC reference voltage is the same as the sensor's Vs,
+				 * so this is ok for ratiometric measurements.
+				 */
+				vs = 5.0;
+				adc_out = raw_data[0] << 8 | raw_data[1];
+				temperature = (adc_out * vs) / (float)0xffff;
+				chip_fmt = TENKI_UNIT_VOLTS;
+			}
+			break;
+
 		case USBTENKI_MCU_ADC0:
 		case USBTENKI_MCU_ADC1:
 		case USBTENKI_MCU_ADC2:
@@ -444,6 +462,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_MPX4115:
 			return "MPX4115 Absolute air pressure sensor";
 
+		case USBTENKI_CHIP_VOLTS:
+			return "Ratiometric volts from ADC";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -483,6 +504,9 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MPX4115:
 			return "Pressure";
 
+		case USBTENKI_CHIP_VOLTS:
+			return "Voltage";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -513,6 +537,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_ATM: return "atm";
 		case TENKI_UNIT_TORR: return "Torr";
 		case TENKI_UNIT_PSI: return "psi";
+		case TENKI_UNIT_VOLTS: return "volts";
 	}
 
 	return "";
