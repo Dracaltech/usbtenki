@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.11 2007-07-15 22:00:51 raph Exp $
+# This Revision: $Id: Makefile,v 1.12 2007-09-09 01:56:06 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -74,7 +74,7 @@ fuse:
 	$(UISP) --wr_fuse_h=0xc1 --wr_fuse_l=0x1f
 
 clean:
-	rm -f mcp9800.hex mcp9800.lst mcp9800.obj mcp9800.cof mcp9800.list mcp9800.map mcp9800.eep.hex mcp9800.elf *.o usbdrv/*.o mcp9800.s usbdrv/oddebug.s usbdrv/usbdrv.s
+	rm -f *.hex *.elf *.lst *.o usbdrv/*.o usbdrv/oddebug.s usbdrv/usbdrv.s
 
 # file targets:
 mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o interface_mcp9800.o
