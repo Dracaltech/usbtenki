@@ -73,6 +73,7 @@
 
 /* Ratiometric volts measurement */
 #define USBTENKI_CHIP_VOLTS		0x91
+#define USBTENKI_CHIP_VOLTS_REVERSE	0x92
 
 #define USBTENKI_CHIP_NONE		0xFF
 

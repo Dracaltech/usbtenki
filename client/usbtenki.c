@@ -385,6 +385,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_VOLTS_REVERSE:
 		case USBTENKI_CHIP_VOLTS:
 			{
 				unsigned short adc_out;
@@ -398,6 +399,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				 */
 				vs = 5.0;
 				adc_out = raw_data[0] << 8 | raw_data[1];
+
+				if (chn->chip_id==USBTENKI_CHIP_VOLTS_REVERSE)
+					adc_out ^= 0xffff;
+
 				temperature = (adc_out * vs) / (float)0xffff;
 				chip_fmt = TENKI_UNIT_VOLTS;
 			}
@@ -465,6 +470,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_VOLTS:
 			return "Ratiometric volts from ADC";
 
+		case USBTENKI_CHIP_VOLTS_REVERSE:
+			return "Inverted ratiometric volts from ADC";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -504,6 +512,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MPX4115:
 			return "Pressure";
 
+		case USBTENKI_CHIP_VOLTS_REVERSE:
 		case USBTENKI_CHIP_VOLTS:
 			return "Voltage";
 
@@ -537,7 +546,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_ATM: return "atm";
 		case TENKI_UNIT_TORR: return "Torr";
 		case TENKI_UNIT_PSI: return "psi";
-		case TENKI_UNIT_VOLTS: return "volts";
+		case TENKI_UNIT_VOLTS: return "V";
 	}
 
 	return "";
