@@ -145,7 +145,6 @@ int main(void)
 	adc_init();
 	eeprom_init();
 	serno_init();
-	i2c_init();
 
 	if (sensors_init()) {
 		while(1) { } /* watchdog will reset me! */

@@ -5,11 +5,13 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.12 2007-09-09 01:56:06 raph Exp $
+# This Revision: $Id: Makefile,v 1.13 2007-09-25 17:00:52 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
 VERIFY = --verify
+FUSE_H=0xc1
+FUSE_L=0x1f
 # The two lines above are for "uisp" and the AVR910 serial programmer connected
 # to a Keyspan USB to serial converter to a Mac running Mac OS X.
 # Choose your favorite programmer and interface.
@@ -19,12 +21,12 @@ SERNUMBER=
 COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common -DF_CPU=12000000UL
 
 COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o adc.o
-SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o
+SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o tsl2561.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800.hex lm75.hex sensirion.hex adc.hex
+all: mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -57,6 +59,9 @@ flash_lm75: lm75.hex
 flash_adc: adc.hex
 	$(UISP) --erase --upload $(VERIFY) if=adc.hex
 
+flash_tsl2561: tsl2561.hex
+	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
+
 #
 # Fuse high byte = 0xC1
 #  | RSTDISBL | WDTON | SPIEN | CKOPT | EESAVE | BOOTSZ1-0 | BOOTRST |
@@ -71,7 +76,10 @@ flash_adc: adc.hex
 # BODLEVEL: Brownout at 4 volts.
 #
 fuse:
-	$(UISP) --wr_fuse_h=0xc1 --wr_fuse_l=0x1f
+	$(UISP) --wr_fuse_h=$(FUSE_H) --wr_fuse_l=$(FUSE_L)
+
+fuse_usb:
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uhfuse:w:$(FUSE_H):m -Ulfuse:w:$(FUSE_L):m
 
 clean:
 	rm -f *.hex *.elf *.lst *.o usbdrv/*.o usbdrv/oddebug.s usbdrv/usbdrv.s
@@ -87,6 +95,9 @@ sensirion.elf: $(COMMON_OBJECTS) sensirion_serial.o interface_sensirion.o
 	$(COMPILE) -o $@ $^
 
 adc.elf: $(COMMON_OBJECTS) interface_dummy.o
+	$(COMPILE) -o $@ $^ 
+
+tsl2561.elf: $(COMMON_OBJECTS) interface_tsl2561.o tsl2561.o
 	$(COMPILE) -o $@ $^ 
 
 %.hex: %.elf

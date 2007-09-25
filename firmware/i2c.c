@@ -3,10 +3,15 @@
 
 #include "i2c.h"
 
-void i2c_init(void)
+void i2c_init(int use_int_pullup)
 {
-	/* Use internal pullups */
-	PORTC |= (1<<5)|(1<<4);
+	if (use_int_pullup) {
+		/* Use internal pullups */
+		PORTC |= (1<<5)|(1<<4);
+	} else {
+		/* Extenal pullups required */
+		PORTC &= ~((1<<5)|(1<<4));
+	}
 
 	/* This gives roughly 30 khz with a 16mhz xtal */
 	TWBR = 255;
