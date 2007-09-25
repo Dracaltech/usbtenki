@@ -106,8 +106,17 @@ int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd,
 {
 	unsigned char buffer[8];
 	unsigned char xor;
-	int n;
+	int n, i;
 	int datlen;
+	static int first = 1, trace = 0;
+
+	if (first) {
+		if (getenv("USBTENKI_TRACE")) {
+			trace = 1;
+		}
+		first = 0;
+	}
+	
 
 	n =	usb_control_msg(hdl, 
 		USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, /* requesttype */
@@ -115,6 +124,17 @@ int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd,
 		id, 				/* value */
 		0, 					/* index */
 		(char*)buffer, sizeof(buffer), 5000);
+
+	if (trace) {
+		printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
+			cmd, id, 0, n);
+		if (n>0) {
+			for (i=0; i<n; i++) {
+				printf("%02x ", buffer[i]);
+			}
+		}
+		printf("\n");
+	}
 
 	/* Validate size first */
 	if (n>8) {
@@ -385,6 +405,16 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2561_IR:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 		case USBTENKI_CHIP_VOLTS:
 			{
@@ -414,12 +444,12 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 		case USBTENKI_MCU_ADC3:
 		case USBTENKI_MCU_ADC4:
 		case USBTENKI_MCU_ADC5:
-			temperature = raw_data[0] << 8 | raw_data[1];
+			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
 			break;
 
 		default:
-			temperature = raw_data[0] << 8 | raw_data[1];
+			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
 			//printf("Unknown chip id 0x%02x\n", chn->chip_id);
 			break;
@@ -450,6 +480,10 @@ const char *chipToString(int id)
 			return "Sensirion SHT1x/7x Temperature";
 		case USBTENKI_CHIP_SHT_RH:
 			return "Sensirion SHT1x/7x Relative Humidity";
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
+			return "TSL2561 Channel 0 (IR+Visibile)";
+		case USBTENKI_CHIP_TSL2561_IR:
+			return "TSL2561 Channel 1 (IR only)";
 
 		case USBTENKI_MCU_ADC0:
 			return "Microcontroller ADC channel 0";
@@ -480,7 +514,10 @@ const char *chipToString(int id)
 			return "Humidex";
 		case USBTENKI_VIRTUAL_HEAT_INDEX:
 			return "Heat index";
-		
+	
+		case USBTENKI_VIRTUAL_TSL2561_LUX:
+			return "TSL2561 Lux";
+
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
 
@@ -498,6 +535,11 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 			return "Temperature";
 		
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
+			return "Visible+Ir light";
+		case USBTENKI_CHIP_TSL2561_IR:
+			return "Ir light";
+
 		case USBTENKI_CHIP_SHT_RH:
 			return "Relative Humidity";
 		
@@ -523,6 +565,8 @@ const char *chipToShortString(int id)
 			return "Humidex";
 		case USBTENKI_VIRTUAL_HEAT_INDEX:
 			return "Heat index";
+		case USBTENKI_VIRTUAL_TSL2561_LUX:
+			return "Lux";
 
 		case USBTENKI_CHIP_NONE:
 			return "N/A";
@@ -547,6 +591,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_TORR: return "Torr";
 		case TENKI_UNIT_PSI: return "psi";
 		case TENKI_UNIT_VOLTS: return "V";
+		case TENKI_UNIT_LUX: return "lx";
 	}
 
 	return "";

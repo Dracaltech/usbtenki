@@ -42,6 +42,8 @@
 
 #define TENKI_UNIT_VOLTS		0x20
 
+#define TENKI_UNIT_LUX			0x30
+
 struct USBTenki_info {
 	char str_prodname[256];
 	char str_serial[256];

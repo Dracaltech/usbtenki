@@ -412,6 +412,30 @@ int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 		}
 	}
 
+	/* Lux calculated using Visible + IR and IR only channels from TSL2561 sensor */
+	if (1)
+	{
+		int vir_found=0, ir_found=0;
+		for (i=0; i<real_channels; i++)
+		{
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2561_IR_VISIBLE)
+				vir_found = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2561_IR)
+				ir_found = 1;
+		}
+
+		if (vir_found && ir_found) {
+			chn.channel_id = USBTENKI_VIRTUAL_TSL2561_LUX;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+		}
+	}
+
+
 	return 0;
 }
 
@@ -510,6 +534,53 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 
 			switch(chn->channel_id)
 			{
+				case USBTENKI_VIRTUAL_TSL2561_LUX:
+					{
+						struct USBTenki_channel *vir_chn, *ir_chn;
+						float ch0,ch1,lx;
+
+						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2561_IR);
+
+						vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2561_IR_VISIBLE);
+
+						if (ir_chn==NULL || vir_chn==NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						ch0 = vir_chn->converted_data;
+						ch1 = ir_chn->converted_data;
+						
+			/*
+			 * TMB Package
+			 *
+			 * For 0 < CH1/CH0 <= 0.50 		Lux = 0.0304 * CH0 - .062 * CH0 * ((CH1/CH0)1.4)
+			 * For 0.50 < CH1/CH0 <=  0.61 	Lux = 0.0224 * CH0 - .031 * CH1
+			 * For 0.61 < CH1/CH0 <= 0.80 	Lux = 0.0128 * CH0 - .0153 * CH1
+			 * For 0.80 < CH1/CH0 <= 1.30 	Lux = 0.00146 *  CH0 - .00112 * CH1
+			 * For CH1/CH0 > 1.30			Lux = 0
+			 *
+			 */
+
+						if (ch1/ch0 < 0.50)
+							lx = 0.0304 * ch0 - 0.062 * ch0 * (pow((ch1/ch0),1.4));
+						else if (ch1/ch0 < 0.61)
+							lx = 0.0224 * ch0 - 0.031 * ch1;
+						else if (ch1/ch0 < 0.80)
+							lx = 0.0128 * ch0 - 0.0153 * ch1;
+						else
+							lx = 0.0;
+						
+						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
+
+						chn->data_valid = 1;
+						chn->converted_data = lx;
+						chn->converted_unit = TENKI_UNIT_LUX;
+					}
+					break;
+				
 				case USBTENKI_VIRTUAL_DEW_POINT:
 					{
 						struct USBTenki_channel *temp_chn, *rh_chn;
