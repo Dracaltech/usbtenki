@@ -573,7 +573,7 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 						else
 							lx = 0.0;
 						
-						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
+//						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
 
 						chn->data_valid = 1;
 						chn->converted_data = lx;
