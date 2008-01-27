@@ -306,8 +306,20 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 	float temperature;
 	int chip_fmt = TENKI_UNIT_KELVIN;
 	unsigned char *raw_data;
+	int i;
 
 	raw_data = chn->raw_data;
+
+/*	printf("Raw data: ");
+	for (i=0; i<chn->raw_length; i++) {
+		int b;
+		for (b=0x80; b; b>>=1) {
+			printf("%c", raw_data[i] & b ? '1' : '0');
+		}
+		printf(" ");
+	}
+	printf("\n");*/
+
 
 	switch (chn->chip_id)
 	{
@@ -348,7 +360,6 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 					goto wrongData;
 
 				t = (raw_data[0]<<8) | raw_data[1];
-//					temperature = ((float)t) * pow(2.0,-6.0);
 			
 				temperature = -40.0 + 0.01  * (float)t;
 
@@ -361,6 +372,39 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 				float c1 = -4.0;
 				float c2 = 0.0405;
 				float c3 = -2.8 * powf(10.0, -6.0);
+				float sorh;
+
+				if (chn->raw_length!=2)
+					goto wrongData;
+
+				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
+			
+				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
+				chip_fmt = TENKI_UNIT_RH;
+			}
+			break;
+
+
+		case USBTENKI_CHIP_BS02_TEMP:
+			{
+				unsigned  short t;
+
+				if (chn->raw_length!=2)
+					goto wrongData;
+
+				t = (raw_data[0]<<8) | raw_data[1];
+			
+				temperature = -40.0 + 0.04  * (float)t;
+
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_BS02_RH:
+			{
+				float c1 = -4.0;
+				float c2 = 0.648;
+				float c3 = -7.2 * powf(10.0, -4.0);
 				float sorh;
 
 				if (chn->raw_length!=2)
@@ -480,6 +524,10 @@ const char *chipToString(int id)
 			return "Sensirion SHT1x/7x Temperature";
 		case USBTENKI_CHIP_SHT_RH:
 			return "Sensirion SHT1x/7x Relative Humidity";
+		case USBTENKI_CHIP_BS02_TEMP:
+			return "BS02 Temperature";
+		case USBTENKI_CHIP_BS02_RH:
+			return "BS02 Relative Humidity";
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
 		case USBTENKI_CHIP_TSL2561_IR:
@@ -533,6 +581,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_LM75:
 		case USBTENKI_CHIP_LM92:
 		case USBTENKI_CHIP_SHT_TEMP:
+		case USBTENKI_CHIP_BS02_TEMP:
 			return "Temperature";
 		
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -541,8 +590,9 @@ const char *chipToShortString(int id)
 			return "Ir light";
 
 		case USBTENKI_CHIP_SHT_RH:
+		case USBTENKI_CHIP_BS02_RH:
 			return "Relative Humidity";
-		
+
 		case USBTENKI_MCU_ADC0:
 		case USBTENKI_MCU_ADC1:
 		case USBTENKI_MCU_ADC2:
