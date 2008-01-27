@@ -1,5 +1,5 @@
 #include <avr/io.h>
-#include "sensirion_serial.h"
+#include "sser.h"
 
 static void dly()
 {
@@ -82,6 +82,53 @@ int sser_cmd(unsigned char cmd)
 		clockLow();
 
 		cmd <<= 1;
+	}
+	releaseData();
+
+	/* ack */	
+	dly();
+	clockHigh();
+	dly();
+	ack = SSER_DATA_PIN & SSER_DATA_BIT;
+	clockLow();
+	
+	if (ack) {
+		return -1; // no ack!
+	}
+
+	// let the slave relase data
+	while (!(SSER_DATA_PIN & SSER_DATA_BIT)) 
+		{ /* empty */	}
+
+	// clk low
+	// data floating
+
+	return 0;
+}
+
+/**
+ * NOT FINISHED NOR TESTED
+ */
+int sser_writeByte(unsigned char dat)
+{
+	char ack, i;
+
+	dly();
+	/* 3 address bits + 5 command bits */
+	for (i=0; i<8; i++)
+	{
+		if (dat & 0x80)
+			releaseData();
+		else
+			pullData();
+		
+		dly();
+		clockHigh();
+		dly();
+		clockLow();
+		dly();
+
+		dat <<= 1;
 	}
 	releaseData();
 

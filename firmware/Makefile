@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.13 2007-09-25 17:00:52 raph Exp $
+# This Revision: $Id: Makefile,v 1.14 2008-01-27 19:14:03 raph Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -21,12 +21,12 @@ SERNUMBER=
 COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common -DF_CPU=12000000UL
 
 COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o adc.o
-SENSOR_OBJECTS = mcp9800.o lm75.o sensirion_serial.o tsl2561.o
+SENSOR_OBJECTS = mcp9800.o lm75.o sser.o tsl2561.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex
+all: mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -45,7 +45,7 @@ all: mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex
 	$(COMPILE) -S $< -o $@
 
 flash:
-	echo "flash_sensirion | flash_lm75 | flash_mcp9800 ?"
+	echo "flash_sensirion | flash_lm75 | flash_mcp9800 | flash_adc | flash_tsl2561 | flash_bs02 ?"
 
 flash_sensirion:	sensirion.hex
 	$(UISP) --erase --upload $(VERIFY) if=sensirion.hex
@@ -61,6 +61,9 @@ flash_adc: adc.hex
 
 flash_tsl2561: tsl2561.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
+
+flash_bs02: bs02.hex
+	$(UISP) --erase --upload $(VERIFY) if=bs02.hex
 
 #
 # Fuse high byte = 0xC1
@@ -91,7 +94,7 @@ mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o interface_mcp9800.o
 lm75.elf: $(COMMON_OBJECTS) lm75.o interface_lm75.o
 	$(COMPILE) -o $@ $^
 
-sensirion.elf: $(COMMON_OBJECTS) sensirion_serial.o interface_sensirion.o
+sensirion.elf: $(COMMON_OBJECTS) sser.o interface_sensirion.o
 	$(COMPILE) -o $@ $^
 
 adc.elf: $(COMMON_OBJECTS) interface_dummy.o
@@ -99,6 +102,9 @@ adc.elf: $(COMMON_OBJECTS) interface_dummy.o
 
 tsl2561.elf: $(COMMON_OBJECTS) interface_tsl2561.o tsl2561.o
 	$(COMPILE) -o $@ $^ 
+
+bs02.elf: $(COMMON_OBJECTS) interface_bs02.o sser.o
+	$(COMPILE) -o $@ $^
 
 %.hex: %.elf
 	rm -f $@
