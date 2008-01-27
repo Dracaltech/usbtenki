@@ -306,11 +306,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 	float temperature;
 	int chip_fmt = TENKI_UNIT_KELVIN;
 	unsigned char *raw_data;
+
+	/*
 	int i;
-
-	raw_data = chn->raw_data;
-
-/*	printf("Raw data: ");
+	printf("Raw data: ");
 	for (i=0; i<chn->raw_length; i++) {
 		int b;
 		for (b=0x80; b; b>>=1) {
@@ -320,6 +319,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 	}
 	printf("\n");*/
 
+	raw_data = chn->raw_data;
 
 	switch (chn->chip_id)
 	{
