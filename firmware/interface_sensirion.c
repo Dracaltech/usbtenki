@@ -1,10 +1,19 @@
 #include "interface.h"
 #include "usbtenki_cmds.h"
-#include "sensirion_serial.h"
+#include "sser.h"
+#include <util/delay.h>
 
 int sensors_init(void)
 {
+	// SHT7x datasheet specifies 11ms. With 50ms, we are on the safe side.
+	_delay_ms(50);
+
 	sser_init();
+
+	// Explicitely set the status register with default values.
+	sser_cmd(SHT_CMD_WRITE_STATUS);
+	sser_writeByte(0x00);
+
 	return 0;	
 }
 
