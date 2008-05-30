@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "com_raphnet_tenki_USBTenkiDevice.h"
+#include "com_raphnet_tenki_JNI.h"
 #include "usbtenki.h"
 
 
@@ -48,10 +48,71 @@ static void validateContext(JNIEnv *env, struct tenki_context *ctx)
 
 /*
  * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Method:    n_getConvertedChannelValue
+ * Signature: (JI)F
+ */
+JNIEXPORT jfloat JNICALL Java_com_raphnet_tenki_JNI_n_1getConvertedChannelValue
+  (JNIEnv *env, jobject obj, jlong ptr, jint id)
+{
+	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
+	int idx;
+	validateContext(env, ctx);
+
+	idx = indexFromId(env, ctx, id);
+	if (idx==-1) 
+		return 0.0;
+
+	return ctx->channels[idx].converted_data;
+}
+
+/*
+ * Class:     com_raphnet_tenki_JNI
+ * Method:    n_getConvertedChannelUnit
+ * Signature: (JI)I
+ */
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getConvertedChannelUnit
+  (JNIEnv *env, jobject obj, jlong ptr, jint id)
+{
+	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
+	int idx;
+	validateContext(env, ctx);
+
+	idx = indexFromId(env, ctx, id);
+	if (idx==-1) 
+		return 0;
+
+	return ctx->channels[idx].converted_unit;
+}
+/*
+ * Class:     com_raphnet_tenki_JNI
+ * Method:    n_readChannel
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1readChannel
+  (JNIEnv *env, jobject obj, jlong ptr, jint id)
+{
+	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
+	int idx;
+	validateContext(env, ctx);
+
+	idx = indexFromId(env, ctx, id);
+	if (idx==-1) 
+		return;
+
+	if (usbtenki_readChannel(ctx->hdl, &ctx->channels[idx]) < 0) {
+		jclass clazz;
+		clazz = (*env)->FindClass(env, "com/raphnet/tenki/TenkiException");
+		(*env)->ThrowNew(env, clazz, "usbtenki_readChannel failed");
+	}
+}
+
+
+/*
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_openBySerial
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1openBySerial
+JNIEXPORT jlong JNICALL Java_com_raphnet_tenki_JNI_n_1openBySerial
   (JNIEnv *env, jobject obj, jstring serial)
 {
 	usb_dev_handle *hdl;
@@ -88,11 +149,11 @@ JNIEXPORT jlong JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1openBySerial
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getVersion
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getVersion
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getVersion
   (JNIEnv *env, jobject obj, jlong ptr)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -104,11 +165,11 @@ JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getVersion
 
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getNumChannels
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getNumChannels
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getNumChannels
   (JNIEnv *env, jobject obj, jlong ptr)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -117,11 +178,11 @@ JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getNumChannels
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getChannelId
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelId
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelId
   (JNIEnv *env, jobject obj, jlong ptr, jint index)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -137,11 +198,11 @@ JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelId
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getChannelName
  * Signature: (JI)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelName
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelName
   (JNIEnv *env, jobject obj, jlong ptr, jint id)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -157,11 +218,11 @@ JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelNam
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getChannelChipId
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelChipId
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelChipId
   (JNIEnv *env, jobject obj, jlong ptr, jint id)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -177,11 +238,11 @@ JNIEXPORT jint JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelChipId
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_getChannelTypeName
  * Signature: (JI)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelTypeName
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelTypeName
   (JNIEnv *env, jobject obj, jlong ptr, jint id)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -197,11 +258,11 @@ JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1getChannelTyp
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_cleanUp
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1cleanUp
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1cleanUp
   (JNIEnv *env, jobject obj, jlong ptr)
 {
 	struct tenki_context *ctx = PTR_FROM_JAVA(ptr);
@@ -213,11 +274,11 @@ JNIEXPORT void JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1cleanUp
 }
 
 /*
- * Class:     com_raphnet_tenki_USBTenkiDevice
+ * Class:     com_raphnet_tenki_JNI
  * Method:    n_initLibusb
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_raphnet_tenki_USBTenkiDevice_n_1initLibusb
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1initLibusb
   (JNIEnv *env, jclass cls)
 {
 	usb_init();
