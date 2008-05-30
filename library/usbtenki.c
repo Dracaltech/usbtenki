@@ -685,9 +685,13 @@ const char *unitToString(int unit, int no_fancy_chars)
 	switch(unit)
 	{
 		case TENKI_UNIT_RH: return "%";
-		case TENKI_UNIT_CELCIUS: return no_fancy_chars ? "C" : "°C";
-		case TENKI_UNIT_KELVIN: return no_fancy_chars ? "K" : "°K";
-		case TENKI_UNIT_FAHRENHEIT: return no_fancy_chars ? "F" : "°F";
+
+		/* Note: The degree symbol may appear incorrectly as two characters
+		 * depending on your encoding here */
+		case TENKI_UNIT_CELCIUS: return no_fancy_chars ? "C" : "Â°C";
+		case TENKI_UNIT_KELVIN: return no_fancy_chars ? "K" : "Â°K";
+		case TENKI_UNIT_FAHRENHEIT: return no_fancy_chars ? "F" : "Â°F";
+
 		case TENKI_UNIT_RAW: return "(raw)";
 		case TENKI_UNIT_KPA: return "kPa";
 		case TENKI_UNIT_HPA: return "hPa";
@@ -701,6 +705,11 @@ const char *unitToString(int unit, int no_fancy_chars)
 	}
 
 	return "";
+}
+
+int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn)
+{
+	return usbtenki_readChannelList(hdl, &chn->channel_id, 1, chn, 1, 1);
 }
 
 /**

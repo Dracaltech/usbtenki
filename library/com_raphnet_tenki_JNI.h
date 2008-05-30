@@ -9,98 +9,114 @@ extern "C" {
 #endif
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getConvertedChannelValue
+ * Method:    getConvertedChannelValue
  * Signature: (JI)F
  */
-JNIEXPORT jfloat JNICALL Java_com_raphnet_tenki_JNI_n_1getConvertedChannelValue
+JNIEXPORT jfloat JNICALL Java_com_raphnet_tenki_JNI_getConvertedChannelValue
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getConvertedChannelUnit
+ * Method:    getConvertedChannelUnit
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getConvertedChannelUnit
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_getConvertedChannelUnit
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_readChannel
+ * Method:    readChannel
  * Signature: (JI)V
  */
-JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1readChannel
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_readChannel
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_openBySerial
+ * Method:    openBySerial
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_com_raphnet_tenki_JNI_n_1openBySerial
+JNIEXPORT jlong JNICALL Java_com_raphnet_tenki_JNI_openBySerial
   (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getVersion
+ * Method:    getVersion
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getVersion
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_getVersion
   (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getNumChannels
+ * Method:    getNumChannels
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getNumChannels
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_getNumChannels
   (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getChannelId
+ * Method:    getChannelId
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelId
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_getChannelId
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getChannelName
+ * Method:    getChannelName
  * Signature: (JI)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelName
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_getChannelName
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getChannelChipId
+ * Method:    getChannelChipId
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelChipId
+JNIEXPORT jint JNICALL Java_com_raphnet_tenki_JNI_getChannelChipId
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_getChannelTypeName
+ * Method:    getChannelTypeName
  * Signature: (JI)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_n_1getChannelTypeName
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_getChannelTypeName
   (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_cleanUp
+ * Method:    unitToName
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_unitToName
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com_raphnet_tenki_JNI
+ * Method:    chipToName
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_chipToName
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com_raphnet_tenki_JNI
+ * Method:    cleanUp
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1cleanUp
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_cleanUp
   (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_raphnet_tenki_JNI
- * Method:    n_initLibusb
+ * Method:    initLibusb
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_n_1initLibusb
+JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_initLibusb
   (JNIEnv *, jclass);
 
 #ifdef __cplusplus
