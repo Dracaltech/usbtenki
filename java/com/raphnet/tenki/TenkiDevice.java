@@ -3,6 +3,7 @@ package com.raphnet.tenki;
 
 public interface TenkiDevice {
 
+	
 	/* Get the type of device.
 	 *
 	 * USB, Serial, etc
@@ -20,5 +21,4 @@ public interface TenkiDevice {
 	/* Get the list of channels available 
 	 */
 	public TenkiDeviceChannel[] getAvailableChannels();
-
 }
