@@ -331,7 +331,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 					goto wrongData;
 				
 				/* The sensor will be initailized in 12 bits mode  */
-				t = (raw_data[0] << 4) | (raw_data[1]>>4);
+				t = ((raw_data[0] << 4) | (raw_data[1]>>4))<<4;
+				t >>= 4;
 				temperature = ((float)t) * pow(2.0,-4.0);
 				chip_fmt = TENKI_UNIT_CELCIUS;
 			}
