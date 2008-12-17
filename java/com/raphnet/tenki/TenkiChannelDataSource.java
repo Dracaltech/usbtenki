@@ -1,8 +1,14 @@
 package com.raphnet.tenki;
 
+/**
+ * Data source interface for TenkiDeviceChannels.
+ *
+ * TenkiDeviceChannel uses classes implementing this interface as
+ * a way to obtain data and information about the channel they are 
+ * representing.
+ */
 public interface TenkiChannelDataSource
 {
-		
 	/**
 	 * Communicate with the device and fetch the channel data.
 	 *

@@ -1,6 +1,9 @@
 package com.raphnet.tenki;
 
 
+/**
+ * Interface for TenkiDevice of all types.
+ */
 public interface TenkiDevice {
 
 	
