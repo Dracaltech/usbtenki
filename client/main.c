@@ -18,7 +18,14 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#ifdef WINDOWS_VERSION
+#include "usb.h"
+#include "getopt.h"
+#else
 #include <usb.h>
+#endif
+
 #include <math.h>
 
 #include "usbtenki.h"
@@ -326,6 +333,15 @@ int main(int argc, char **argv)
 		printf("USB Error: %s\n", usb_strerror());
 		return 1;
 	}
+
+	if (g_verbose)
+		printf("Setting configuration\n");
+	res = usb_set_configuration(hdl, rgblistctx.bConfigurationValue);
+	if (res<0) {
+		printf("USB Error (usb_set_configuration: %s)\n", usb_strerror());
+		return 2;
+	}	
+	
 
 	if (g_verbose)
 		printf("Claiming interface\n");

@@ -53,6 +53,7 @@ struct USBTenki_info {
 struct USBTenki_list_ctx {
 	struct usb_bus *bus;
 	struct usb_device *dev;
+	int bConfigurationValue;
 };
 
 struct USBTenki_channel {

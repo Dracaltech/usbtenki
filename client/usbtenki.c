@@ -86,6 +86,17 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 					info->minor = ctx->dev->descriptor.bcdDevice & 0xff;
 					info->major = (ctx->dev->descriptor.bcdDevice & 0xff00) >> 8;
 
+
+					//printf("Num configs: %d\n", ctx->dev->descriptor.bNumConfigurations);
+					if (ctx->dev->descriptor.bNumConfigurations) {
+						ctx->bConfigurationValue = ctx->dev->config[0].bConfigurationValue;
+						//printf("Conf val: %d\n", ctx->dev->config[0].bConfigurationValue);
+						//printf("Num interfaces: %d\n", ctx->dev->config[0].bNumInterfaces);
+						if (ctx->dev->config[0].bNumInterfaces) {
+						//	printf("inum: %d\n", ctx->dev->config[0].interface[0].altsetting->bInterfaceNumber);
+						}
+					}
+
 					usb_close(hdl);
 					return ctx->dev;
 				}

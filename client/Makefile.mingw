@@ -1,0 +1,30 @@
+CC=gcc
+LD=$(CC)
+
+#CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.7\" -I../..//libusb-win32-device-bin-0.1.12.2/include -DWINDOWS_VERSION
+CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.7\" -DWINDOWS_VERSION
+LDFLAGS=-lm -lusb libusb0.dll
+
+PREFIX=/usr/local
+
+PROGS=usbtenkiget usbtenkisetup
+
+.PHONY : clean install
+
+all: usbtenkiget usbtenkisetup
+
+usbtenkiget: usbtenki.o main.o getopt.o
+	$(LD) $(LDFLAGS) $^ -o $@
+	
+usbtenkisetup: usbtenki.o usbtenkisetup.o getopt.o
+	$(LD) $(LDFLAGS) $^ -o $@
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f *.o $(PROGS)
+
+install:
+	@echo "Install not done yet. Sorry"
+
