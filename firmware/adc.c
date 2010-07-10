@@ -17,7 +17,7 @@ unsigned short adc_sample(char id, int n_samples, int interval_ms)
 	unsigned long total = 0;
 	int i;
 
-	if (id<0 || id > 5)
+	if (id<0 || id > 15)
 		return 0xffff;
 
 	/* set MUX3:0  (bits 3:0). No mask needed because of range
