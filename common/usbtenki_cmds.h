@@ -75,9 +75,11 @@
 
 #define USBTENKI_CHIP_MPX4115	0x90
 
-/* Ratiometric volts measurement */
+/* Ratiometric volts measurement based on 5 volts avcc */
 #define USBTENKI_CHIP_VOLTS		0x91
 #define USBTENKI_CHIP_VOLTS_REVERSE	0x92
+
+#define USBTENKI_CHIP_MP3H6115A	0x93
 
 #define USBTENKI_CHIP_NONE		0xFF
 
