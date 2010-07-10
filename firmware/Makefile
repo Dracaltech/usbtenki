@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.14 2008-01-27 19:14:03 raph Exp $
+# This Revision: $Id: Makefile,v 1.15 2010-07-10 16:41:10 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -59,6 +59,10 @@ flash_lm75: lm75.hex
 flash_adc: adc.hex
 	$(UISP) --erase --upload $(VERIFY) if=adc.hex
 
+flash_adc_usb: adc.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
+
 flash_tsl2561: tsl2561.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
 
@@ -82,7 +86,7 @@ fuse:
 	$(UISP) --wr_fuse_h=$(FUSE_H) --wr_fuse_l=$(FUSE_L)
 
 fuse_usb:
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uhfuse:w:$(FUSE_H):m -Ulfuse:w:$(FUSE_L):m
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uhfuse:w:$(FUSE_H):m -Ulfuse:w:$(FUSE_L):m -B 10.0
 
 clean:
 	rm -f *.hex *.elf *.lst *.o usbdrv/*.o usbdrv/oddebug.s usbdrv/usbdrv.s
