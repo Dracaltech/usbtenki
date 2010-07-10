@@ -1,7 +1,9 @@
 #include <avr/io.h>
 #include "sser.h"
 
-static void dly()
+void dly() __attribute__ ((noinline));
+
+void dly()
 {
 	// 1 us
 	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
