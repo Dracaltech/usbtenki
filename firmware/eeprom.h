@@ -3,7 +3,7 @@
 
 #define EEPROM_MAGIC_SIZE		7
 #define EEPROM_SERIAL_SIZE		6
-#define EEPROM_ADC_CHIPS_SIZE	6
+#define EEPROM_ADC_CHIPS_SIZE	8
 
 struct eeprom_data_struct {
 	unsigned char magic[EEPROM_MAGIC_SIZE]; /* 'TenkiCfg' */
