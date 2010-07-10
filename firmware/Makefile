@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.15 2010-07-10 16:41:10 cvs Exp $
+# This Revision: $Id: Makefile,v 1.16 2010-07-10 18:05:37 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -21,12 +21,12 @@ SERNUMBER=
 COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common -DF_CPU=12000000UL
 
 COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o adc.o
-SENSOR_OBJECTS = mcp9800.o lm75.o sser.o tsl2561.o
+SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl2561.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex
+all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -53,6 +53,12 @@ flash_sensirion:	sensirion.hex
 flash_mcp9800:	mcp9800.hex
 	$(UISP) --erase --upload $(VERIFY) if=mcp9800.hex
 
+flash_mcp9800_usb: mcp9800.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
+flash_mcp9800_00_usb: mcp9800_00.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
 flash_lm75: lm75.hex
 	$(UISP) --erase --upload $(VERIFY) if=lm75.hex
 
@@ -61,7 +67,6 @@ flash_adc: adc.hex
 
 flash_adc_usb: adc.hex
 	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
-
 
 flash_tsl2561: tsl2561.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
@@ -93,6 +98,9 @@ clean:
 
 # file targets:
 mcp9800.elf: $(COMMON_OBJECTS) mcp9800.o interface_mcp9800.o
+	$(COMPILE) -o $@ $^
+
+mcp9800_00.elf: $(COMMON_OBJECTS) mcp9800.o interface_mcp9800_00.o
 	$(COMPILE) -o $@ $^
 
 lm75.elf: $(COMMON_OBJECTS) lm75.o interface_lm75.o
