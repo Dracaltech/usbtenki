@@ -429,6 +429,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_MP3H6115A:
 		case USBTENKI_CHIP_MPX4115:
 			{
 				float vout, vs, p;
@@ -558,6 +559,8 @@ const char *chipToString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Microcontroller ADC channel 5";
 
+		case USBTENKI_CHIP_MP3H6115A:
+			return "MP3H6115A Absolute air pressure sensor";
 		case USBTENKI_CHIP_MPX4115:
 			return "MPX4115 Absolute air pressure sensor";
 
@@ -613,6 +616,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Raw ADC output";
 
+		case USBTENKI_CHIP_MP3H6115A:
 		case USBTENKI_CHIP_MPX4115:
 			return "Pressure";
 
