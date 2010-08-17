@@ -151,6 +151,9 @@ public class JNI
 	 */
 	public static native void cleanUp(long handle);
 
+
+	public static native String getDeviceList();
+
 	/**
 	 * Initialize libusb.
 	 *

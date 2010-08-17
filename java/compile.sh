@@ -7,3 +7,5 @@ JAVADOC=$JAVA_HOME/bin/javadoc
 
 $JAVAC com/raphnet/tenki/*.java Test.java
 $JAVADOC -classpath . -d ./javadoc  com.raphnet.tenki 
+jar cf jusbtenki.jar com/
+

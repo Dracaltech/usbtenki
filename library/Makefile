@@ -25,3 +25,5 @@ clean:
 install:
 	@echo "Install not done yet. Sorry"
 
+javah:
+	$(JAVA_HOME)/bin/javah -classpath ../java/jusbtenki.jar com.raphnet.tenki.JNI

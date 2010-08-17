@@ -113,6 +113,14 @@ JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_cleanUp
 
 /*
  * Class:     com_raphnet_tenki_JNI
+ * Method:    getDeviceList
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_getDeviceList
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_raphnet_tenki_JNI
  * Method:    initLibusb
  * Signature: ()V
  */
