@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+
+#ifdef WINDOWS_VERSION
+#include "getopt.h"
+#include "usb.h"
+#else
 #include <usb.h>
+#endif
+
 #include "usbtenki.h"
 #include "../common/usbtenki_cmds.h"
 

@@ -1,8 +1,8 @@
 CC=gcc
 LD=$(CC)
 
-#CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.7\" -I../..//libusb-win32-device-bin-0.1.12.2/include -DWINDOWS_VERSION
-CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.7\" -DWINDOWS_VERSION
+#CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.8a\" -I../..//libusb-win32-device-bin-0.1.12.2/include -DWINDOWS_VERSION
+CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.8a\" -DWINDOWS_VERSION
 LDFLAGS=-lm -lusb libusb0.dll
 
 PREFIX=/usr/local
@@ -13,10 +13,10 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: usbtenkiget usbtenkisetup
 
-usbtenkiget: usbtenki.o main.o getopt.o timestamp.o
+usbtenkiget: usbtenki.o main.o  timestamp.o
 	$(LD) $(LDFLAGS) $^ -o $@
 	
-usbtenkisetup: usbtenki.o usbtenkisetup.o getopt.o
+usbtenkisetup: usbtenki.o usbtenkisetup.o 
 	$(LD) $(LDFLAGS) $^ -o $@
 
 %.o: %.c %.h

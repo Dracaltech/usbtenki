@@ -23,6 +23,11 @@
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
 
+#ifdef WINDOWS_VERSION
+#include <windows.h>
+#define usleep(t) Sleep(t/1000)
+#endif
+
 extern int g_verbose; // from main.c
 
 static unsigned char xor_buf(unsigned char *buf, int len)

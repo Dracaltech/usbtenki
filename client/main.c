@@ -18,10 +18,13 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef WINDOWS_VERSION
 #include "usb.h"
-#include "getopt.h"
+//#include "getopt.h"
+#include <windows.h>
+#define usleep(t) Sleep(t/1000)
 #else
 #include <usb.h>
 #endif
@@ -414,10 +417,11 @@ reopen:
 			fprintf(g_log_fptr, ", ");
 
 			res = processChannels(hdl, requested_channels, num_requested_channels);
-			usleep(g_log_interval * 1000);
 
 			fprintf(g_log_fptr, "\n");
 			fflush(g_log_fptr);
+			
+			usleep(g_log_interval * 1000);
 
 			if (res<0) {
 				fprintf(stderr, "Data acquisition error. Re-opening port...\n");
