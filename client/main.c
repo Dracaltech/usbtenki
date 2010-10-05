@@ -30,12 +30,14 @@
 
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
+#include "timestamp.h"
 
 #define ARRAY_SIZE(arr) ( sizeof(arr) / sizeof(*(arr)))
 
-#define DEFAULT_CHANNEL_ID	0
-#define DEFAULT_NUM_SAMPLES 1
-#define MAX_CHANNELS		256
+#define DEFAULT_CHANNEL_ID		0
+#define DEFAULT_NUM_SAMPLES 	1
+#define DEFAULT_LOG_INTERVAL	1000
+#define MAX_CHANNELS			256
 
 
 int g_verbose = 0;
@@ -44,31 +46,39 @@ int g_pressure_format = TENKI_UNIT_KPA;
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_7bit_clean = 0;
+int g_log_mode = 0;
+int g_log_interval = DEFAULT_LOG_INTERVAL;
+int g_must_run = 1;
+const char *g_log_file = NULL;
+FILE *g_log_fptr = NULL;
 
 int g_num_attempts = 1;
 
 int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
+
 																	int max_channels);
+
+
 
 static void printUsage(void)
 {
 	printf("Usage: ./usbtenkiget [options]\n");
 	printf("\nValid options:\n");
-	printf("    -V          Display version information\n");
-	printf("    -v          Verbose mode\n");
-	printf("    -h          Displays help\n");
-	printf("    -l          List and display info about available sensors\n");
-	printf("    -f          Full list mode. (shows unused/unconfigured channels)\n");
-	printf("    -s serno    Use USB sensor with matching serial number. Default: Use first.\n");
+	printf("    -V           Display version information\n");
+	printf("    -v           Verbose mode\n");
+	printf("    -h           Displays help\n");
+	printf("    -l           List and display info about available sensors\n");
+	printf("    -f           Full list mode. (shows unused/unconfigured channels)\n");
+	printf("    -s serno     Use USB sensor with matching serial number. Default: Use first.\n");
 	printf("    -i id<,id,id...>  Use specific channel(s) id(s) or 'a' for all. Default: %d\n", DEFAULT_CHANNEL_ID);
-	printf("    -R num      If an USB command fails, retry it num times before bailing out\n");
-
-	printf("    -T unit     Select the temperature unit to use. Default: Celcius\n");
-	printf("    -P unit     Select the pressure unit to use. Default: kPa\n");
-
-	printf("    -p          Enable pretty output\n");
-	printf("    -7          Use 7 bit clean output (no fancy degree symbols)\n");
+	printf("    -R num       If an USB command fails, retry it num times before bailing out\n");
+	printf("    -T unit      Select the temperature unit to use. Default: Celcius\n");
+	printf("    -P unit      Select the pressure unit to use. Default: kPa\n");
+	printf("    -p           Enable pretty output\n");
+	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
+	printf("    -L logfile   Log to specified file\n");
+	printf("    -I interval  Log interval. In milliseconds. Default: %d\n", DEFAULT_LOG_INTERVAL);
 
 	printf("\nValid temperature units:\n");
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
@@ -78,7 +88,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007, Raphael Assenat\n\n", VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2010, Raphael Assenat\n\n", VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -103,7 +113,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:")))
 	{
 		switch (res)
 		{
@@ -225,6 +235,21 @@ int main(int argc, char **argv)
 				g_pretty = 1;
 				break;
 
+			case 'L':
+				g_log_file = optarg;
+				break;
+
+			case 'I':
+				{
+					char *e;
+					g_log_interval = strtol(optarg, &e, 0);
+					if (e==optarg) {
+						fprintf(stderr, "Invalid log interval\n");
+						return -1;
+					}
+				}
+				break;
+
 			case '?':
 				fprintf(stderr, "Unknown argument specified\n");
 				return -1;
@@ -244,10 +269,17 @@ int main(int argc, char **argv)
 		printf("  list_mode: %d\n", list_mode);
 		if (use_serial)
 			printf("  use_serial: %s\n", use_serial);
+		if (g_log_file) {
+			printf("  log file: %s\n", g_log_file);
+			printf("  log interval (ms): %d\n", g_log_interval);
+		}
 		printf("}\n");
 	}
 
 	usb_init();
+
+reopen:
+	dev = NULL;
 	usb_find_busses();
 	usb_find_devices();
 
@@ -319,8 +351,15 @@ int main(int argc, char **argv)
 	if (!dev) {
 		if (use_serial)
 			printf("Device with serial '%s' not found\n", use_serial);
-		else
-			printf("No device found\n");
+		else {
+			fprintf(stderr, "No device found\n");
+		}
+
+		if (g_log_file) {
+			fprintf(stderr, "Log mode is on, hence retrying in 100ms...\n");
+			usleep(100000);
+			goto reopen;
+		}
 		return 1;
 	}
 
@@ -351,8 +390,50 @@ int main(int argc, char **argv)
 		printf("USB Error (usb_claim_interface: %s)\n", usb_strerror());
 		return 2;
 	}	
-	
-	processChannels(hdl, requested_channels, num_requested_channels);
+
+	if (g_log_file)
+	{
+		printf("Log mode on.\n");
+		if (!g_log_fptr) {
+			g_log_fptr = fopen(g_log_file, "a");
+			if (!g_log_file) {
+				fprintf(stderr, "Failed to open log file\n");
+				usb_release_interface(hdl, 0);
+				usb_close(hdl);
+				return -1;
+			}
+			printf("Opened file '%s' for logging. Append mode.\n", g_log_file);
+		}
+
+		// yyyy-mm-dd hh:mm:ss.000
+		while (g_must_run)
+		{
+			int res;
+
+			printTimeStamp(g_log_fptr);
+			fprintf(g_log_fptr, ", ");
+
+			res = processChannels(hdl, requested_channels, num_requested_channels);
+			usleep(g_log_interval * 1000);
+
+			fprintf(g_log_fptr, "\n");
+			fflush(g_log_fptr);
+
+			if (res<0) {
+				fprintf(stderr, "Data acquisition error. Re-opening port...\n");
+				usb_release_interface(hdl, 0);
+				usb_close(hdl);
+				goto reopen;
+			}
+		}
+
+		printf("Closing log file.\n");
+		fflush(g_log_fptr);
+		fclose(g_log_fptr);
+	}
+	else {
+		processChannels(hdl, requested_channels, num_requested_channels);
+	}
 
 	usb_release_interface(hdl, 0);
 	usb_close(hdl);
@@ -831,6 +912,14 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 			if (i<num_req_chns-1)
 				printf(", ");
 		}
+
+		if (g_log_fptr) {
+			fprintf(g_log_fptr, "%.2f" , chn->converted_data);
+				if (i<num_req_chns-1)
+					fprintf(g_log_fptr, ", ");
+		}
+
+
 	}
 	if (!g_pretty)
 		printf("\n");

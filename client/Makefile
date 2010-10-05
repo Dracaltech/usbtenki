@@ -12,7 +12,7 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: usbtenkiget usbtenkisetup
 
-usbtenkiget: usbtenki.o main.o
+usbtenkiget: usbtenki.o main.o timestamp.o
 	$(LD) $(LDFLAGS) $^ -o $@
 	
 usbtenkisetup: usbtenki.o usbtenkisetup.o
