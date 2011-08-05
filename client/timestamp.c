@@ -17,7 +17,7 @@ void printTimeStamp(FILE *stream)
 
 	tm = localtime(&t);
 
-	fprintf(stream, "%d-%02d-%02d %02d:%02d:%02d.%03d", 
+	fprintf(stream, "%d-%02d-%02d %02d:%02d:%02d.%03ld", 
 		tm->tm_year + 1900, tm->tm_mon, tm->tm_mday,
 			tm->tm_hour, tm->tm_min, tm->tm_sec,
 				tv_now.tv_usec / 1000);
