@@ -1,14 +1,22 @@
 #ifndef _sensirion_serial_h__
 #define _sensirion_serial_h__
 
+#ifndef SSER_SCK_BIT
+
 #define SSER_SCK_BIT	(1<<5)
 #define SSER_SCK_PORT	PORTC
 #define SSER_SCK_DDR	DDRC
+
+#endif
+
+#ifndef SSER_DATA_BIT
 
 #define SSER_DATA_BIT	(1<<4)
 #define SSER_DATA_PORT	PORTC
 #define SSER_DATA_DDR	DDRC
 #define SSER_DATA_PIN	PINC
+
+#endif
 
 #define SHT_CMD_MEASURE_TEMPERATURE	0x03
 #define SHT_CMD_MEASURE_HUMIDITY	0x05

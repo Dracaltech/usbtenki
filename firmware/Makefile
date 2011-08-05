@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.16 2010-07-10 18:05:37 cvs Exp $
+# This Revision: $Id: Makefile,v 1.17 2011-08-05 16:09:32 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -26,7 +26,7 @@ SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl2561.o
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex
+all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex sensirion_pc23.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -74,6 +74,9 @@ flash_tsl2561: tsl2561.hex
 flash_bs02: bs02.hex
 	$(UISP) --erase --upload $(VERIFY) if=bs02.hex
 
+flash_sensirion_pc23: sensirion_pc23.hex
+	$(UISP) --erase --upload $(VERIFY) if=sensirion_pc23.hex
+
 #
 # Fuse high byte = 0xC1
 #  | RSTDISBL | WDTON | SPIEN | CKOPT | EESAVE | BOOTSZ1-0 | BOOTRST |
@@ -107,6 +110,9 @@ lm75.elf: $(COMMON_OBJECTS) lm75.o interface_lm75.o
 	$(COMPILE) -o $@ $^
 
 sensirion.elf: $(COMMON_OBJECTS) sser.o interface_sensirion.o
+	$(COMPILE) -o $@ $^
+
+sensirion_pc23.elf: $(COMMON_OBJECTS) sser_pc2_pc3.o interface_sensirion.o
 	$(COMPILE) -o $@ $^
 
 adc.elf: $(COMMON_OBJECTS) interface_dummy.o
