@@ -29,6 +29,7 @@ static void printUsage(void)
 	printf("    -V          Display version information\n");
 	printf("    -h          Displays help\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Required.\n");
+	printf("    -f          Operates on the first device found.\n");
 	printf("\nValid commands:\n");
 	printf("    setadcchip  adc_id chip\n");
 	printf("    setserial   serial (8 characters)\n");
@@ -40,6 +41,7 @@ static void printUsage(void)
 int main(int argc, char **argv)
 {
 	int res, i;
+	int use_first = 0;
 	char *use_serial = NULL;
 	int n_extra_args=0;
 	char *eargv[MAX_EXTRA_ARGS];
@@ -50,10 +52,13 @@ int main(int argc, char **argv)
 	unsigned char repBuf[8];
 	int retval = 0;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhs:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhfs:")))
 	{
 		switch (res)
 		{
+			case 'f':
+				use_first = 1;
+				break;
 			case 'v':
 				g_verbose = 1;
 				break;
@@ -70,7 +75,7 @@ int main(int argc, char **argv)
 	}
 
 	n_extra_args = argc-optind;
-	if (!use_serial) {
+	if (!use_serial && !use_first) {
 		fprintf(stderr, "Serial number is required.\n");
 		return 1;
 	}
@@ -92,7 +97,13 @@ int main(int argc, char **argv)
 	usbtenki_initListCtx(&rgblistctx);
 
 	while ((cur_dev=usbtenki_listDevices(&info, &rgblistctx))) {
-		if (strcmp(use_serial, info.str_serial)==0) {
+		if (use_serial) {
+			if (strcmp(use_serial, info.str_serial)==0) {
+				dev = cur_dev;
+				break;
+			}
+		}
+		if (use_first) {
 			dev = cur_dev;
 			break;
 		}
