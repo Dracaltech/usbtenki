@@ -467,12 +467,42 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE_16X:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2561_IR_16X:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2568_IR_16X:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
 			break;
 
 		case USBTENKI_CHIP_TSL2561_IR:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE:
+			temperature = raw_data[1] << 8 | raw_data[0];
+			chip_fmt = TENKI_UNIT_RAW;
+			break;
+
+		case USBTENKI_CHIP_TSL2568_IR:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
 			break;
@@ -546,10 +576,24 @@ const char *chipToString(int id)
 			return "BS02 Temperature";
 		case USBTENKI_CHIP_BS02_RH:
 			return "BS02 Relative Humidity";
+
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
 		case USBTENKI_CHIP_TSL2561_IR:
 			return "TSL2561 Channel 1 (IR only)";
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE_16X:
+			return "TSL2561 Channel 0 (IR+Visibile) 16X gain";
+		case USBTENKI_CHIP_TSL2561_IR_16X:
+			return "TSL2561 Channel 1 (IR only)";
+
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE:
+			return "TSL2568 Channel 0 (IR+Visibile)";
+		case USBTENKI_CHIP_TSL2568_IR:
+			return "TSL2568 Channel 1 (IR only)";
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X:
+			return "TSL2568 Channel 0 (IR+Visibile) 16X gain";
+		case USBTENKI_CHIP_TSL2568_IR_16X:
+			return "TSL2568 Channel 1 (IR only)";
 
 		case USBTENKI_MCU_ADC0:
 			return "Microcontroller ADC channel 0";
@@ -585,6 +629,8 @@ const char *chipToString(int id)
 	
 		case USBTENKI_VIRTUAL_TSL2561_LUX:
 			return "TSL2561 Lux";
+		case USBTENKI_VIRTUAL_TSL2568_LUX:
+			return "TSL2568 Lux";
 
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
@@ -603,11 +649,23 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 			return "Temperature";
-		
+	
+			
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE:
 			return "Visible+Ir light";
+
+		case USBTENKI_CHIP_TSL2561_IR_VISIBLE_16X:
+		case USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X:
+			return "Visible+Ir light (16x gain)";
+
 		case USBTENKI_CHIP_TSL2561_IR:
+		case USBTENKI_CHIP_TSL2568_IR:
 			return "Ir light";
+
+		case USBTENKI_CHIP_TSL2561_IR_16X:
+		case USBTENKI_CHIP_TSL2568_IR_16X:
+			return "Ir light (16x gain)";
 
 		case USBTENKI_CHIP_SHT_RH:
 		case USBTENKI_CHIP_BS02_RH:
