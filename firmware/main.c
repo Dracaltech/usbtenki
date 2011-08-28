@@ -4,6 +4,8 @@
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
 
+#include <util/delay.h>
+
 #include "usbdrv.h"
 #include "oddebug.h"
 #include "usbconfig.h"
@@ -17,6 +19,18 @@
 
 static char g_auto_mode = 1;
 
+
+void usbtenki_delay_ms(int ms)
+{
+	int i;
+
+	for (i=0; i<(ms/10); i++) {
+        wdt_reset();
+        usbPoll();
+		_delay_ms(10);
+	}
+	usbPoll();
+}
 
 static unsigned char xor_buf(unsigned char *buf, int len)
 {
@@ -134,7 +148,7 @@ int main(void)
 {
 	uchar   i, j;
 
-    wdt_enable(WDTO_1S);
+//    wdt_enable(WDTO_1S);
     odDebugInit();
 
 	
@@ -171,7 +185,6 @@ int main(void)
     for(;;){    /* main event loop */
         wdt_reset();
         usbPoll();
-    
     }
 
 

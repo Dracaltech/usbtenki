@@ -7,7 +7,7 @@
 
 int sensors_init(void)
 {
-	i2c_init(I2C_FLAG_INTERNAL_PULLUP);
+	i2c_init(I2C_FLAG_INTERNAL_PULLUP, 255);
 
 	return lm75_configure(LM75_ADDR, 0);
 }

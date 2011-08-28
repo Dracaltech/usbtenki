@@ -3,7 +3,7 @@
 
 #include "i2c.h"
 
-void i2c_init(int use_int_pullup)
+void i2c_init(int use_int_pullup, unsigned char twbr)
 {
 	if (use_int_pullup) {
 		/* Use internal pullups */
@@ -14,7 +14,7 @@ void i2c_init(int use_int_pullup)
 	}
 
 	/* This gives roughly 30 khz with a 16mhz xtal */
-	TWBR = 255;
+	TWBR = twbr;
 	TWSR &= ~((1<<TWPS1)|(1<<TWPS0));
 }
 

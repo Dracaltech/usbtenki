@@ -7,7 +7,7 @@
 
 int sensors_init(void)
 {
-	i2c_init(I2C_FLAG_INTERNAL_PULLUP);
+	i2c_init(I2C_FLAG_INTERNAL_PULLUP, 255);
 
 	return mcp9800_configure(MCP9800_ADDR, MCP9800_CFG_12BITS);
 }

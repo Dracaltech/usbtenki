@@ -1,5 +1,5 @@
 #include <string.h>
-#include "tsl2561.h"
+#include "tsl256x.h"
 #include "i2c.h"
 
 int tsl2561_writeRegister(char i2c_addr, char reg_addr, unsigned char *dat, char len)

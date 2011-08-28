@@ -1,6 +1,7 @@
 #ifndef _interface_h__
 #define _interface_h__
 
+void usbtenki_delay_ms(int ms);		
 
 int sensors_init(void);
 int sensors_getNumChannels(void);

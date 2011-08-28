@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.17 2011-08-05 16:09:32 cvs Exp $
+# This Revision: $Id: Makefile,v 1.18 2011-08-28 01:02:29 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -21,12 +21,12 @@ SERNUMBER=
 COMPILE = avr-gcc -Wall -Os -Iusbdrv -I. -mmcu=atmega8 -I../common -DF_CPU=12000000UL
 
 COMMON_OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o serno.o i2c.o main.o eeprom.o adc.o
-SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl2561.o
+SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl256x.o
 # Note that we link usbdrv.o first! This is required for correct alignment of
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex bs02.hex sensirion_pc23.hex
+all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex tsl2568.hex bs02.hex sensirion_pc23.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -70,6 +70,15 @@ flash_adc_usb: adc.hex
 
 flash_tsl2561: tsl2561.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
+
+flash_tsl2561_usb: tsl2561.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
+flash_tsl2568: tsl2568.hex
+	$(UISP) --erase --upload $(VERIFY) if=tsl2568.hex
+
+flash_tsl2568_usb: tsl2568.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_bs02: bs02.hex
 	$(UISP) --erase --upload $(VERIFY) if=bs02.hex
@@ -118,7 +127,10 @@ sensirion_pc23.elf: $(COMMON_OBJECTS) sser_pc2_pc3.o interface_sensirion.o
 adc.elf: $(COMMON_OBJECTS) interface_dummy.o
 	$(COMPILE) -o $@ $^ 
 
-tsl2561.elf: $(COMMON_OBJECTS) interface_tsl2561.o tsl2561.o
+tsl2568.elf: $(COMMON_OBJECTS) interface_tsl256x.o interface_tsl2568_channels.o tsl256x.o
+	$(COMPILE) -o $@ $^ 
+
+tsl2561.elf: $(COMMON_OBJECTS) interface_tsl256x.o interface_tsl2561_channels.o tsl256x.o
 	$(COMPILE) -o $@ $^ 
 
 bs02.elf: $(COMMON_OBJECTS) interface_bs02.o sser.o
