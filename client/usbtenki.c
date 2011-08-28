@@ -649,23 +649,22 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 			return "Temperature";
-	
 			
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 		case USBTENKI_CHIP_TSL2568_IR_VISIBLE:
-			return "Visible+Ir light";
+			return "Visible and IR";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE_16X:
 		case USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X:
-			return "Visible+Ir light (16x gain)";
+			return "Visible and IR (16x gain)";
 
 		case USBTENKI_CHIP_TSL2561_IR:
 		case USBTENKI_CHIP_TSL2568_IR:
-			return "Ir light";
+			return "IR";
 
 		case USBTENKI_CHIP_TSL2561_IR_16X:
 		case USBTENKI_CHIP_TSL2568_IR_16X:
-			return "Ir light (16x gain)";
+			return "IR (16x gain)";
 
 		case USBTENKI_CHIP_SHT_RH:
 		case USBTENKI_CHIP_BS02_RH:
@@ -694,6 +693,7 @@ const char *chipToShortString(int id)
 			return "Humidex";
 		case USBTENKI_VIRTUAL_HEAT_INDEX:
 			return "Heat index";
+		case USBTENKI_VIRTUAL_TSL2568_LUX:
 		case USBTENKI_VIRTUAL_TSL2561_LUX:
 			return "Lux";
 

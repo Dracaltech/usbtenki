@@ -662,7 +662,7 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 				case USBTENKI_VIRTUAL_TSL2568_LUX:
 					{
 						struct USBTenki_channel *vir_chn, *ir_chn;
-						float ch0,ch1,lx;
+						double ch0,ch1,lx;
 
 						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
 														USBTENKI_CHIP_TSL2568_IR);
@@ -677,6 +677,30 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 
 						ch0 = vir_chn->converted_data;
 						ch1 = ir_chn->converted_data;
+
+						if ((vir_chn->converted_data < 3000) && (ir_chn->converted_data < 3000)) {
+							double ch0_g, ch1_g;
+
+							/* Based on these values, a 16x gain would not overflow. */
+//							printf("Switching to 16x gain\n");
+							ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR_16X);
+	
+							vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X);
+
+						
+							ch0_g = vir_chn->converted_data;
+							ch1_g = ir_chn->converted_data;
+	
+//							printf("%.f %.f %.f %.f\n", ch0, ch0_g/16.0, ch1, ch1_g/16.0);
+				
+							if (ir_chn != NULL && vir_chn != NULL) {
+								ch0 = ch0_g / 16.0;
+								ch1 = ch1_g / 16.0;
+							}
+						}
+
 						
 						/*						 
 						TMB Package
@@ -935,6 +959,7 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	for (i=0; i<num_req_chns; i++) {
 		int j;
 		struct USBTenki_channel *chn;
+		char *fmt;
 
 		/* find the requested channel */
 		chn = NULL;
@@ -977,21 +1002,25 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 
 		}
 
-
+		if (chn->converted_unit == TENKI_UNIT_LUX) {
+			fmt = "%.6f";
+		} else {
+			fmt = "%.2f";
+		}
+	
 		if (g_pretty) {
-			printf("%s: %.2f %s\n", 
-					chipToShortString(chn->chip_id),
-					chn->converted_data, 
-					unitToString(chn->converted_unit, g_7bit_clean));
+			printf("%s: ", chipToShortString(chn->chip_id));
+			printf(fmt, chn->converted_data);
+			printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 		}
 		else {
-			printf("%.2f" , chn->converted_data);
+			printf(fmt , chn->converted_data);
 			if (i<num_req_chns-1)
 				printf(", ");
 		}
 
 		if (g_log_fptr) {
-			fprintf(g_log_fptr, "%.2f" , chn->converted_data);
+			fprintf(g_log_fptr, fmt, chn->converted_data);
 				if (i<num_req_chns-1)
 					fprintf(g_log_fptr, ", ");
 		}

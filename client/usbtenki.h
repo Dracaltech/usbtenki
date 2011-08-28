@@ -62,7 +62,7 @@ struct USBTenki_channel {
 	char data_valid;
 	unsigned char raw_data[8];
 	int raw_length;
-	float converted_data;
+	double converted_data;
 	int converted_unit;
 };
 
