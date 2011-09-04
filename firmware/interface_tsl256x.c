@@ -51,8 +51,14 @@ static int switchGain(int gain_16x)
 				TSL2561_REG_TIMING | TSL2561_CMD_CMD, &tmp, 1);
 		if (res)
 			return res;
-		
-		_delay_ms(600);		
+	
+		// Nominal integration time : 402ms.		
+		// If the gain is switched to 16x during an integration
+		// cycle, this cycle result will be invalid. We must
+		// therefore wait until another cycle completes, hence
+		// the double delay.		
+		_delay_ms(415);
+		_delay_ms(415);
 	}
 
 	last_16x = gain_16x;
