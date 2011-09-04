@@ -60,6 +60,7 @@ struct USBTenki_channel {
 	int channel_id;
 	int chip_id;
 	char data_valid;
+	char saturated;
 	unsigned char raw_data[8];
 	int raw_length;
 	double converted_data;

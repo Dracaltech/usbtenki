@@ -679,29 +679,41 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 						ch1 = ir_chn->converted_data;
 
 						if ((vir_chn->converted_data < 3000) && (ir_chn->converted_data < 3000)) {
+							struct USBTenki_channel *vir_chn_g, *ir_chn_g;
 							double ch0_g, ch1_g;
 
 							/* Based on these values, a 16x gain would not overflow. */
 //							printf("Switching to 16x gain\n");
-							ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+							ir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
 														USBTENKI_CHIP_TSL2568_IR_16X);
 	
-							vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+							vir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
 														USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X);
 
 						
-							ch0_g = vir_chn->converted_data;
-							ch1_g = ir_chn->converted_data;
+							ch0_g = vir_chn_g->converted_data;
+							ch1_g = ir_chn_g->converted_data;
 	
 //							printf("%.f %.f %.f %.f\n", ch0, ch0_g/16.0, ch1, ch1_g/16.0);
 				
-							if (ir_chn != NULL && vir_chn != NULL) {
-								ch0 = ch0_g / 16.0;
-								ch1 = ch1_g / 16.0;
+							if (ir_chn_g != NULL && vir_chn_g != NULL) {
+								// stick to the low gain channels in case of saturation
+								if (ir_chn_g->converted_data != 65535 && 
+									vir_chn_g->converted_data != 65535) {
+									ch0 = ch0_g / 16.0;
+									ch1 = ch1_g / 16.0;
+								}
 							}
 						}
-
 						
+						if (ch0 > 65534 || ch1 > 65534) {	
+							chn->data_valid = 0;
+							chn->saturated = 1;
+							chn->converted_data = -1;
+							chn->converted_unit = TENKI_UNIT_LUX;
+							break;
+						}
+
 						/*						 
 						TMB Package
 							For 0 < CH1/CH0 < 0.35     Lux = 0.00763  CH0 - 0.01031  CH1
@@ -969,7 +981,7 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 				break;
 		}
 
-		if (!chn || !chn->data_valid) {
+		if (!chn || (!chn->data_valid && !chn->saturated) ) {
 			fprintf(stderr, "Internal error..\n");
 			res = -2;
 			return -2;
@@ -1010,11 +1022,19 @@ int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_ch
 	
 		if (g_pretty) {
 			printf("%s: ", chipToShortString(chn->chip_id));
-			printf(fmt, chn->converted_data);
+			if (chn->saturated) {
+				printf("err");
+			} else {
+				printf(fmt, chn->converted_data);
+			}
 			printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 		}
 		else {
-			printf(fmt , chn->converted_data);
+			if (chn->saturated) {
+				printf("err");
+			} else {
+				printf(fmt , chn->converted_data);
+			}
 			if (i<num_req_chns-1)
 				printf(", ");
 		}
