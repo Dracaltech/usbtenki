@@ -148,9 +148,11 @@ int main(void)
 {
 	uchar   i, j;
 
-//    wdt_enable(WDTO_1S);
+    wdt_enable(WDTO_1S);
     odDebugInit();
 
+	PORTB = 0xff;
+	DDRB = 0xff;
 	
 	// all input by default
 	PORTC= 0xff;
@@ -160,9 +162,7 @@ int main(void)
 	eeprom_init();
 	serno_init();
 
-	if (sensors_init()) {
-		while(1) { } /* watchdog will reset me! */
-	}
+	
 
 	/* 1101 1000 bin: activate pull-ups except on USB lines
 	 *
@@ -182,6 +182,11 @@ int main(void)
 
     usbInit();
     sei();
+
+	if (sensors_init()) {
+		while(1) { } /* watchdog will reset me! */
+	}
+
     for(;;){    /* main event loop */
         wdt_reset();
         usbPoll();
