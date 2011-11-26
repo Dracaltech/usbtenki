@@ -299,7 +299,7 @@ JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_chipToName
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_raphnet_tenki_JNI_getDeviceList
-  (JNIEnv *, jclass)
+  (JNIEnv *env, jclass cls)
 {
 
 
