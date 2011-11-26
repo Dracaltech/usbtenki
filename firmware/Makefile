@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.18 2011-08-28 01:02:29 cvs Exp $
+# This Revision: $Id: Makefile,v 1.19 2011-11-26 03:13:26 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -55,6 +55,9 @@ flash_mcp9800:	mcp9800.hex
 
 flash_mcp9800_usb: mcp9800.hex
 	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
+flash_mcp9800_00: mcp9800_00.hex
+	$(UISP) --erase --upload $(VERIFY) if=mcp9800_00.hex
 
 flash_mcp9800_00_usb: mcp9800_00.hex
 	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
