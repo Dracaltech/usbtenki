@@ -354,6 +354,27 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_SE95:
+			{
+				signed short t;
+
+				if (chn->raw_length!=2)
+					goto wrongData;
+			
+				/* This sensor offers 13 bits of resolution as follows:
+				 *
+				 * [0]                                 [1]
+				 *   7   6   5   4   3   2   1   0      7   6    5   4   3   2   1   0
+				 * D12 D11 D10  D9  D8  D7  D6  D5  |  D4  D3  D2   D1  D0   X   X   X
+				 */
+				
+				t = ((raw_data[0] << 5) | (raw_data[1]>>3))<<3;
+				t >>= 3;
+				temperature = ((float)t) * pow(2.0,-5.0);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
 		case USBTENKI_CHIP_LM75:
 			{
 				signed short t;
@@ -562,6 +583,8 @@ const char *chipToString(int id)
 {
 	switch(id)
 	{
+		case USBTENKI_CHIP_SE95:
+			return "SE95 I2C Temperature sensor";
 		case USBTENKI_CHIP_MCP9800:
 			return "MCP980x I2C Temperature sensor";
 		case USBTENKI_CHIP_LM75:
@@ -643,6 +666,7 @@ const char *chipToShortString(int id)
 {
 	switch(id)
 	{
+		case USBTENKI_CHIP_SE95:
 		case USBTENKI_CHIP_MCP9800:
 		case USBTENKI_CHIP_LM75:
 		case USBTENKI_CHIP_LM92:
