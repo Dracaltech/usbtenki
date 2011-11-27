@@ -20,6 +20,10 @@
 
 #include <usb.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define OUR_VENDOR_ID 	0x1781
 #define OUR_PRODUCT_ID 	0x0a98
 #define ID_STRING		"USBTenki"
@@ -65,6 +69,9 @@ struct USBTenki_channel {
 	int converted_unit;
 };
 
+int usbtenki_init(void);
+void unsbtenki_shutdown(void);
+
 void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx);
 struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, 
 										struct USBTenki_list_ctx *ctx);
@@ -88,6 +95,10 @@ float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 const char *chipToShortString(int id);
 const char *unitToString(int unit, int no_fancy_chars);
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif // _rgbleds_h__
 

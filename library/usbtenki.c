@@ -26,6 +26,15 @@
 static int g_verbose=1;
 
 
+int usbtenki_init(void)
+{
+	usb_init();
+	return 0;
+}
+
+void unsbtenki_shutdown(void)
+{
+}
 
 static unsigned char xor_buf(unsigned char *buf, int len)
 {
@@ -58,7 +67,19 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 	if (ctx->dev && ctx->bus)
 		goto jumpin;
 		
+	if (g_verbose)
+			printf("Start listing\n");
+
+	usb_find_busses();
+	usb_find_devices();
 	start_bus = usb_get_busses();
+
+	if (start_bus==NULL) {
+		if (g_verbose) {
+			printf("No busses found!\n");
+		}
+		return NULL;
+	}
 
 	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next) {
 		
@@ -68,8 +89,11 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 				if (ctx->dev->descriptor.idProduct == OUR_PRODUCT_ID) {
 					usb_dev_handle *hdl;
 					hdl = usb_open(ctx->dev);
-					if (!hdl)
+					if (!hdl) {
+						if (g_verbose)
+							printf("Failed to open device. Error '%s'\n", usb_strerror());
 						continue; 
+					}
 					
 					usb_get_string_simple(hdl, ctx->dev->descriptor.iProduct,
 										info->str_prodname, 256);
