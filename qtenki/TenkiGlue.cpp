@@ -35,13 +35,15 @@ int tenkiglue_init()
 	return 0;
 }
 
-int tenkiglue_populateSourceCheckboxes(QLayout *l)
+int tenkiglue_populateSourceCheckboxes(QLayout *l, QList<DataSourceCheckBox*>*sources)
 {
 	for (int i=0; i<sourceList.size(); i++) {
 		struct sourceDescription *sd = sourceList.at(i);
 
-		QCheckBox *qcb = new QCheckBox(sd->q_name + "  --   " + sd->chipShortString );
-		l->addWidget(qcb);
+		DataSourceCheckBox *cb = new DataSourceCheckBox(sd->q_name + "  --   " + sd->chipShortString, sd->q_name);
+		l->addWidget(cb);
+		if (sources)
+			sources->append(cb);
 	}
 	return sourceList.size();
 }

@@ -2,6 +2,7 @@
 #define _create_logger_h__
 
 #include <QtGui>
+#include "DataSourceCheckBox.h"
 
 class CreateLogger : public QDialog
 {
@@ -13,19 +14,20 @@ class CreateLogger : public QDialog
 	
 	public slots:
 		void accept();
+		void browse_clicked();
 
 	private:
 		QGroupBox *sourcebox;
 		QVBoxLayout *svb;
-		QList<QCheckBox*> sources;
+		QList<DataSourceCheckBox*> sources;
 
 		QGroupBox *destbox;
 		QGridLayout *dbl;
 		QComboBox *comb_fmt;
 		QLineEdit *path;
 		QPushButton *browseButton;
-
-		QLineEdit *log_interval;		
+		
+		QSpinBox *log_interval;		
 
 		QWidget *mid_layer; // source and dest
 		QHBoxLayout *mid_layout;

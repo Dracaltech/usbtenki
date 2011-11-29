@@ -1,10 +1,10 @@
 #ifndef _tenkiglue_h__
 #define _tenkiglue_h__
 
-#include <QString>
-#include <QList>
+#include <QtGui>
 #include "TenkiDashboard.h"
 #include "TenkiDevice.h"
+#include "DataSourceCheckBox.h"
 
 struct sourceDescription {
 	char name[32]; // XXXXXX:XX form.
@@ -23,7 +23,7 @@ int tenkiglue_shutdown();
 int tenkiglue_init();
 int tenkiglue_syncDashboard(TenkiDashboard *td);
 int tenkiglue_registerSource(TenkiDevice *td, const char *serial, int chn_id, USBTenki_channel *chn);
-int tenkiglue_populateSourceCheckboxes(QLayout *l);
+int tenkiglue_populateSourceCheckboxes(QLayout *l, QList<DataSourceCheckBox*>*sources);
 
 
 #endif 
