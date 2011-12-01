@@ -646,6 +646,9 @@ const char *chipToString(int id)
 		case USBTENKI_VIRTUAL_TSL2561_LUX:
 			return "TSL2561 Lux";
 
+		 case USBTENKI_VIRTUAL_TSL2568_LUX:
+		 	return "TSL2568 Lux";
+
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
 
@@ -806,6 +809,7 @@ int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray
 
 	n_channels = usbtenki_getNumChannels(hdl);
 	for (i=0; i<n_channels && i<arr_size; i++){
+		memset(dstArray, 0, sizeof(struct USBTenki_channel));
 		dstArray->channel_id = i;
 		dstArray->chip_id = usbtenki_getChipID(hdl, i);
 		dstArray->data_valid = 0;

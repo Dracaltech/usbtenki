@@ -332,6 +332,6 @@ JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_cleanUp
 JNIEXPORT void JNICALL Java_com_raphnet_tenki_JNI_initLibusb
   (JNIEnv *env, jclass cls)
 {
-	usb_init();
+	usbtenki_init();
 }
 
