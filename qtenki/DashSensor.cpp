@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "DashSensor.h"
 #include "TenkiDevice.h"
 
@@ -68,3 +69,18 @@ DashSensor::~DashSensor()
 	delete layout;
 }
 
+
+void DashSensor::refresh()
+{
+	USBTenki_channel *ch;
+	qDebug() << "DashSensor::refresh()";
+
+	for (int i=0; i<values.size(); i++) {
+		QString d;
+
+		ch = tenki_device->getChannelData(i);	
+		d.sprintf("%.3f", ch->converted_data);	
+		values.at(i)->setText(d);
+		qDebug() << d;
+	}
+}

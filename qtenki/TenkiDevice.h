@@ -21,14 +21,22 @@ class TenkiDevice
 		int isChannelHidden(int id);
 	
 		int status;
+
+		void updateChannelData();
+		struct USBTenki_channel channel_data[MAX_CHANNELS];
 		
 	private:
 		void initChannels();
-		void updateChannelData();
 		usb_dev_handle *tenki_hdl;
 		struct USBTenki_info tenki_info;
-		struct USBTenki_channel channel_data[MAX_CHANNELS];
 		int num_channels;
+};
+
+class TenkiDeviceAddRemove
+{
+	public:
+		virtual void addTenkiDevice(TenkiDevice *td) = 0;
+		virtual void removeTenkiDevice(TenkiDevice *td) = 0;
 };
 
 #endif // _tenki_device_h__

@@ -6,6 +6,7 @@
 #include <QGridLayout>
 #include <QString>
 #include <QList>
+#include <QMap>
 
 #include "TenkiDevice.h"
 
@@ -18,6 +19,7 @@ class DashSensor : public QGroupBox
 		~DashSensor();
 
 		TenkiDevice *tenki_device;
+		void refresh();
 				
 	private:
 		void addChannel(int channel, int row);

@@ -8,10 +8,10 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-HEADERS += DashSensor.h CreateLogger.h \
+HEADERS += TenkiSources.h DashSensor.h CreateLogger.h \
            TenkiDashboard.h TenkiDevice.h LoggersPanel.h DataSourceCheckBox.h SimpleLogger.h \
            ../library/usbtenki.h \
            ../common/usbtenki_cmds.h \
            usbtenki_cmds.h
-SOURCES += SimpleLogger.cpp DashSensor.cpp CreateLogger.cpp TenkiDashboard.cpp tuto.cpp TenkiDevice.cpp LoggersPanel.cpp DataSourceCheckBox.cpp ../library/usbtenki.c TenkiGlue.cpp
+SOURCES += TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp CreateLogger.cpp TenkiDashboard.cpp tuto.cpp TenkiDevice.cpp LoggersPanel.cpp DataSourceCheckBox.cpp ../library/usbtenki.c 
 unix:LIBS += -lusb

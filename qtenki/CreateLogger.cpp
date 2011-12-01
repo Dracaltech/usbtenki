@@ -5,7 +5,7 @@
 #include <QDebug>
 
 #include <stdio.h>
-#include "TenkiGlue.h"
+//#include "TenkiGlue.h"
 #include "SimpleLogger.h"
 
 CreateLogger::CreateLogger()
@@ -17,7 +17,9 @@ CreateLogger::CreateLogger()
 	sourcebox = new QGroupBox(tr("Data sources"));
 	svb = new QVBoxLayout();
 	sourcebox->setLayout(svb);
-	tenkiglue_populateSourceCheckboxes(svb, &sources);
+	
+	//tenkiglue_populateSourceCheckboxes(svb, &sources);
+
 /*		
 	QCheckBox *qcb = new QCheckBox("Test");
 	sources.append(qcb);

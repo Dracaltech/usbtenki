@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include "TenkiDevice.h"
 #include "../common/usbtenki_cmds.h"
-#include "TenkiGlue.h"
 
 TenkiDevice::TenkiDevice(const char *serial)
 {
@@ -28,22 +28,19 @@ void TenkiDevice::initChannels()
 		num_channels = MAX_CHANNELS;
 
 	usbtenki_listChannels(tenki_hdl, channel_data, MAX_CHANNELS);
-
-	for (int i=0; i<num_channels; i++) {
-		if (!isChannelHidden(i)) {
-			tenkiglue_registerSource(this, tenki_info.str_serial, i, &channel_data[i]);
-		}
-	}
 }
 
 void TenkiDevice::updateChannelData()
 {
-	int i;
+	int i, res;
 	for (i=0; i<num_channels; i++) {
 		if (channel_data[i].chip_id == USBTENKI_CHIP_NONE)
 			continue;
 
-		usbtenki_readChannel(tenki_hdl, &channel_data[i]);
+		channel_data[i].data_valid = 0;
+			
+		res = usbtenki_readChannel(tenki_hdl, &channel_data[i]);
+		printf("Read channel res=%d, %.3f\n", res, channel_data[i].converted_data);
 	}
 }
 
