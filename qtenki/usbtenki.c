@@ -783,7 +783,7 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
 		
 		/* all attempts failed? */
 		if (n==num_attempts) {
-			return dst[j].raw_length;		
+			return -1;
 		}
 		
 		dst[j].data_valid = 1;

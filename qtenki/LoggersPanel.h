@@ -6,7 +6,7 @@
 #include <QGridLayout>
 #include <QString>
 #include <QList>
-
+#include "TenkiSources.h"
 #include "TenkiDevice.h"
 
 class LoggersPanel : public QWidget
@@ -14,7 +14,7 @@ class LoggersPanel : public QWidget
 	Q_OBJECT
 
 	public:
-		LoggersPanel();
+		LoggersPanel(TenkiSources *s);
 		~LoggersPanel();
 
 	private slots:
@@ -27,6 +27,7 @@ class LoggersPanel : public QWidget
 		QGridLayout *listLayout;
 		QVBoxLayout *mainLayout;
 		QList<QLabel*> values;
+		TenkiSources *tenkisources;
 };
 
 #endif

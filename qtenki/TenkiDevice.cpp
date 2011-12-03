@@ -38,8 +38,9 @@ void TenkiDevice::updateChannelData()
 			continue;
 
 		channel_data[i].data_valid = 0;
-			
 		res = usbtenki_readChannel(tenki_hdl, &channel_data[i]);
+
+
 		printf("Read channel res=%d, %.3f\n", res, channel_data[i].converted_data);
 	}
 }

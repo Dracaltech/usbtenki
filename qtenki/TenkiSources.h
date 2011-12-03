@@ -6,7 +6,6 @@
 #include <QTimer>
 #include <QList>
 #include "TenkiDevice.h"
-
 #include "usbtenki.h"
 
 struct sourceDescription {
@@ -22,6 +21,14 @@ struct sourceDescription {
 	USBTenki_channel *chn_data;
 };
 
+class TenkiSourceAddRemove
+{
+	public:
+		virtual void addTenkiSource(struct sourceDescription *sd) = 0;
+		virtual void removeTenkiSource(struct sourceDescription *sd) = 0;
+};
+
+
 class TenkiSources : public QThread
 {
 	Q_OBJECT
@@ -31,10 +38,11 @@ class TenkiSources : public QThread
 		~TenkiSources();
 		int init();
 		int getNumDevices();
-		int getNumChannels();
 		
 		// Add all known TenkiDevices to target
 		void syncDevicesTo(TenkiDeviceAddRemove *tdr);
+
+		void addSourcesTo(TenkiSourceAddRemove *tsar);
 
 	protected:
 		void run();

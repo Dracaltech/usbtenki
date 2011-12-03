@@ -4,8 +4,7 @@
 #include "TenkiSources.h"
 #include "TenkiDashboard.h"
 #include "DashSensor.h"
-//#include "TenkiGlue.h"
-#include "LoggersPanel.h"
+#include "Logger.h"
 
 struct USBTenki_list_ctx list_context;
 struct USBTenki_info tenki_info;
@@ -19,7 +18,7 @@ int main(int argc, char **argv)
 	QWidget *window = new QWidget();
 
 	TenkiDashboard *td;
-	LoggersPanel *loggers;
+	Logger *logger;
 
 	QCoreApplication::setOrganizationName("raphnet technologies");
 	QCoreApplication::setOrganizationDomain("raphnet.net");
@@ -33,23 +32,22 @@ int main(int argc, char **argv)
 	td = new TenkiDashboard(tenkisources);
 
 	tenkisources->syncDevicesTo(td);
-
 	QObject::connect(tenkisources, SIGNAL(captureCycleCompleted()), td, SLOT(refreshView()));
 
-/*
 	// loggers
-	loggers = new LoggersPanel();
+	logger = new Logger(tenkisources);
 
 	// messages
 	// configuration
-*/
+	
 	/* Tabs */
-	tw->addTab(td, QObject::tr("Dashboard"));
-//	tw->addTab(loggers, QObject::tr("Loggers"));	
+	tw->addTab(td, QObject::tr("Sources"));
+	tw->addTab(logger, QObject::tr("Logging"));	
 
 	/* The main window */
 	window->setLayout(layout);
 	layout->addWidget(tw);
+
 
 	window->show();
 

@@ -5,9 +5,6 @@
 
 TenkiSources::TenkiSources()
 {
-	timer = new QTimer();
-	timer->setInterval(1000);
-	connect(timer, SIGNAL(timeout()), this, SLOT(doCaptures()));
 }
 
 TenkiSources::~TenkiSources()
@@ -96,17 +93,28 @@ void TenkiSources::syncDevicesTo(TenkiDeviceAddRemove *tdr)
 	}
 }
 
+void TenkiSources::addSourcesTo(TenkiSourceAddRemove *tsar)
+{
+	for (int i=0; i<sourceList.size(); i++) {
+		tsar->addTenkiSource(sourceList.at(i));
+	}
+}
+
 void TenkiSources::run()
 {
+	timer = new QTimer();
+	timer->setInterval(1000);
+	connect(timer, SIGNAL(timeout()), this, SLOT(doCaptures()), Qt::DirectConnection);
 	timer->start();
+	exec();
 }
 
 void TenkiSources::doCaptures()
 {
-	qDebug() << "Capture time!";
+//	qDebug() << "Capture time!";
 
 	for (int i=0; i<device_list.size(); i++) {
-		printf("Updating %s\n", device_list.at(i)->getSerial());
+//		printf("Updating %s\n", device_list.at(i)->getSerial());
 		device_list.at(i)->updateChannelData();
 	}
 

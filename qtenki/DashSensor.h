@@ -26,6 +26,7 @@ class DashSensor : public QGroupBox
 		QString title;
 		QGridLayout *layout;
 		QList<QLabel*> values;
+		QList<QLabel*> units;
 };
 
 #endif

@@ -1,15 +1,10 @@
-#include "CreateLogger.h"
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QDialogButtonBox>
-#include <QDebug>
+#include "Logger.h"
 
-#include <stdio.h>
-//#include "TenkiGlue.h"
-#include "SimpleLogger.h"
 
-CreateLogger::CreateLogger(TenkiSources *s)
+Logger::Logger(TenkiSources *s)
 {
+	tenkisources = s;
+
 	main_layout = new QVBoxLayout();
 	setLayout(main_layout);
 
@@ -19,16 +14,8 @@ CreateLogger::CreateLogger(TenkiSources *s)
 	sourcebox->setLayout(svb);
 	
 	//tenkiglue_populateSourceCheckboxes(svb, &sources);
-
-/*		
-	QCheckBox *qcb = new QCheckBox("Test");
-	sources.append(qcb);
-	svb->addWidget(qcb);
-
-	qcb = new QCheckBox("Test");
-	sources.append(qcb);
-	svb->addWidget(qcb);
-*/
+	tenkisources->addSourcesTo(this);
+	svb->addStretch();
 
 	/* Output selection */
 	destbox = new QGroupBox(tr("Output configuration"));
@@ -50,6 +37,7 @@ CreateLogger::CreateLogger(TenkiSources *s)
 	dbl->addWidget(path, 1, 1, 1, 3);
 	dbl->addWidget(browseButton, 1, 4, 1, 1);
 
+
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
 
 	dbl->addWidget(new QLabel(tr("Logging interval:")), 2, 0 );
@@ -58,9 +46,21 @@ CreateLogger::CreateLogger(TenkiSources *s)
 	dbl->addWidget(log_interval, 2, 1, 1, 2);
 	dbl->addWidget(new QLabel(tr("(seconds)")), 2, 4 );
 
-	
 
-	/* Create / Cancel */
+	control = new QGroupBox("Control");
+	control_layout = new QHBoxLayout();
+	control->setLayout(control_layout);
+	start_button = new QPushButton("Start");
+	stop_button = new QPushButton("Stop");
+	status_label = new QLabel("Not running");
+	control_layout->addWidget(start_button);
+	control_layout->addWidget(stop_button);
+	control_layout->addWidget(status_label);
+	control_layout->addStretch();
+	
+	messages = new QGroupBox("Messages");
+
+/*
 	btn_create = new QPushButton("Create");
 	btn_cancel = new QPushButton("Cancel");
 
@@ -71,7 +71,7 @@ CreateLogger::CreateLogger(TenkiSources *s)
 
 	QObject::connect(btnbox, SIGNAL(rejected()), this, SLOT(reject()));
 	QObject::connect(btnbox, SIGNAL(accepted()), this, SLOT(accept()));
-
+*/
 	
 	/* Layout */
 	mid_layer = new QWidget();
@@ -81,76 +81,34 @@ CreateLogger::CreateLogger(TenkiSources *s)
 	mid_layout->addWidget(destbox);
 
 	main_layout->addWidget(mid_layer);	
-	main_layout->addWidget(btnbox);
+
+	main_layout->addWidget(control);
+	main_layout->addWidget(messages);
+
 }
 
-void CreateLogger::accept()
+Logger::~Logger()
 {
-	SimpleLogger *logger;
-
-	/* Make sure a file was specified.
-	 * TODO: Test for write access? */
-	if (0 == path->text().size()) {
-		QMessageBox msgBox;
-
-		msgBox.setText(tr("No file selected."));
-		msgBox.setInformativeText(tr("Select a file or click cancel."));
-		msgBox.setStandardButtons(QMessageBox::Ok);
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.exec();
-		return;
-	}
-
-	if (comb_fmt->currentIndex() == -1) {
-		QMessageBox msgBox;
-
-		msgBox.setText(tr("No file format selected."));
-		msgBox.setInformativeText(tr("Please select an output file format."));
-		msgBox.setStandardButtons(QMessageBox::Ok);
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.exec();
-		return;
-	}
-
-	SimpleLogger::FileFormat fmt = SimpleLogger::Csv;
-
-	switch(comb_fmt->currentIndex()) {
-		case 0: fmt = SimpleLogger::Csv; break;
-		case 1: fmt = SimpleLogger::Tsv; break;
-		case 2: fmt = SimpleLogger::Ssv; break;
-		case 3: fmt = SimpleLogger::Scsv; break;
-	}
-	
-
-	logger = new SimpleLogger(path->text(), log_interval->value(), fmt);
-
-	for (int i=0; i<sources.size(); i++) {
-		DataSourceCheckBox *cb = sources.at(i);
-	
-		if (cb->isChecked()) {
-			logger->addSource(cb->src);
-			qDebug() << cb->src;
-
-		}
-	}
-
-	//
-	logger->start();
-	//
-
-	QDialog::accept();
 }
 
-void CreateLogger::browse_clicked()
+void Logger::addTenkiSource(struct sourceDescription *sd)
+{
+	 DataSourceCheckBox *cb = new DataSourceCheckBox(sd->q_name + "  --  " + sd->chipShortString, sd->q_name);
+	 svb->addWidget(cb);
+	 sources.append(cb);
+}
+
+void Logger::removeTenkiSource(struct sourceDescription *sd)
+{
+}
+
+void Logger::browse_clicked()
 {
 	QString filename;
 
+	
 	filename = QFileDialog::getSaveFileName(this, tr("Output file"), "", "(*.txt *.csv *.tsv)" );
 
 	path->setText(filename);
-}
-
-CreateLogger::~CreateLogger()
-{
 }
 

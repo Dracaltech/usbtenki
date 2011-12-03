@@ -3,13 +3,14 @@
 
 #include <QtGui>
 #include "DataSourceCheckBox.h"
+#include "TenkiSources.h"
 
 class CreateLogger : public QDialog
 {
 	Q_OBJECT
 
 	public:
-		CreateLogger();
+		CreateLogger(TenkiSources *s);
 		~CreateLogger();
 	
 	public slots:

@@ -3,10 +3,11 @@
 #include "CreateLogger.h"
 #include <QMessageBox>
 #include <QPushButton>
+#include "TenkiSources.h"
 
-LoggersPanel::LoggersPanel()
+LoggersPanel::LoggersPanel(TenkiSources *s)
 {
-	
+	tenkisources = s;	
 
 	listLayout = new QGridLayout();
 	listArea.setLayout(listLayout);
@@ -76,7 +77,7 @@ LoggersPanel::~LoggersPanel()
 
 void LoggersPanel::openCreator(void)
 {
-	CreateLogger cd;
+	CreateLogger cd(tenkisources);
 
 	cd.exec();
 }

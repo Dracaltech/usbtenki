@@ -35,7 +35,7 @@ void DashSensor::addChannel(int chn, int row)
 {
 	USBTenki_channel *ch;
 	QString a, b, c, d, e, f;
-	QLabel *value_label;
+	QLabel *value_label, *unit_label;
 
 	ch = tenki_device->getChannelData(chn);
 	
@@ -53,8 +53,10 @@ void DashSensor::addChannel(int chn, int row)
 	values.append(value_label);
 	layout->addWidget(value_label, row, 3);
 
-	e = QString::fromAscii(unitToString(ch->converted_unit, 0));
-	layout->addWidget(new QLabel(e), row, 4);
+	e = QString::fromUtf8(unitToString(ch->converted_unit, 0));
+	unit_label = new QLabel(e);
+	layout->addWidget(unit_label, row, 4);
+	units.append(unit_label);
 
 	f.sprintf("%s:%02x", tenki_device->getSerial(), chn);
 	layout->addWidget(new QLabel(f), row, 5);
@@ -76,11 +78,22 @@ void DashSensor::refresh()
 	qDebug() << "DashSensor::refresh()";
 
 	for (int i=0; i<values.size(); i++) {
-		QString d;
+		QString d,e;
 
 		ch = tenki_device->getChannelData(i);	
+		if (!ch->data_valid) {
+			values.at(i)->setText("Error");
+			continue;
+		}
 		d.sprintf("%.3f", ch->converted_data);	
 		values.at(i)->setText(d);
-		qDebug() << d;
+
+		// those two QList are populated in the same
+		// order. So it will be the same index i.
+		e = QString::fromUtf8(unitToString(ch->converted_unit, 0));
+		units.at(i)->setText(e);
+
+	//	qDebug() << d;
 	}
+
 }
