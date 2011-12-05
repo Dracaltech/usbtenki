@@ -2,6 +2,9 @@
 #include <QThread>
 #include <QList>
 #include <QTimer>
+#include <QFile>
+
+#include "TenkiSources.h"
 
 class SimpleLogger : public QThread
 {
@@ -15,21 +18,27 @@ class SimpleLogger : public QThread
 			Scsv=3 // semicolon separated
 		};
 
-		SimpleLogger(QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt);
+		SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt);
 		~SimpleLogger();
 		void addSource(QString src);
-
+	
 	protected:
 		void run();
 
 	public slots:
 		void doLog();
 
+	signals:
+		void logMessage(QString msg);
+
 	private:
+		TenkiSources *tenkisources;
+
 		QString output_file;
 		int interval_s;
 		FileFormat fmt;
 		QList<QString> sources;
 		QTimer *timer;
+		QFile *file;
 };
 

@@ -5,6 +5,7 @@
 #include <QWidget>
 #include "TenkiSources.h"
 #include "DataSourceCheckBox.h"
+#include "SimpleLogger.h"
 
 class Logger : public QWidget, public TenkiSourceAddRemove
 {
@@ -19,6 +20,17 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 
 	public slots:
 		void browse_clicked();
+		void startLogging();
+		void stopLogging();
+
+	protected:
+		void logMessage(QString str);
+		void cannotStartPopup(QString reason, QString hint);
+
+	protected slots:
+		void loggerStarted();
+		void loggerStopped();
+		void loggerMessage(QString str);
 
 	private:
 		TenkiSources *tenkisources;
@@ -45,9 +57,13 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 	
 
 		QGroupBox *messages;
-
-
+		QHBoxLayout *msg_layout;
+		QTextEdit *msgtxt;
+			
 		QVBoxLayout *main_layout;
+
+
+		SimpleLogger *current_logger;
 
 };
 

@@ -41,8 +41,9 @@ class TenkiSources : public QThread
 		
 		// Add all known TenkiDevices to target
 		void syncDevicesTo(TenkiDeviceAddRemove *tdr);
-
 		void addSourcesTo(TenkiSourceAddRemove *tsar);
+
+		struct sourceDescription *getSourceByName(QString src);
 
 	protected:
 		void run();

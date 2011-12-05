@@ -2,6 +2,7 @@
 #include "usbtenki.h"
 #include <QTimer>
 #include <QDebug>
+#include <string.h>
 
 TenkiSources::TenkiSources()
 {
@@ -119,5 +120,22 @@ void TenkiSources::doCaptures()
 	}
 
 	emit captureCycleCompleted();
+}
+
+struct sourceDescription *TenkiSources::getSourceByName(QString source_name)
+{
+	qDebug() << "Looking for " + source_name;
+
+	for (int i=0; i<sourceList.size(); i++) {
+		struct sourceDescription *sd = sourceList.at(i);
+	
+		qDebug() << "Considering " + sd->q_name;
+		
+		if (sd->q_name == source_name) {
+			return sd;
+		}
+	}
+
+	return NULL;
 }
 

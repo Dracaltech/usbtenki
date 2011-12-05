@@ -75,7 +75,7 @@ DashSensor::~DashSensor()
 void DashSensor::refresh()
 {
 	USBTenki_channel *ch;
-	qDebug() << "DashSensor::refresh()";
+//	qDebug() << "DashSensor::refresh()";
 
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;

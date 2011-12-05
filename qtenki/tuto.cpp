@@ -17,6 +17,9 @@ int main(int argc, char **argv)
 	QTabWidget *tw = new QTabWidget();
 	QWidget *window = new QWidget();
 
+	QWidget *dash_container;
+	QVBoxLayout *dash_container_layout;
+
 	TenkiDashboard *td;
 	Logger *logger;
 
@@ -30,6 +33,12 @@ int main(int argc, char **argv)
 
 	/* prepare tab elements */
 	td = new TenkiDashboard(tenkisources);
+	dash_container = new QWidget();
+	dash_container_layout = new QVBoxLayout();
+	dash_container->setLayout(dash_container_layout);
+	dash_container_layout->addWidget(td);
+	dash_container_layout->addStretch();
+
 
 	tenkisources->syncDevicesTo(td);
 	QObject::connect(tenkisources, SIGNAL(captureCycleCompleted()), td, SLOT(refreshView()));
@@ -41,7 +50,7 @@ int main(int argc, char **argv)
 	// configuration
 	
 	/* Tabs */
-	tw->addTab(td, QObject::tr("Sources"));
+	tw->addTab(dash_container, QObject::tr("Sources"));
 	tw->addTab(logger, QObject::tr("Logging"));	
 
 	/* The main window */
