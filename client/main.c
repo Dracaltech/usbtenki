@@ -33,6 +33,7 @@
 
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
+#include "usbtenki_units.h"
 #include "timestamp.h"
 
 #define ARRAY_SIZE(arr) ( sizeof(arr) / sizeof(*(arr)))
@@ -376,6 +377,7 @@ reopen:
 		return 1;
 	}
 
+/*
 	if (g_verbose)
 		printf("Setting configuration\n");
 	res = usb_set_configuration(hdl, rgblistctx.bConfigurationValue);
@@ -383,7 +385,7 @@ reopen:
 		printf("USB Error (usb_set_configuration: %s)\n", usb_strerror());
 		return 2;
 	}	
-	
+*/	
 
 	if (g_verbose)
 		printf("Claiming interface\n");

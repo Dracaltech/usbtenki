@@ -1,7 +1,7 @@
 CC=gcc
 LD=$(CC)
 
-CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.8\"
+CFLAGS=-Wall -g -O  -I../common -I../library  -DVERSION=\"1.8\"
 LDFLAGS=-lusb -lm
 
 PREFIX=/usr/local
@@ -12,14 +12,20 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: usbtenkiget usbtenkisetup
 
-usbtenkiget: usbtenki.o main.o timestamp.o
+usbtenkiget: usbtenki.o main.o timestamp.o convertRaw.o
 	$(LD) $(LDFLAGS) $^ -o $@
 	
-usbtenkisetup: usbtenki.o usbtenkisetup.o
+usbtenkisetup: usbtenki.o usbtenkisetup.o convertRaw.o
 	$(LD) $(LDFLAGS) $^ -o $@
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
+
+convertRaw.o: ../library/convertRaw.c 
+	$(CC) $(CFLAGS) -c $< -o convertRaw.o
+
+usbtenki.o: ../library/usbtenki.c 
+	$(CC) $(CFLAGS) -c $< -o usbtenki.o
 
 clean:
 	rm -f *.o $(PROGS)
