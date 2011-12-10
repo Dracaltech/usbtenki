@@ -55,7 +55,6 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QPushButton *start_button, *stop_button;
 		QLabel *status_label;
 	
-
 		QGroupBox *messages;
 		QHBoxLayout *msg_layout;
 		QTextEdit *msgtxt;
@@ -64,7 +63,6 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 
 
 		SimpleLogger *current_logger;
-
 };
 
 #endif // _logger_h__

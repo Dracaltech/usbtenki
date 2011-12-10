@@ -23,7 +23,12 @@ class SimpleLogger : public QThread
 		void addSource(QString src);
 	
 	protected:
+		void writeHeader();
 		void run();
+		void logItem(QString str, int last = 0);
+		void logValue(float v, int last = 0);
+		void logLineEnd();
+		void colTitles();
 
 	public slots:
 		void doLog();
@@ -40,5 +45,7 @@ class SimpleLogger : public QThread
 		QList<QString> sources;
 		QTimer *timer;
 		QFile *file;
+
+		bool first_log;
 };
 
