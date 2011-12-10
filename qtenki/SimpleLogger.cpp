@@ -10,7 +10,7 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s
 	this->fmt = fmt;
 
 	tenkisources = ts;
-	first_log = 1;
+	count = 0;
 }
 
 SimpleLogger::~SimpleLogger()
@@ -60,7 +60,7 @@ void SimpleLogger::run()
 	emit logMessage("opening file..");
 
 	file = new QFile(output_file);
-	file->open(QIODevice::WriteOnly /*| QIODevice::Append*/);
+	file->open(QIODevice::Text | QIODevice::WriteOnly /*| QIODevice::Append*/);
 
 	writeHeader();
 
@@ -118,6 +118,9 @@ void SimpleLogger::logValue(float v, int last)
 void SimpleLogger::logLineEnd()
 {
 	file->write("\n");
+	file->flush();
+	count++;
+	emit logged(count);
 }
 
 void SimpleLogger::colTitles()

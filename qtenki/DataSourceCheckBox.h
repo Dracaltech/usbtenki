@@ -3,8 +3,9 @@
 
 #include <QString>
 #include <QCheckBox>
+#include <QLineEdit>
 
-class DataSourceCheckBox : public QCheckBox
+class DataSourceCheckBox : public QWidget
 {
 	Q_OBJECT
 
@@ -12,6 +13,12 @@ class DataSourceCheckBox : public QCheckBox
 		DataSourceCheckBox(QString caption, QString src);
 		~DataSourceCheckBox();
 		QString src;	
+
+		bool isChecked();
+
+	private:
+		QCheckBox *checkbox;
+		QLineEdit *alias_edit;
 };
 
 #endif

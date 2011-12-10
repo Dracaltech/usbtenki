@@ -19,6 +19,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void removeTenkiSource(struct sourceDescription *sd);
 
 	public slots:
+		void openViewer();
 		void browse_clicked();
 		void startLogging();
 		void stopLogging();
@@ -31,6 +32,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void loggerStarted();
 		void loggerStopped();
 		void loggerMessage(QString str);
+		void loggerActivity(int counter);
 
 	private:
 		TenkiSources *tenkisources;
@@ -43,7 +45,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QGridLayout *dbl;
 		QComboBox *comb_fmt;
 		QLineEdit *path;
-		QPushButton *browseButton;
+		QPushButton *browseButton, *viewButton;
 		
 		QSpinBox *log_interval;		
 
@@ -53,14 +55,13 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QGroupBox *control;
 		QHBoxLayout *control_layout;
 		QPushButton *start_button, *stop_button;
-		QLabel *status_label;
+		QLabel *status_label, *counter_label;
 	
 		QGroupBox *messages;
 		QHBoxLayout *msg_layout;
 		QTextEdit *msgtxt;
 			
 		QVBoxLayout *main_layout;
-
 
 		SimpleLogger *current_logger;
 };

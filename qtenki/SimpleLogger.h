@@ -35,6 +35,7 @@ class SimpleLogger : public QThread
 
 	signals:
 		void logMessage(QString msg);
+		void logged(int counter);
 
 	private:
 		TenkiSources *tenkisources;
@@ -46,6 +47,6 @@ class SimpleLogger : public QThread
 		QTimer *timer;
 		QFile *file;
 
-		bool first_log;
+		int count;
 };
 

@@ -1,5 +1,5 @@
 #include "Logger.h"
-
+#include "TextViewer.h"
 
 Logger::Logger(TenkiSources *s)
 {
@@ -13,7 +13,8 @@ Logger::Logger(TenkiSources *s)
 	svb = new QVBoxLayout();
 	sourcebox->setLayout(svb);
 	
-	//tenkiglue_populateSourceCheckboxes(svb, &sources);
+	// have tenkisource call our addTenkiSource in loop for
+	// each source present.
 	tenkisources->addSourcesTo(this);
 	svb->addStretch();
 
@@ -26,19 +27,21 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(new QLabel(tr("File format:")), 0, 0 );
 	dbl->addWidget(comb_fmt, 0, 1);
 	/* Note: Added in this order to match SimpleLogger::FileFormat */
-	comb_fmt->addItem(tr("Comma separated values - 00.00,11.11,..."));
-	comb_fmt->addItem(tr("Tab separated values - 00.00(tab)11.11(tab)..."));
-	comb_fmt->addItem(tr("Space separated values - 00.00 11.11 ..."));
-	comb_fmt->addItem(tr("Semicolon separated values - 00.00;11.11;..."));
+	comb_fmt->addItem(tr("Comma separated values"));
+	comb_fmt->addItem(tr("Tab separated values"));
+	comb_fmt->addItem(tr("Space separated values"));
+	comb_fmt->addItem(tr("Semicolon separated values"));
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), 1, 0 );
 	path = new QLineEdit("tenkilog.txt");
-	browseButton = new QPushButton(("..."));
+	browseButton = new QPushButton(tr("Select"));
+	viewButton = new QPushButton(tr("View"));
 	dbl->addWidget(path, 1, 1, 1, 3);
 	dbl->addWidget(browseButton, 1, 4, 1, 1);
-
+	dbl->addWidget(viewButton, 1, 5, 1, 1);
 
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
+	QObject::connect(viewButton, SIGNAL(clicked()), this, SLOT(openViewer()));
 
 	dbl->addWidget(new QLabel(tr("Logging interval:")), 2, 0 );
 	log_interval = new QSpinBox();
@@ -47,16 +50,21 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(new QLabel(tr("(seconds)")), 2, 3 );
 
 
-	control = new QGroupBox("Control");
+
+
+	control = new QGroupBox(tr("Control"));
 	control_layout = new QHBoxLayout();
 	control->setLayout(control_layout);
-	start_button = new QPushButton("Start");
-	stop_button = new QPushButton("Stop");
+	start_button = new QPushButton(tr("Start"));
+	stop_button = new QPushButton(tr("Stop"));
 	stop_button->setEnabled(false);
-	status_label = new QLabel("Not running");
+	status_label = new QLabel(tr("Not running."));
+	counter_label = new QLabel("0");
 	control_layout->addWidget(start_button);
 	control_layout->addWidget(stop_button);
 	control_layout->addWidget(status_label);
+	control_layout->addWidget(new QLabel(tr("Lines written: ")));
+	control_layout->addWidget(counter_label);
 	control_layout->addStretch();
 	
 	messages = new QGroupBox("Messages");
@@ -178,6 +186,7 @@ void Logger::startLogging()
 	QObject::connect(current_logger, SIGNAL(started()), this, SLOT(loggerStarted()));	
 	QObject::connect(current_logger, SIGNAL(finished()), this, SLOT(loggerStopped()));	
 	QObject::connect(current_logger, SIGNAL(logMessage(QString)), this, SLOT(loggerMessage(QString)));
+	QObject::connect(current_logger, SIGNAL(logged(int)), this, SLOT(loggerActivity(int)));
 	current_logger->start();	
 }
 
@@ -186,7 +195,16 @@ void Logger::stopLogging()
 	logMessage("Stopping logger...");
 	current_logger->quit();
 	logMessage("Waiting for logger thread to stop...");
+	status_label->setText(tr("Not running."));
 	current_logger->wait();
+}
+
+void Logger::openViewer()
+{
+	TextViewer *t;
+	
+	t = new TextViewer(path->text());
+	t->exec();
 }
 
 void Logger::browse_clicked()
@@ -202,6 +220,14 @@ void Logger::browse_clicked()
 void Logger::loggerStarted()
 {
 	logMessage("logger started successfully");
+	status_label->setText(tr("Running."));
+}
+
+void Logger::loggerActivity(int count)
+{
+	QString str;
+	str.setNum(count);
+	counter_label->setText(str);
 }
 
 void Logger::loggerStopped()
