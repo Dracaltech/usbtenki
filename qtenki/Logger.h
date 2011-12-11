@@ -33,6 +33,9 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void loggerStopped();
 		void loggerMessage(QString str);
 		void loggerActivity(int counter);
+		void logFormatChanged(int idx);
+		void intervalChanged(int i);
+		void filenameEdited();
 
 	private:
 		TenkiSources *tenkisources;

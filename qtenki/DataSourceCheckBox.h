@@ -16,6 +16,10 @@ class DataSourceCheckBox : public QWidget
 
 		bool isChecked();
 
+	private slots:
+		void aliasChanged();
+		void checkChanged(int state);
+
 	private:
 		QCheckBox *checkbox;
 		QLineEdit *alias_edit;

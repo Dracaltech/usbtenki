@@ -3,6 +3,8 @@
 
 Logger::Logger(TenkiSources *s)
 {
+	QSettings settings;
+
 	tenkisources = s;
 
 	main_layout = new QVBoxLayout();
@@ -31,14 +33,18 @@ Logger::Logger(TenkiSources *s)
 	comb_fmt->addItem(tr("Tab separated values"));
 	comb_fmt->addItem(tr("Space separated values"));
 	comb_fmt->addItem(tr("Semicolon separated values"));
+	comb_fmt->setCurrentIndex(settings.value("logger/format").toInt());
+	connect(comb_fmt, SIGNAL(currentIndexChanged(int)), this, SLOT(logFormatChanged(int)));
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), 1, 0 );
-	path = new QLineEdit("tenkilog.txt");
+	path = new QLineEdit(settings.value("logger/filename").toString());
 	browseButton = new QPushButton(tr("Select"));
 	viewButton = new QPushButton(tr("View"));
 	dbl->addWidget(path, 1, 1, 1, 3);
 	dbl->addWidget(browseButton, 1, 4, 1, 1);
 	dbl->addWidget(viewButton, 1, 5, 1, 1);
+
+	connect(path, SIGNAL(editingFinished()), this, SLOT(filenameEdited()));
 
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
 	QObject::connect(viewButton, SIGNAL(clicked()), this, SLOT(openViewer()));
@@ -48,8 +54,9 @@ Logger::Logger(TenkiSources *s)
 	log_interval->setMinimum(1);
 	dbl->addWidget(log_interval, 2, 1, 1, 1);
 	dbl->addWidget(new QLabel(tr("(seconds)")), 2, 3 );
-
-
+	
+	log_interval->setValue(settings.value("logger/interval").toInt());
+	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
 
 
 	control = new QGroupBox(tr("Control"));
@@ -75,8 +82,8 @@ Logger::Logger(TenkiSources *s)
 	
 	msg_layout->addWidget(msgtxt);
 
-	QObject::connect(start_button, SIGNAL(clicked()), this, SLOT(startLogging()));
-	QObject::connect(stop_button, SIGNAL(clicked()), this, SLOT(stopLogging()));
+	connect(start_button, SIGNAL(clicked()), this, SLOT(startLogging()));
+	connect(stop_button, SIGNAL(clicked()), this, SLOT(stopLogging()));
 
 	/* Layout */
 	mid_layer = new QWidget();
@@ -187,7 +194,7 @@ void Logger::startLogging()
 	QObject::connect(current_logger, SIGNAL(finished()), this, SLOT(loggerStopped()));	
 	QObject::connect(current_logger, SIGNAL(logMessage(QString)), this, SLOT(loggerMessage(QString)));
 	QObject::connect(current_logger, SIGNAL(logged(int)), this, SLOT(loggerActivity(int)));
-	current_logger->start();	
+	current_logger->start();
 }
 
 void Logger::stopLogging()
@@ -215,6 +222,7 @@ void Logger::browse_clicked()
 	filename = QFileDialog::getSaveFileName(this, tr("Output file"), "", "(*.txt *.csv *.tsv)" );
 
 	path->setText(filename);
+	filenameEdited(); // QLineEdit does not emit a signal in this case.
 }
 
 void Logger::loggerStarted()
@@ -241,3 +249,20 @@ void Logger::loggerStopped()
 	delete current_logger;
 }
 
+void Logger::logFormatChanged(int idx)
+{
+	QSettings settings;
+	settings.setValue("logger/format", idx);
+}
+
+void Logger::intervalChanged(int i)
+{
+	QSettings settings;
+	settings.setValue("logger/interval", i);
+}
+
+void Logger::filenameEdited()
+{
+	QSettings settings;
+	settings.setValue("logger/filename", path->text());
+}
