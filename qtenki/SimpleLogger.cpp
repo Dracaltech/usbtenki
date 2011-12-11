@@ -27,7 +27,9 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s
 			logLocale = new QLocale(QLocale::C, QLocale::AnyCountry);
 			break;
 	}
-	
+
+	timestamp_format = tfmt;	
+	use_utc = 0;
 }
 
 SimpleLogger::~SimpleLogger()
@@ -183,8 +185,48 @@ void SimpleLogger::colTitles()
 
 }
 
+void SimpleLogger::setUseUTC(bool use)
+{
+	use_utc = use;
+}
+
 void SimpleLogger::doLog()
 {
+	// Requires QT 4.7
+//	if (use_utc) {
+//		QDateTime now = QDateTime::currentDateTimeUtc();
+//	} else {
+		QDateTime now = QDateTime::currentDateTime();
+//	}
+
+	switch(timestamp_format)
+	{
+		case None:
+			break;
+
+		case SystemShort:
+			logItem(now.toString(Qt::SystemLocaleShortDate));
+			break;
+
+		case SystemLong:
+			logItem(now.toString(Qt::SystemLocaleLongDate));
+			break;
+
+		case ISO8601:
+			logItem(now.toString(Qt::ISODate));
+			break;
+
+		case SplitISO8601:
+			logItem(now.toString("yyyy-MM-dd"));
+			logItem(now.toString("hh:mm:ss"));
+			break;
+
+		case ISO8601TimeOnly:
+			logItem(now.toString("hh:mm:ss"));
+			break;
+	}
+
+
 	for (int i=0; i<sources.size(); i++)
 	{
 		struct sourceDescription *sd;

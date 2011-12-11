@@ -25,15 +25,17 @@ class SimpleLogger : public QThread
 		};
 		enum TimeStampFormat {
 			None=0,
-			ISO8601=1,
-			SplitISO8601=2,
-			SystemShort=3,
-			SystemLong=4,
+			SystemShort=1,
+			SystemLong=2,
+			ISO8601=3,
+			SplitISO8601=4,
+			ISO8601TimeOnly=5,
 		};
 
 		SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt);
 		~SimpleLogger();
 		void addSource(QString src, QString alias);
+		void setUseUTC(bool use);
 	
 	protected:
 		void writeHeader();
@@ -62,6 +64,9 @@ class SimpleLogger : public QThread
 		QFile *file;
 
 		QLocale *logLocale;
+
+		enum TimeStampFormat timestamp_format;
+		bool use_utc;
 
 		int count;
 };

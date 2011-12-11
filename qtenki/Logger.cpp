@@ -52,12 +52,14 @@ Logger::Logger(TenkiSources *s)
 	y++;
 
 	comb_timestamp = new QComboBox();
-	/* Note: Added in order matching SimpleLogger::DecimalType */
+	/* Note: Added in order matching SimpleLogger::TimeStampFormat */
 	comb_timestamp->addItem(tr("None"));
-	comb_timestamp->addItem(tr("ISO8601 (single field YYYY-MM-DDTHH:MM:SS)"));
-	comb_timestamp->addItem(tr("ISO8601 (date YYYY-MM-DD and hour HH:MM:SS across two fields)"));
 	comb_timestamp->addItem(tr("Short system-specific format"));
 	comb_timestamp->addItem(tr("Long system-specific format"));
+	comb_timestamp->addItem(tr("ISO8601 (single field YYYY-MM-DDTHH:MM:SS)"));
+	comb_timestamp->addItem(tr("ISO8601 (date YYYY-MM-DD and hour HH:MM:SS across two fields)"));
+	comb_timestamp->addItem(tr("ISO8601 Time only (HH:MM:SS)"));
+
 
 	comb_timestamp->setCurrentIndex(settings.value("logger/timestamp").toInt());
 	connect(comb_timestamp, SIGNAL(currentIndexChanged(int)), this, SLOT(timestampChanged(int)));
@@ -206,18 +208,26 @@ void Logger::startLogging()
 		case 0: fmt = SimpleLogger::Csv; break;
 		case 1: fmt = SimpleLogger::Tsv; break;
 		case 2: fmt = SimpleLogger::Ssv; break;
-		case 3: fmt = SimpleLogger::Scsv; break;
+		case 3: fmt = SimpleLogger::Scsv;break;
 	}
 
 	SimpleLogger::DecimalType dt = SimpleLogger::SystemFormat;
 
 	switch(comb_decimal->currentIndex()) {
-		case 0: dt = SimpleLogger::SystemFormat; break;
-		case 1: dt = SimpleLogger::Period; break;
-		case 2: dt = SimpleLogger::Comma; break;
+		case 0: dt = SimpleLogger::SystemFormat;break;
+		case 1: dt = SimpleLogger::Period;		break;
+		case 2: dt = SimpleLogger::Comma;		break;
 	}
 
 	SimpleLogger::TimeStampFormat tfmt = SimpleLogger::None;
+	switch(comb_timestamp->currentIndex()) {
+		case 0: tfmt = SimpleLogger::None;				break;
+		case 1: tfmt = SimpleLogger::SystemShort;		break;
+		case 2: tfmt = SimpleLogger::SystemLong;		break;
+		case 3: tfmt = SimpleLogger::ISO8601;			break;
+		case 4: tfmt = SimpleLogger::SplitISO8601;		break;
+		case 5: tfmt = SimpleLogger::ISO8601TimeOnly;	break;
+	}
 
 	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt);
 
