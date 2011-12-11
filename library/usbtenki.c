@@ -173,6 +173,17 @@ usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *
 		return NULL;
 	}
 
+
+	if (g_verbose)
+		printf("usbtenki.c: Setting configuration\n");
+	
+	res = usb_set_configuration(hdl, cur_dev->config->bConfigurationValue);
+	if (res < 0) {
+		printf("USB Error (usb_set_configuration: %s)\n", usb_strerror());
+		usb_close(hdl);
+		return NULL;
+	}
+
 	if (g_verbose)
 		printf("usbtenki.c: Claiming interface\n");
 	
