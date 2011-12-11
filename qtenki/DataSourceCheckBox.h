@@ -14,6 +14,7 @@ class DataSourceCheckBox : public QWidget
 		~DataSourceCheckBox();
 		QString src;	
 
+		QString getAlias();
 		bool isChecked();
 
 	private slots:

@@ -34,6 +34,8 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void loggerMessage(QString str);
 		void loggerActivity(int counter);
 		void logFormatChanged(int idx);
+		void decimalPointChanged(int idx);
+		void timestampChanged(int idx);
 		void intervalChanged(int i);
 		void filenameEdited();
 
@@ -47,6 +49,8 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QGroupBox *destbox;
 		QGridLayout *dbl;
 		QComboBox *comb_fmt;
+		QComboBox *comb_decimal;
+		QComboBox *comb_timestamp;
 		QLineEdit *path;
 		QPushButton *browseButton, *viewButton;
 		

@@ -3,7 +3,9 @@
 
 Logger::Logger(TenkiSources *s)
 {
+	int y=0;
 	QSettings settings;
+	QLocale locale;
 
 	tenkisources = s;
 
@@ -26,34 +28,65 @@ Logger::Logger(TenkiSources *s)
 	destbox->setLayout(dbl);
 
 	comb_fmt = new QComboBox();
-	dbl->addWidget(new QLabel(tr("File format:")), 0, 0 );
-	dbl->addWidget(comb_fmt, 0, 1);
 	/* Note: Added in this order to match SimpleLogger::FileFormat */
-	comb_fmt->addItem(tr("Comma separated values"));
-	comb_fmt->addItem(tr("Tab separated values"));
-	comb_fmt->addItem(tr("Space separated values"));
-	comb_fmt->addItem(tr("Semicolon separated values"));
+	comb_fmt->addItem(tr("Comma"));
+	comb_fmt->addItem(tr("Tab"));
+	comb_fmt->addItem(tr("Space"));
+	comb_fmt->addItem(tr("Semicolon"));
 	comb_fmt->setCurrentIndex(settings.value("logger/format").toInt());
 	connect(comb_fmt, SIGNAL(currentIndexChanged(int)), this, SLOT(logFormatChanged(int)));
+
+	dbl->addWidget(new QLabel(tr("Field separator:")), y, 0 );
+	dbl->addWidget(comb_fmt, y, 1);
+//	y++;
 	
-	dbl->addWidget(new QLabel(tr("Output file:")), 1, 0 );
+	comb_decimal = new QComboBox();
+	/* Note: Added in order matching SimpleLogger::DecimalType */
+	comb_decimal->addItem(tr("System default"));
+	comb_decimal->addItem(tr("Period: ")+" .");
+	comb_decimal->addItem(tr("Comma: ")+" ,");
+	comb_decimal->setCurrentIndex(settings.value("logger/decimal_point").toInt());
+	connect(comb_decimal, SIGNAL(currentIndexChanged(int)), this, SLOT(decimalPointChanged(int)));
+	dbl->addWidget(new QLabel(tr("Decimal point:")), y, 2 );
+	dbl->addWidget(comb_decimal, y, 3);
+	y++;
+
+	comb_timestamp = new QComboBox();
+	/* Note: Added in order matching SimpleLogger::DecimalType */
+	comb_timestamp->addItem(tr("None"));
+	comb_timestamp->addItem(tr("ISO8601 (single field YYYY-MM-DDTHH:MM:SS)"));
+	comb_timestamp->addItem(tr("ISO8601 (date YYYY-MM-DD and hour HH:MM:SS across two fields)"));
+	comb_timestamp->addItem(tr("Short system-specific format"));
+	comb_timestamp->addItem(tr("Long system-specific format"));
+
+	comb_timestamp->setCurrentIndex(settings.value("logger/timestamp").toInt());
+	connect(comb_timestamp, SIGNAL(currentIndexChanged(int)), this, SLOT(timestampChanged(int)));
+	dbl->addWidget(new QLabel(tr("Timestamps:")), y, 0 );
+	dbl->addWidget(comb_timestamp, y, 1, 1, 4);
+	y++;
+
+	
+	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
 	browseButton = new QPushButton(tr("Select"));
 	viewButton = new QPushButton(tr("View"));
-	dbl->addWidget(path, 1, 1, 1, 3);
-	dbl->addWidget(browseButton, 1, 4, 1, 1);
-	dbl->addWidget(viewButton, 1, 5, 1, 1);
+	dbl->addWidget(path, y, 1, 1, 4);
+	y++;
+
+	dbl->addWidget(browseButton, y, 3, 1, 1);
+	dbl->addWidget(viewButton, y, 4, 1, 1);
+	y++;
 
 	connect(path, SIGNAL(editingFinished()), this, SLOT(filenameEdited()));
 
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
 	QObject::connect(viewButton, SIGNAL(clicked()), this, SLOT(openViewer()));
 
-	dbl->addWidget(new QLabel(tr("Logging interval:")), 2, 0 );
+	dbl->addWidget(new QLabel(tr("Logging interval:")), y, 0 );
 	log_interval = new QSpinBox();
 	log_interval->setMinimum(1);
-	dbl->addWidget(log_interval, 2, 1, 1, 1);
-	dbl->addWidget(new QLabel(tr("(seconds)")), 2, 3 );
+	dbl->addWidget(log_interval, y, 1, 1, 1);
+	dbl->addWidget(new QLabel(tr("(seconds)")), y, 3 );
 	
 	log_interval->setValue(settings.value("logger/interval").toInt());
 	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
@@ -175,13 +208,23 @@ void Logger::startLogging()
 		case 2: fmt = SimpleLogger::Ssv; break;
 		case 3: fmt = SimpleLogger::Scsv; break;
 	}
-	
-	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt);
+
+	SimpleLogger::DecimalType dt = SimpleLogger::SystemFormat;
+
+	switch(comb_decimal->currentIndex()) {
+		case 0: dt = SimpleLogger::SystemFormat; break;
+		case 1: dt = SimpleLogger::Period; break;
+		case 2: dt = SimpleLogger::Comma; break;
+	}
+
+	SimpleLogger::TimeStampFormat tfmt = SimpleLogger::None;
+
+	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt);
 
 	for (int i=0; i<sources.size(); i++) {
 		DataSourceCheckBox *cb = sources.at(i);
 		if (cb->isChecked()) {
-			current_logger->addSource(cb->src);
+			current_logger->addSource(cb->src, cb->getAlias());
 		}
 	}
 
@@ -247,6 +290,18 @@ void Logger::loggerStopped()
 	mid_layer->setEnabled(true);
 
 	delete current_logger;
+}
+
+void Logger::timestampChanged(int idx)
+{
+	QSettings settings;
+	settings.setValue("logger/timestamp", idx);
+}
+
+void Logger::decimalPointChanged(int idx)
+{
+	QSettings settings;
+	settings.setValue("logger/decimal_point", idx);
 }
 
 void Logger::logFormatChanged(int idx)

@@ -3,7 +3,7 @@
 //#include <QHostInfo>
 #include "version.h"
 
-SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt)
+SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt)
 {
 	this->output_file = output_file;
 	this->interval_s = interval_s;
@@ -11,15 +11,34 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s
 
 	tenkisources = ts;
 	count = 0;
+
+	switch(dt)
+	{
+		default:
+		case SystemFormat:
+			logLocale = new QLocale();
+			break;
+
+		case Comma:
+			logLocale = new QLocale(QLocale::French, QLocale::Canada);
+			break;
+
+		case Period:
+			logLocale = new QLocale(QLocale::C, QLocale::AnyCountry);
+			break;
+	}
+	
 }
 
 SimpleLogger::~SimpleLogger()
 {
+	delete logLocale;
 }
 
-void SimpleLogger::addSource(QString src)
+void SimpleLogger::addSource(QString src, QString alias)
 {
 	sources.append(src);
+	aliases.append(alias);
 }
 
 void SimpleLogger::writeHeader()
@@ -107,11 +126,15 @@ void SimpleLogger::logItem(QString str, int last)
 
 void SimpleLogger::logValue(float v, int last)
 {
-	char tmpbuf[32];
+	//char tmpbuf[32];
 
-	sprintf(tmpbuf, "%0.02f", v);
+//	sprintf(tmpbuf, "%0.02f", v);
 	
-	logItem(QString::fromAscii(tmpbuf), last);
+	// TODO : Potential options:
+	//   - scientific notation
+	//   - precision (now hardcoded to 2)
+	logItem(logLocale->toString(v, 'f', 2), last); 	
+//	logItem(QString::fromAscii(tmpbuf), last);
 
 }
 
@@ -133,7 +156,14 @@ void SimpleLogger::colTitles()
 		logItem(sd->q_name, i==(sources.size()-1));
 	}
 
-	// alias name TODO
+	// aliases
+	// this works with the assumption that sources and aliases QLists share
+	// the same indices.
+	for (int i=0; i<aliases.size(); i++)
+	{
+		logItem(aliases.at(i), i==(aliases.size()-1));
+	}
+
 	
 	// measurement type
 	for (int i=0; i<sources.size(); i++)

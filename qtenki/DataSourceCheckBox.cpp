@@ -19,6 +19,7 @@ DataSourceCheckBox::DataSourceCheckBox(QString caption, QString src)
 	this->src = src;
 
 	QHBoxLayout *lay = new QHBoxLayout();
+	lay->setContentsMargins(0,0,0,0);
 	setLayout(lay);
 
 	lay->addWidget(checkbox);
@@ -31,6 +32,11 @@ DataSourceCheckBox::DataSourceCheckBox(QString caption, QString src)
 
 	connect(alias_edit, SIGNAL(editingFinished()), this, SLOT(aliasChanged()));
 	connect(checkbox, SIGNAL(stateChanged(int)), this, SLOT(checkChanged(int)));
+}
+
+QString DataSourceCheckBox::getAlias()
+{
+	return alias_edit->text();
 }
 
 bool DataSourceCheckBox::isChecked()
