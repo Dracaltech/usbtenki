@@ -13,7 +13,7 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: libtenki.so 
 
-libtenki.so: usbtenki.o com_raphnet_tenki_JNI.o
+libtenki.so: usbtenki.o convertRaw.o com_raphnet_tenki_JNI.o
 	$(LD) -shared $(LDFLAGS) $^ -o $@
 
 %.o: %.c %.h
