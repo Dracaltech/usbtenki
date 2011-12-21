@@ -139,6 +139,16 @@ uchar   usbFunctionSetup(uchar data[8])
 			replyBuf[1] = xor_buf(replyBuf, 1);
 			replen = 2;
 			break;
+
+		case USBTENKI_SET_ADC_REF:
+			g_eeprom_data.use_aref = data[2];
+			eeprom_commit();
+
+			replyBuf[0] = USBTENKI_SET_ADC_REF;
+			replyBuf[1] = xor_buf(replyBuf, 1);
+			replen = 2;
+			break;
+
     }
 	
 	return replen;

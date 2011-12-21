@@ -54,6 +54,15 @@
  */
 #define USBTENKI_SET_ADC_CHIP		0xf1
 
+/* Select the ADC reference to use.
+ *
+ *   request: USBTENKI_SET_ADC_CHIP
+ *   value: Low byte (0=internal 5v, 1=adc ref)
+ *
+ * Returned data:
+ * [0xf2] [lrc]
+ */
+#define USBTENKI_SET_ADC_REF		0xf2
 
 #define USBTENKI_CHIP_MCP9800	0x00
 #define USBTENKI_CHIP_LM75		0x01

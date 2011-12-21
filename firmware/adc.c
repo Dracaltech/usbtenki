@@ -1,11 +1,27 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "adc.h"
+#include "eeprom.h"
+
+static void setChannel(int id)
+{
+	// REFS1  REFS0   
+	//   0      0    AREF (internal ref. disabled)
+	//   0      1    AVCC with cap on AREF
+	//   1      0    Reserved
+	//   1      1    Internal 2.56v
+
+	if (!g_eeprom_data.use_aref) {
+		ADMUX = (1<<REFS0) | id;
+	} else {
+		ADMUX = 0 | id;
+	}
+}
 
 void adc_init(void)
 {
-	/* Use AVCC (usb 5 volts) and select ADC0. */
-	ADMUX = (1<<REFS0);
+	setChannel(0);
+
 	/* Enable ADC and setup prescaler to /128 (gives 93khz) */
 	ADCSRA = (1<<ADEN) | 
 		(1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
@@ -22,7 +38,7 @@ unsigned short adc_sample(char id, int n_samples, int interval_ms)
 
 	/* set MUX3:0  (bits 3:0). No mask needed because of range
 	 * check above. */
-	ADMUX = (1<<REFS0) | id;
+	setChannel(id);
 
 	for (i=0; i<n_samples; i++) {
 		ADCSRA |= (1<<ADSC);	/* start conversion */ 

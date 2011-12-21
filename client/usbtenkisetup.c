@@ -15,7 +15,7 @@ int g_verbose = 0;
 
 static void printVersion(void)
 {
-	printf("Usbtenkisetup version %s, Copyright (C) 2007, Raphael Assenat\n\n", VERSION);
+	printf("Usbtenkisetup version %s, Copyright (C) 2007-2011, Raphael Assenat\n\n", VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -33,6 +33,7 @@ static void printUsage(void)
 	printf("\nValid commands:\n");
 	printf("    setadcchip  adc_id chip\n");
 	printf("    setserial   serial (8 characters)\n");
+	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
 
 }
 
@@ -124,6 +125,43 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Cannot open device (%s)\n", usb_strerror());
 		return 2;
 	}
+
+	/**************** Setref ****************/
+	if (strcmp(eargv[0], "setref")==0) {
+		int ref_id;
+		char *e;
+
+		printf("hmm\n");
+	
+		/* printf("    setadcchip  adc_id chip\n"); */
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		ref_id = strtol(eargv[1], &e, 0);
+		if (e==eargv[1]) {
+			fprintf(stderr, "Bad ref id\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+		
+	if (g_verbose) 
+			printf("Setting adc ref to %d\n", ref_id);
+
+		res = usbtenki_command(hdl, USBTENKI_SET_ADC_REF, 
+								(ref_id & 0xff), repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error setting adc ref to %d\n",
+								ref_id);
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
 
 	/**************** Setadcchip ****************/
 	if (strcmp(eargv[0], "setadcchip")==0) {
