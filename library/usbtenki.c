@@ -455,6 +455,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_MPX4115:
 			return "MPX4115 Absolute air pressure sensor";
 
+		case USBTENKI_CHIP_MP3H6115A:
+			return "MP3H6115A Absolute air pressure sensor";
+
 		case USBTENKI_CHIP_VOLTS:
 			return "Ratiometric volts from ADC";
 
