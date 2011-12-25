@@ -148,9 +148,47 @@ void SimpleLogger::logLineEnd()
 	emit logged(count);
 }
 
+void SimpleLogger::tsTitlesPre(int step)
+{
+	// 0: Source names
+	// 1: Aliases
+	// 2: Measurement type
+	// 3: Unit	
+
+	switch(timestamp_format)
+	{
+		case None:
+			break;
+
+		case SystemShort:
+			logItem("Datetime");
+			break;
+
+		case SystemLong:
+			logItem("Datetime");
+			break;
+
+		case ISO8601:
+			logItem("Datetime");
+			break;
+
+		case SplitISO8601:
+			logItem("Date");
+			logItem("Time");
+			break;
+
+		case ISO8601TimeOnly:
+			logItem("Time");
+			break;
+	}
+
+
+}
+
 void SimpleLogger::colTitles()
 {
 	// Source names: AAAAAA:00
+	tsTitlesPre(0);
 	for (int i=0; i<sources.size(); i++)
 	{
 		struct sourceDescription *sd;
@@ -161,6 +199,7 @@ void SimpleLogger::colTitles()
 	// aliases
 	// this works with the assumption that sources and aliases QLists share
 	// the same indices.
+	tsTitlesPre(1);
 	for (int i=0; i<aliases.size(); i++)
 	{
 		logItem(aliases.at(i), i==(aliases.size()-1));
@@ -168,6 +207,7 @@ void SimpleLogger::colTitles()
 
 	
 	// measurement type
+	tsTitlesPre(2);
 	for (int i=0; i<sources.size(); i++)
 	{
 		struct sourceDescription *sd;
@@ -176,6 +216,7 @@ void SimpleLogger::colTitles()
 	}
 
 	// unit
+	tsTitlesPre(3);
 	for (int i=0; i<sources.size(); i++)
 	{
 		struct sourceDescription *sd;
@@ -217,7 +258,7 @@ void SimpleLogger::doLog()
 			break;
 
 		case SplitISO8601:
-			logItem(now.toString("yyyy-MM-dd"));
+			logItem(now.toString("yyyy-mm-dd"));
 			logItem(now.toString("hh:mm:ss"));
 			break;
 

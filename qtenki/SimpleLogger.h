@@ -44,6 +44,7 @@ class SimpleLogger : public QThread
 		void logValue(float v, int last = 0);
 		void logLineEnd();
 		void colTitles();
+		void tsTitlesPre(int step);
 
 	public slots:
 		void doLog();

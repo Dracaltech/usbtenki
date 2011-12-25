@@ -88,7 +88,7 @@ Logger::Logger(TenkiSources *s)
 	log_interval = new QSpinBox();
 	log_interval->setMinimum(1);
 	dbl->addWidget(log_interval, y, 1, 1, 1);
-	dbl->addWidget(new QLabel(tr("(seconds)")), y, 3 );
+	dbl->addWidget(new QLabel(tr("(seconds)")), y, 2 );
 	
 	log_interval->setValue(settings.value("logger/interval").toInt());
 	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
