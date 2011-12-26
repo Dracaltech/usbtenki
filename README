@@ -1,0 +1,14 @@
+
+
+client/            Command-line client
+cmdline_wrapper/   Sample code for calling the command-line client from an application.
+common/            Files shared between firmware and host side software
+firmware/          MCU firmware sources
+schematics/        Schematic files
+
+Work in progress:
+
+java/              JNI interface for Java
+qtenki/            QT based logging GUI
+windows_driver/    Windows driver (libusb)
+
