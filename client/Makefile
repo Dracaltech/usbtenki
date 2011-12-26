@@ -1,7 +1,7 @@
 CC=gcc
 LD=$(CC)
 
-CFLAGS=-Wall -g -O  -I../common -I../library  -DVERSION=\"1.8\"
+CFLAGS=-Wall -g -O -I../common -I../library
 LDFLAGS=-lusb -lm
 
 PREFIX=/usr/local

@@ -32,8 +32,9 @@
 #include <math.h>
 
 #include "usbtenki.h"
-#include "usbtenki_cmds.h"
-#include "usbtenki_units.h"
+#include "../common/usbtenki_version.h"
+#include "../common/usbtenki_cmds.h"
+#include "../library/usbtenki_units.h"
 #include "timestamp.h"
 
 #define ARRAY_SIZE(arr) ( sizeof(arr) / sizeof(*(arr)))
@@ -92,7 +93,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007-2010, Raphael Assenat\n\n", VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2010, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");

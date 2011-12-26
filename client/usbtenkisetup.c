@@ -10,12 +10,13 @@
 
 #include "usbtenki.h"
 #include "../common/usbtenki_cmds.h"
+#include "../common/usbtenki_version.h"
 
 int g_verbose = 0;
 
 static void printVersion(void)
 {
-	printf("Usbtenkisetup version %s, Copyright (C) 2007-2011, Raphael Assenat\n\n", VERSION);
+	printf("Usbtenkisetup version %s, Copyright (C) 2007-2011, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
