@@ -72,6 +72,16 @@ int usbtenki_getNumChannels(usb_dev_handle *hdl);
 int usbtenki_convertRaw(struct USBTenki_channel *chn);
 
 int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray, int arr_size);
+
+/**
+ * \brief Add virtual channels based on previously listed ones (see usbtenki_listChannels)
+ * \param chnArray array to hold the channels
+ * \param num_channels The number of channels available in the arrary
+ * \param arr_size The maximum number of channels that can be held by the array.
+ */
+int usbtenki_addVirtualChannels(struct USBTenki_channel *chnArray, int *num_channels, int arr_size);
+int usbtenki_processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels);
+
 int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
 int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn);
 

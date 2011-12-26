@@ -29,8 +29,8 @@
 #define usleep(t) Sleep(t/1000)
 #endif
 
-static int g_verbose=1;
-
+int g_usbtenki_verbose=0;
+int g_usbtenki_num_attempts = 3;
 
 int usbtenki_init(void)
 {
@@ -73,7 +73,7 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 	if (ctx->dev && ctx->bus)
 		goto jumpin;
 		
-	if (g_verbose)
+	if (g_usbtenki_verbose)
 			printf("Start listing\n");
 
 	usb_find_busses();
@@ -81,7 +81,7 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 	start_bus = usb_get_busses();
 
 	if (start_bus==NULL) {
-		if (g_verbose) {
+		if (g_usbtenki_verbose) {
 			printf("No busses found!\n");
 		}
 		return NULL;
@@ -96,7 +96,7 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 					usb_dev_handle *hdl;
 					hdl = usb_open(ctx->dev);
 					if (!hdl) {
-						if (g_verbose)
+						if (g_usbtenki_verbose)
 							printf("Failed to open device. Error '%s'\n", usb_strerror());
 						continue; 
 					}
@@ -106,7 +106,7 @@ struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTe
 
 					if (strcmp(info->str_prodname, ID_STRING) &&
 						strcmp(info->str_prodname, OLD_ID_STRING)) {
-						if (g_verbose)
+						if (g_usbtenki_verbose)
 							printf("Ignored: %s\n", info->str_prodname);
 
 						usb_close(hdl);
@@ -157,7 +157,7 @@ usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *
 				memcpy(info, &inf, sizeof (struct USBTenki_info));
 			}
 			dev = cur_dev;
-			if (g_verbose) {
+			if (g_usbtenki_verbose) {
 				printf("usbtenki.c: Found device '%s'\n", serial);
 			}
 			break;
@@ -174,7 +174,7 @@ usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *
 	}
 
 
-	if (g_verbose)
+	if (g_usbtenki_verbose)
 		printf("usbtenki.c: Setting configuration\n");
 	
 	res = usb_set_configuration(hdl, cur_dev->config->bConfigurationValue);
@@ -184,7 +184,7 @@ usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *
 		return NULL;
 	}
 
-	if (g_verbose)
+	if (g_usbtenki_verbose)
 		printf("usbtenki.c: Claiming interface\n");
 	
 	res = usb_claim_interface(hdl, 0);
@@ -608,8 +608,9 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
 
 		// Look for the destination
 		for (j=0; j<dst_total; j++) {
-			if (channel_ids[i] == dst[j].channel_id) 
+			if (channel_ids[i] == dst[j].channel_id) {
 				break;
+			}
 		}
 		if (j==dst_total) {
 			fprintf(stderr, "Invalid channel ID (%d) requested\n", channel_ids[i]);
@@ -670,4 +671,447 @@ int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray
 	return n_channels;
 }
 
+/**
+ * \brief Add a virtual channel to a list of channels.
+ * \param channels The channel list
+ * \param num_channels Pointer to an integer representing the number of channel currently in list.
+ * \param max_channels The maximum number of channels that can be present in 'channels'
+ * \param channel The channel to add.
+ */
+static int addVirtualChannel(struct USBTenki_channel *channels, int *num_channels, 
+						int max_channels, struct USBTenki_channel *channel)
+{
+	if (*num_channels >= max_channels) {
+		fprintf(stderr, "warning: Not enough space for all virtual channels\n");
+		return -1;
+	}
 
+	if (g_usbtenki_verbose)
+		printf("Adding channel to index %d\n", *num_channels);
+
+	memcpy(&channels[*num_channels], channel, sizeof(struct USBTenki_channel));
+	(*num_channels)++;
+
+	return 0;
+}
+
+/**
+ * \brief Search the list of channels for the channel_id corresponding to a specific chip id.
+ */
+static int chipIdToChannelId(struct USBTenki_channel *channels, int num_channels, int chip_id)
+{
+	int i;
+	for (i=0; i<num_channels; i++)
+	{
+		if (channels[i].chip_id == chip_id) {
+			if (g_usbtenki_verbose)
+				printf("Chip %d is at channel %d\n", chip_id,
+					channels[i].channel_id);
+			return channels[i].channel_id;
+		}
+	}
+	return -1;
+}
+
+/**
+ * Returns a pointer to a specific channel_id from a list of channels, optionally
+ * reading data from the device if the channel's data was not yet valid.
+ * */
+static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_channel_id)
+{
+	int i, res;	
+
+	for (i=0; i<num_channels; i++)
+	{
+		if (channels[i].channel_id == requested_channel_id)
+		{
+			if (g_usbtenki_verbose)
+				printf("%s: found channel id %d at index %d\n" , __FUNCTION__, 
+							requested_channel_id, i);
+
+			if (channels[i].data_valid) {
+				if (g_usbtenki_verbose) 
+					printf("Data already valid for this channel.\n");
+				return &channels[i];
+			}				
+
+			res = usbtenki_readChannelList(hdl, &requested_channel_id, 1, channels, num_channels, g_usbtenki_num_attempts);
+			if (res!=0) {
+				fprintf(stderr, "Failed to read channel %d data from device! (%d)\n",
+					requested_channel_id, res);
+				return NULL;
+			}
+
+			if (channels[i].data_valid) {
+				if (g_usbtenki_verbose) 
+					printf("Data is now valid for this channel.\n");
+				return &channels[i];
+			}				
+
+		}
+	}
+	return NULL;
+}
+
+
+static struct USBTenki_channel *getValidChannelFromChip(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id)
+{
+	int channel_id;
+
+	channel_id = chipIdToChannelId(channels, num_channels, requested_chip_id);
+	if (channel_id < 0) 
+		return NULL;
+	return getValidChannel(hdl, channels, num_channels, channel_id);
+}
+
+int usbtenki_processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels)
+{
+	int i;
+	struct USBTenki_channel *chn;
+
+	for (i=0; i<num_channels; i++)
+	{
+		chn = &channels[i];
+
+		if (chn->channel_id < USBTENKI_VIRTUAL_START)
+			continue;
+
+		switch(chn->channel_id)
+			{
+				case USBTENKI_VIRTUAL_TSL2568_LUX:
+					{
+						struct USBTenki_channel *vir_chn, *ir_chn;
+						double ch0,ch1,lx;
+
+						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR);
+
+						vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR_VISIBLE);
+
+						if (ir_chn==NULL || vir_chn==NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						ch0 = vir_chn->converted_data;
+						ch1 = ir_chn->converted_data;
+
+						if ((vir_chn->converted_data < 3000) && (ir_chn->converted_data < 3000)) {
+							struct USBTenki_channel *vir_chn_g, *ir_chn_g;
+							double ch0_g, ch1_g;
+
+							/* Based on these values, a 16x gain would not overflow. */
+//							printf("Switching to 16x gain\n");
+							ir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR_16X);
+	
+							vir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X);
+
+						
+							ch0_g = vir_chn_g->converted_data;
+							ch1_g = ir_chn_g->converted_data;
+	
+//							printf("%.f %.f %.f %.f\n", ch0, ch0_g/16.0, ch1, ch1_g/16.0);
+				
+							if (ir_chn_g != NULL && vir_chn_g != NULL) {
+								// stick to the low gain channels in case of saturation
+								if (ir_chn_g->converted_data != 65535 && 
+									vir_chn_g->converted_data != 65535) {
+									ch0 = ch0_g / 16.0;
+									ch1 = ch1_g / 16.0;
+								}
+							}
+						}
+						
+						if (ch0 > 65534 || ch1 > 65534) {	
+							chn->data_valid = 0;
+							chn->saturated = 1;
+							chn->converted_data = -1;
+							chn->converted_unit = TENKI_UNIT_LUX;
+							break;
+						}
+
+						/*						 
+						TMB Package
+							For 0 < CH1/CH0 < 0.35     Lux = 0.00763  CH0 - 0.01031  CH1
+							For 0.35 < CH1/CH0 < 0.50  Lux = 0.00817  CH0 - 0.01188  CH1
+							For 0.50 < CH1/CH0 < 0.60  Lux = 0.00723  CH0 - 0.01000  CH1
+							For 0.60 < CH1/CH0 < 0.72  Lux = 0.00573  CH0 - 0.00750  CH1
+							For 0.72 < CH1/CH0 < 0.85  Lux = 0.00216  CH0 - 0.00254  CH1
+							For CH1/CH0 > 0.85         Lux = 0
+						*/
+						if (ch1/ch0 < 0.35)
+							lx = 0.00763 * ch0 - 0.01031 * ch1;
+						else if (ch1/ch0 < 0.50)
+							lx = 0.00817 * ch0 - 0.01188 * ch1;
+						else if (ch1/ch0 < 0.60)
+							lx = 0.00723 * ch0 - 0.01000 * ch1;
+						else if (ch1/ch0 < 0.72)
+							lx = 0.00573 * ch0 - 0.00750 * ch1;
+						else if (ch1/ch0 < 0.85)
+							lx = 0.00216 * ch0 - 0.00254 * ch1;
+						else
+							lx = 0.0;
+						
+//						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
+
+						chn->data_valid = 1;
+						chn->converted_data = lx;
+						chn->converted_unit = TENKI_UNIT_LUX;
+					}
+					break;
+
+
+				case USBTENKI_VIRTUAL_TSL2561_LUX:
+					{
+						struct USBTenki_channel *vir_chn, *ir_chn;
+						float ch0,ch1,lx;
+
+						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2561_IR);
+
+						vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
+														USBTENKI_CHIP_TSL2561_IR_VISIBLE);
+
+						if (ir_chn==NULL || vir_chn==NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						ch0 = vir_chn->converted_data;
+						ch1 = ir_chn->converted_data;
+						
+						/*
+						 * TMB Package
+						 *
+						 * For 0 < CH1/CH0 <= 0.50 		Lux = 0.0304 * CH0 - .062 * CH0 * ((CH1/CH0)1.4)
+						 * For 0.50 < CH1/CH0 <=  0.61 	Lux = 0.0224 * CH0 - .031 * CH1
+						 * For 0.61 < CH1/CH0 <= 0.80 	Lux = 0.0128 * CH0 - .0153 * CH1
+						 * For 0.80 < CH1/CH0 <= 1.30 	Lux = 0.00146 *  CH0 - .00112 * CH1
+						 * For CH1/CH0 > 1.30			Lux = 0
+						 *
+						 */
+						if (ch1/ch0 < 0.50)
+							lx = 0.0304 * ch0 - 0.062 * ch0 * (pow((ch1/ch0),1.4));
+						else if (ch1/ch0 < 0.61)
+							lx = 0.0224 * ch0 - 0.031 * ch1;
+						else if (ch1/ch0 < 0.80)
+							lx = 0.0128 * ch0 - 0.0153 * ch1;
+						else
+							lx = 0.0;
+						
+//						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
+
+						chn->data_valid = 1;
+						chn->converted_data = lx;
+						chn->converted_unit = TENKI_UNIT_LUX;
+					}
+					break;
+				
+				case USBTENKI_VIRTUAL_DEW_POINT:
+					{
+						struct USBTenki_channel *temp_chn, *rh_chn;
+						float H, Dp, T;
+
+						if (g_usbtenki_verbose)
+							printf("Processing dew point virtual channel\n");
+
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																USBTENKI_CHIP_SHT_TEMP);
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																	USBTENKI_CHIP_SHT_RH);
+	
+						if (temp_chn == NULL || rh_chn == NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						T = temp_chn->converted_data;
+						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + 
+							(17.62*T)/(243.12+T);
+						Dp = 243.12 * H / (17.62 - H);
+
+						chn->data_valid = 1;
+						chn->converted_data = Dp;
+						chn->converted_unit = TENKI_UNIT_CELCIUS;
+					}
+					break;
+
+				case USBTENKI_VIRTUAL_HUMIDEX:
+					{
+						struct USBTenki_channel *temp_chn, *rh_chn;
+						float H, Dp, T, h, e;
+
+						if (g_usbtenki_verbose)
+							printf("Processing humidex virtual channel\n");
+
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																USBTENKI_CHIP_SHT_TEMP);
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																	USBTENKI_CHIP_SHT_RH);
+	
+						if (temp_chn == NULL || rh_chn == NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						T = temp_chn->converted_data;
+						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + 
+							(17.62*T)/(243.12+T);
+						Dp = 243.12 * H / (17.62 - H);
+		
+						/* We need dewpoint in kelvins... */
+						Dp = usbtenki_convertTemperature(Dp, TENKI_UNIT_CELCIUS, TENKI_UNIT_KELVIN);
+		
+						e = 6.11 * exp(5417.7530 * ((1.0/273.16) - (1.0/Dp)));
+						h = (5.0/9.0)*(e - 10.0);
+
+						chn->data_valid = 1;
+						chn->converted_data = T + h;
+						chn->converted_unit = TENKI_UNIT_CELCIUS;
+					}
+					break;
+
+				case USBTENKI_VIRTUAL_HEAT_INDEX:
+					{
+						struct USBTenki_channel *temp_chn, *rh_chn;
+						float T, R, HI;
+
+						if (g_usbtenki_verbose)
+							printf("Processing heat index virtual channel\n");
+
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																USBTENKI_CHIP_SHT_TEMP);
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
+																	USBTENKI_CHIP_SHT_RH);
+	
+						if (temp_chn == NULL || rh_chn == NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						T = temp_chn->converted_data;
+						T =  usbtenki_convertTemperature(T, TENKI_UNIT_CELCIUS, 
+															TENKI_UNIT_FAHRENHEIT);
+						R = rh_chn->converted_data;
+		
+						/* Formula source: 
+						 * http://www.crh.noaa.gov/jkl/?n=heat_index_calculator */
+						HI = 	-42.379 + 
+								2.04901523 * T + 
+								10.14333127 * R - 
+								0.22475541 * T * R - 
+								6.83783 * pow(10,-3) * pow(T, 2) - 
+								5.481717 * pow(10,-2) * pow(R, 2) + 
+								1.22874 * pow(10,-3) * pow(T, 2) * R + 
+								8.5282 * pow(10,-4) * T * pow(R, 2) - 
+								1.99 * pow(10,-6) * pow(T,2) * pow(R,2);
+
+						chn->data_valid = 1;
+						chn->converted_data = HI;
+						chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
+					}
+					break;
+			}
+
+	}
+
+	return 0;
+}
+
+int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_channels, 
+															int max_channels)
+{
+	int i;
+	struct USBTenki_channel chn;
+
+	int real_channels = *num_channels;
+
+	/* Dew point, humidex and heat index from Temp+RH for sensirion sht1x/7x */
+	if (1)
+	{
+		int hfound=0, tfound=0;
+		for (i=0; i<real_channels; i++)
+		{
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT_TEMP)
+				tfound = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT_RH)
+				hfound = 1;
+		}
+
+		if (hfound && tfound) {
+			chn.channel_id = USBTENKI_VIRTUAL_DEW_POINT;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+
+			chn.channel_id = USBTENKI_VIRTUAL_HUMIDEX;
+			chn.chip_id = chn.channel_id;
+			
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+
+			chn.channel_id = USBTENKI_VIRTUAL_HEAT_INDEX;
+			chn.chip_id = chn.channel_id;
+
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+
+		}
+	}
+
+	/* Lux calculated using Visible + IR and IR only channels from TSL2561 sensor */
+	if (1)
+	{
+		int vir_found=0, ir_found=0;
+		for (i=0; i<real_channels; i++)
+		{
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2561_IR_VISIBLE)
+				vir_found = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2561_IR)
+				ir_found = 1;
+		}
+
+		if (vir_found && ir_found) {
+			chn.channel_id = USBTENKI_VIRTUAL_TSL2561_LUX;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+		}
+	}
+
+	/* Lux calculated using Visible + IR and IR only channels from TSL2568 sensor */
+	if (1)
+	{
+		int vir_found=0, ir_found=0;
+		for (i=0; i<real_channels; i++)
+		{
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2568_IR_VISIBLE)
+				vir_found = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_TSL2568_IR)
+				ir_found = 1;
+		}
+
+		if (vir_found && ir_found) {
+			chn.channel_id = USBTENKI_VIRTUAL_TSL2568_LUX;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+		}
+	}
+
+
+
+	return 0;
+}
