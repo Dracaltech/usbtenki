@@ -5,6 +5,7 @@
 #include "TenkiDashboard.h"
 #include "DashSensor.h"
 #include "Logger.h"
+#include "About.h"
 
 struct USBTenki_list_ctx list_context;
 struct USBTenki_info tenki_info;
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
 
 	TenkiDashboard *td;
 	Logger *logger;
+	About *about;
 
 	QCoreApplication::setOrganizationName("raphnet technologies");
 	QCoreApplication::setOrganizationDomain("raphnet.net");
@@ -48,10 +50,14 @@ int main(int argc, char **argv)
 
 	// messages
 	// configuration
+
+	// about
+	about = new About();
 	
 	/* Tabs */
 	tw->addTab(dash_container, QObject::tr("Sources"));
 	tw->addTab(logger, QObject::tr("Logging"));	
+	tw->addTab(about, QObject::tr("About..."));	
 
 	/* The main window */
 	window->setLayout(layout);

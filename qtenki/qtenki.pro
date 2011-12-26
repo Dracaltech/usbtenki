@@ -6,10 +6,11 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += .
 INCLUDEPATH += . ../common ../library
+RESOURCES	= qtenki.qrc
 
 # Input
 HEADERS += TextViewer.h version.h TenkiSources.h DashSensor.h TenkiDashboard.h TenkiDevice.h Logger.h DataSourceCheckBox.h SimpleLogger.h \
            ../library/usbtenki.h \
-           usbtenki_cmds.h
-SOURCES += TextViewer.cpp version.c TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp tuto.cpp TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp ../library/usbtenki.c ../library/convertRaw.c
+           ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h
+SOURCES += TextViewer.cpp version.c TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp tuto.cpp TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp ../library/usbtenki.c ../library/convertRaw.c About.cpp
 unix:LIBS += -lusb
