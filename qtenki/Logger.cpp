@@ -9,6 +9,8 @@ Logger::Logger(TenkiSources *s)
 
 	tenkisources = s;
 
+	current_logger = NULL;
+
 	main_layout = new QVBoxLayout();
 	setLayout(main_layout);
 
@@ -250,6 +252,23 @@ void Logger::startLogging()
 	current_logger->start();
 }
 
+void Logger::confirmExit()
+{
+	if (current_logger != NULL) {
+		QMessageBox msgBox;
+		
+		msgBox.setText(tr("Logger still running."));
+		msgBox.setInformativeText(tr("Exit anyway?"));
+		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+		msgBox.setIcon(QMessageBox::Warning);
+		if (msgBox.exec() == QMessageBox::Cancel) {
+			return;
+		}
+	}
+
+	qApp->quit();
+}
+
 void Logger::stopLogging()
 {
 	logMessage("Stopping logger...");
@@ -300,6 +319,7 @@ void Logger::loggerStopped()
 	mid_layer->setEnabled(true);
 
 	delete current_logger;
+	current_logger = NULL;
 }
 
 void Logger::timestampChanged(int idx)

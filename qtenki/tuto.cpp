@@ -18,6 +18,13 @@ int main(int argc, char **argv)
 	QTabWidget *tw = new QTabWidget();
 	QWidget *window = new QWidget();
 
+	QHBoxLayout *bot_lay = new QHBoxLayout();
+	QWidget *bot_btns = new QWidget();
+	bot_btns->setLayout(bot_lay);
+	bot_lay->addStretch();
+	QPushButton *exit_button = new QPushButton(QObject::tr("exit"));
+	bot_lay->addWidget(exit_button);
+
 	QWidget *dash_container;
 	QVBoxLayout *dash_container_layout;
 
@@ -62,10 +69,11 @@ int main(int argc, char **argv)
 	/* The main window */
 	window->setLayout(layout);
 	layout->addWidget(tw);
-
+	layout->addWidget(bot_btns);
 
 	window->show();
-
 	
+	QObject::connect(exit_button, SIGNAL(clicked()), logger, SLOT(confirmExit()));
+
 	return app.exec();
 }

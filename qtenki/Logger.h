@@ -23,6 +23,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void browse_clicked();
 		void startLogging();
 		void stopLogging();
+		void confirmExit();
 
 	protected:
 		void logMessage(QString str);
