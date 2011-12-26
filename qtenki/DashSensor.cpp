@@ -60,6 +60,8 @@ void DashSensor::addChannel(int chn, int row)
 
 	f.sprintf("%s:%02x", tenki_device->getSerial(), chn);
 	layout->addWidget(new QLabel(f), row, 5);
+
+	channel_id.append(chn);
 }
 
 DashSensor::~DashSensor()
@@ -80,7 +82,7 @@ void DashSensor::refresh()
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;
 
-		ch = tenki_device->getChannelData(i);	
+		ch = tenki_device->getChannelData(channel_id.at(i));	
 		if (!ch->data_valid) {
 			values.at(i)->setText("Error");
 			continue;

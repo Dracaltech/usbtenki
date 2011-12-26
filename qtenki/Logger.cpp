@@ -252,7 +252,7 @@ void Logger::startLogging()
 	current_logger->start();
 }
 
-void Logger::confirmExit()
+bool Logger::confirmMayExit()
 {
 	if (current_logger != NULL) {
 		QMessageBox msgBox;
@@ -262,11 +262,11 @@ void Logger::confirmExit()
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setIcon(QMessageBox::Warning);
 		if (msgBox.exec() == QMessageBox::Cancel) {
-			return;
+			return false;
 		}
 	}
 
-	qApp->quit();
+	return true;
 }
 
 void Logger::stopLogging()

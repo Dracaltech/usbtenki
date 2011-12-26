@@ -1,4 +1,9 @@
-#include <QtGui>
+#include "MainWindow.h"
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QWidget>
+#include <QTabWidget>
 
 #include "usbtenki.h"
 #include "TenkiSources.h"
@@ -7,16 +12,10 @@
 #include "Logger.h"
 #include "About.h"
 
-struct USBTenki_list_ctx list_context;
-struct USBTenki_info tenki_info;
-
-int main(int argc, char **argv)
+MainWindow::MainWindow()
 {
-	QApplication app(argc, argv);
-
 	QVBoxLayout *layout = new QVBoxLayout();
 	QTabWidget *tw = new QTabWidget();
-	QWidget *window = new QWidget();
 
 	QHBoxLayout *bot_lay = new QHBoxLayout();
 	QWidget *bot_btns = new QWidget();
@@ -24,12 +23,12 @@ int main(int argc, char **argv)
 	bot_lay->addStretch();
 	QPushButton *exit_button = new QPushButton(QObject::tr("exit"));
 	bot_lay->addWidget(exit_button);
+	connect(exit_button, SIGNAL(clicked()), this, SLOT(close()));
 
 	QWidget *dash_container;
 	QVBoxLayout *dash_container_layout;
 
 	TenkiDashboard *td;
-	Logger *logger;
 	About *about;
 
 	QCoreApplication::setOrganizationName("raphnet technologies");
@@ -67,13 +66,22 @@ int main(int argc, char **argv)
 	tw->addTab(about, QObject::tr("About..."));	
 
 	/* The main window */
-	window->setLayout(layout);
+	setLayout(layout);
+
 	layout->addWidget(tw);
 	layout->addWidget(bot_btns);
+}
 
-	window->show();
-	
-	QObject::connect(exit_button, SIGNAL(clicked()), logger, SLOT(confirmExit()));
+MainWindow::~MainWindow()
+{
+}
 
-	return app.exec();
+void MainWindow::closeEvent(QCloseEvent *ev)
+{
+	if (logger->confirmMayExit()) {
+		ev->accept();
+		return;
+	}
+
+	ev->ignore();
 }

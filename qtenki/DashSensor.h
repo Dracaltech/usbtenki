@@ -27,6 +27,7 @@ class DashSensor : public QGroupBox
 		QGridLayout *layout;
 		QList<QLabel*> values;
 		QList<QLabel*> units;
+		QList<int> channel_id;
 };
 
 #endif

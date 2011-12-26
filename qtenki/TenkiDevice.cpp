@@ -28,6 +28,10 @@ void TenkiDevice::initChannels()
 		num_channels = MAX_CHANNELS;
 
 	usbtenki_listChannels(tenki_hdl, channel_data, MAX_CHANNELS);
+
+	// Add the virtual channels we can obtain from the real ones to
+	// the list.
+	usbtenki_addVirtualChannels(channel_data, &num_channels, MAX_CHANNELS);
 }
 
 void TenkiDevice::updateChannelData()
@@ -42,6 +46,9 @@ void TenkiDevice::updateChannelData()
 
 //		printf("Read channel res=%d, %.3f\n", res, channel_data[i].converted_data);
 	}
+
+	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels);
+
 }
 
 int TenkiDevice::isChannelHidden(int id)
