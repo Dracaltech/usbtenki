@@ -1,0 +1,15 @@
+Version 1.8:
+	New QTbased GUI for easy logging
+    Added support for:
+	  - SE95 I2C Temperature sensor
+	  - ADT7410 I2C Temperature sensor
+	  - D6F_V03A1 airflow sensor	
+
+Version 1.7:
+	Environment variable USBTENKI_TRACE can be set for debugging.
+	Added support for the TSL2561 sensor raw channels and virtual Lux Channel.
+
+
+
+
+

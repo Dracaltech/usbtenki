@@ -404,6 +404,8 @@ const char *chipToString(int id)
 {
 	switch(id)
 	{
+		case USBTENKI_CHIP_ADT7410:
+			return "ADT7410 I2C Temperature sensor";
 		case USBTENKI_CHIP_SE95:
 			return "SE95 I2C Temperature sensor";
 		case USBTENKI_CHIP_MCP9800:
@@ -489,6 +491,7 @@ const char *chipToShortString(int id)
 {
 	switch(id)
 	{
+		case USBTENKI_CHIP_ADT7410:
 		case USBTENKI_CHIP_SE95:
 		case USBTENKI_CHIP_MCP9800:
 		case USBTENKI_CHIP_LM75:

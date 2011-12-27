@@ -42,6 +42,27 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			}
 			break;
 
+		case USBTENKI_CHIP_ADT7410:
+			{
+				signed short t;
+
+				if (chn->raw_length!=2)
+					goto wrongData;
+			
+				/* This sensor offers 16 bits of resolution.
+				 *
+				 * [0]                                 [1]
+				 *   7   6   5   4   3   2   1   0      7   6    5   4   3   2   1   0
+				 * D12 D11 D10  D9  D8  D7  D6  D5  |  D4  D3  D2   D1  D0   X   X   X
+				 */
+				
+				t = raw_data[0] << 8 | raw_data[1];
+				temperature = ((float)t) * pow(2.0,-7.0);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+
+			}
+			break;
+
 		case USBTENKI_CHIP_SE95:
 			{
 				signed short t;

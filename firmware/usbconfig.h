@@ -5,7 +5,7 @@
  * Tabsize: 4
  * Copyright: (c) 2006 by OBJECTIVE DEVELOPMENT Software GmbH
  * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: usbconfig.h,v 1.9 2008-01-27 19:14:03 raph Exp $
+ * This Revision: $Id: usbconfig.h,v 1.10 2011-12-27 03:20:23 cvs Exp $
  */
 
 #ifndef __usbconfig_h_included__
@@ -121,7 +121,8 @@ USB driver configuration for AVR-Doper
 
 #define  USB_CFG_VENDOR_ID       0x81, 0x17 /* Mecanique */
 #define  USB_CFG_DEVICE_ID       0x98, 0x0a 
-#define USB_CFG_DEVICE_VERSION  0x07, 0x01
+#include "../common/usbtenki_version.h"
+#define USB_CFG_DEVICE_VERSION  USBTENKI_VERSION_MINOR, USBTENKI_VERSION_MAJOR
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     'r','a','p','h','n','e','t','.','n','e','t'
