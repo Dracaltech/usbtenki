@@ -1,5 +1,14 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 	<file>gpl.txt</file>
+	<file>qtenki.ico</file>
+	<file>sensors.png</file>
+	<file>logger.png</file>
+	<file>about.png</file>
+	<file>application-exit.png</file>
+	<file>record.png</file>
+	<file>stop.png</file>
+	<file>fileopen.png</file>
+	<file>view.png</file>
 </qresource>
 </RCC>

@@ -21,7 +21,7 @@ MainWindow::MainWindow()
 	QWidget *bot_btns = new QWidget();
 	bot_btns->setLayout(bot_lay);
 	bot_lay->addStretch();
-	QPushButton *exit_button = new QPushButton(QObject::tr("exit"));
+	QPushButton *exit_button = new QPushButton(QIcon(":application-exit.png"), QObject::tr("Quit QTenki"));
 	bot_lay->addWidget(exit_button);
 	connect(exit_button, SIGNAL(clicked()), this, SLOT(close()));
 
@@ -61,15 +61,17 @@ MainWindow::MainWindow()
 	about = new About();
 	
 	/* Tabs */
-	tw->addTab(dash_container, QObject::tr("Sources"));
-	tw->addTab(logger, QObject::tr("Logging"));	
-	tw->addTab(about, QObject::tr("About..."));	
+	tw->addTab(dash_container, QIcon(":sensors.png"), QObject::tr("Sources"));
+	tw->addTab(logger, QIcon(":logger.png"), QObject::tr("Logging"));	
+	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 
 	/* The main window */
 	setLayout(layout);
 
 	layout->addWidget(tw);
 	layout->addWidget(bot_btns);
+	QIcon ico(":qtenki.ico");
+	setWindowIcon(ico);
 }
 
 MainWindow::~MainWindow()

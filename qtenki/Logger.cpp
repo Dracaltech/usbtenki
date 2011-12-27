@@ -72,8 +72,8 @@ Logger::Logger(TenkiSources *s)
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
-	browseButton = new QPushButton(tr("Select"));
-	viewButton = new QPushButton(tr("View"));
+	browseButton = new QPushButton(QIcon(":fileopen.png"), tr("Select"));
+	viewButton = new QPushButton(QIcon(":view.png"), tr("View"));
 	dbl->addWidget(path, y, 1, 1, 4);
 	y++;
 
@@ -89,6 +89,7 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(new QLabel(tr("Logging interval:")), y, 0 );
 	log_interval = new QSpinBox();
 	log_interval->setMinimum(1);
+	log_interval->setMaximum(31536000); // one year
 	dbl->addWidget(log_interval, y, 1, 1, 1);
 	dbl->addWidget(new QLabel(tr("(seconds)")), y, 2 );
 	
@@ -99,8 +100,8 @@ Logger::Logger(TenkiSources *s)
 	control = new QGroupBox(tr("Control"));
 	control_layout = new QHBoxLayout();
 	control->setLayout(control_layout);
-	start_button = new QPushButton(tr("Start"));
-	stop_button = new QPushButton(tr("Stop"));
+	start_button = new QPushButton(QIcon(":record.png"), tr("Start"));
+	stop_button = new QPushButton(QIcon(":stop.png"), tr("Stop"));
 	stop_button->setEnabled(false);
 	status_label = new QLabel(tr("Not running."));
 	counter_label = new QLabel("0");
