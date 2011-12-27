@@ -1,7 +1,7 @@
 #include "SimpleLogger.h"
+#include "../common/usbtenki_version.h"
 #include <QtGui>
 //#include <QHostInfo>
-#include "version.h"
 
 SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt)
 {
@@ -48,8 +48,8 @@ void SimpleLogger::writeHeader()
 	QDateTime creation_time = QDateTime::currentDateTime();
 	//QString hostname = QHostInfo::localHostName();
 
-	file->write("# qtenki version ");
-	file->write(g_version);
+	file->write("# USBTenki version ");
+	file->write(USBTENKI_VERSION);
 	file->write(" log file\n");
 
 	file->write("# original filename: ");
