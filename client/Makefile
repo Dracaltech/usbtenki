@@ -13,10 +13,10 @@ PROGS=usbtenkiget usbtenkisetup
 all: usbtenkiget usbtenkisetup
 
 usbtenkiget: usbtenki.o main.o timestamp.o convertRaw.o
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS)
 	
 usbtenkisetup: usbtenki.o usbtenkisetup.o convertRaw.o
-	$(LD) $(LDFLAGS) $^ -o $@
+	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
