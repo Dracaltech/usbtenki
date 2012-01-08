@@ -1,9 +1,8 @@
 CC=gcc
 LD=$(CC)
 
-#CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.8a\" -I../..//libusb-win32-device-bin-0.1.12.2/include -DWINDOWS_VERSION
-CFLAGS=-Wall -g -O  -I../common -DVERSION=\"1.8a\" -DWINDOWS_VERSION
-LDFLAGS=-lm -lusb libusb0.dll
+CFLAGS=-Wall -g -O -I../common -I../library -DWINDOWS_VERSION -I../../libusb/include
+LDFLAGS=-lusb -lm -L../../libusb/lib/gcc
 
 PREFIX=/usr/local
 
@@ -13,14 +12,20 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: usbtenkiget usbtenkisetup
 
-usbtenkiget: usbtenki.o main.o  timestamp.o
-	$(LD) $(LDFLAGS) $^ -o $@
+usbtenkiget: usbtenki.o main.o timestamp.o convertRaw.o
+	$(LD) $^ -o $@ $(LDFLAGS)
 	
-usbtenkisetup: usbtenki.o usbtenkisetup.o 
-	$(LD) $(LDFLAGS) $^ -o $@
+usbtenkisetup: usbtenki.o usbtenkisetup.o convertRaw.o
+	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
+
+convertRaw.o: ../library/convertRaw.c 
+	$(CC) $(CFLAGS) -c $< -o convertRaw.o
+
+usbtenki.o: ../library/usbtenki.c 
+	$(CC) $(CFLAGS) -c $< -o usbtenki.o
 
 clean:
 	rm -f *.o $(PROGS)
