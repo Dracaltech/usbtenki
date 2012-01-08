@@ -151,9 +151,8 @@ void SimpleLogger::logLineEnd()
 void SimpleLogger::tsTitlesPre(int step)
 {
 	// 0: Source names
-	// 1: Aliases
-	// 2: Measurement type
-	// 3: Unit	
+	// 1: Measurement type - Unit
+	// 2: Aliases
 
 	switch(timestamp_format)
 	{
@@ -196,33 +195,27 @@ void SimpleLogger::colTitles()
 		logItem(sd->q_name, i==(sources.size()-1));
 	}
 
+	// measurement type - unit
+	tsTitlesPre(1);
+	for (int i=0; i<sources.size(); i++)
+	{
+		struct sourceDescription *sd;
+		sd = tenkisources->getSourceByName(sources.at(i));
+		
+		logItem(sd->chipShortString + " - " +
+		QString::fromAscii(unitToString(sd->chn_data->converted_unit,1))
+		, i==(sources.size()-1));
+	}
+
 	// aliases
 	// this works with the assumption that sources and aliases QLists share
 	// the same indices.
-	tsTitlesPre(1);
+	tsTitlesPre(2);
 	for (int i=0; i<aliases.size(); i++)
 	{
 		logItem(aliases.at(i), i==(aliases.size()-1));
 	}
 
-	
-	// measurement type
-	tsTitlesPre(2);
-	for (int i=0; i<sources.size(); i++)
-	{
-		struct sourceDescription *sd;
-		sd = tenkisources->getSourceByName(sources.at(i));
-		logItem(sd->chipShortString, i==(sources.size()-1));
-	}
-
-	// unit
-	tsTitlesPre(3);
-	for (int i=0; i<sources.size(); i++)
-	{
-		struct sourceDescription *sd;
-		sd = tenkisources->getSourceByName(sources.at(i));
-		logItem(QString::fromAscii(unitToString(sd->chn_data->converted_unit,1)), i==(sources.size()-1));
-	}
 
 }
 
