@@ -5,6 +5,7 @@
 #include <QCloseEvent>
 
 #include "Logger.h"
+#include "ConfigPanel.h"
 
 class MainWindow : public QWidget
 {
@@ -19,6 +20,7 @@ class MainWindow : public QWidget
 
 	private:
 		Logger *logger;
+		ConfigPanel *cfgPanel;
 };
 
 #endif // _MainWindow_h__

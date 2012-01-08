@@ -10,5 +10,6 @@
 	<file>stop.png</file>
 	<file>fileopen.png</file>
 	<file>view.png</file>
+	<file>configure.png</file>
 </qresource>
 </RCC>

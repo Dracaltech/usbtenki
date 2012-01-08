@@ -10,6 +10,7 @@
 #include "TenkiDashboard.h"
 #include "DashSensor.h"
 #include "Logger.h"
+#include "ConfigPanel.h"
 #include "About.h"
 
 MainWindow::MainWindow()
@@ -56,6 +57,7 @@ MainWindow::MainWindow()
 
 	// messages
 	// configuration
+	cfgPanel = new ConfigPanel();
 
 	// about
 	about = new About();
@@ -63,6 +65,7 @@ MainWindow::MainWindow()
 	/* Tabs */
 	tw->addTab(dash_container, QIcon(":sensors.png"), QObject::tr("Sources"));
 	tw->addTab(logger, QIcon(":logger.png"), QObject::tr("Logging"));	
+	tw->addTab(cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
 	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 
 	/* The main window */
