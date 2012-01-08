@@ -8,9 +8,14 @@ DEPENDPATH += .
 INCLUDEPATH += . ../common ../library
 RESOURCES	= qtenki.qrc
 
+win32: INCLUDEPATH += ../../libusb/include
+win32: DEFINES += WINDOWS_VERSION
+win32: LIBS += -L../../libusb/lib/gcc
+
 # Input
 HEADERS += TextViewer.h TenkiSources.h DashSensor.h TenkiDashboard.h TenkiDevice.h Logger.h DataSourceCheckBox.h SimpleLogger.h MainWindow.h \
            ../library/usbtenki.h \
            ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h
 SOURCES += TextViewer.cpp TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp main.cpp TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp ../library/usbtenki.c ../library/convertRaw.c About.cpp MainWindow.cpp
-unix:LIBS += -lusb
+
+LIBS += -lusb
