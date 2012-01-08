@@ -17,7 +17,7 @@ TenkiDevice::TenkiDevice(const char *serial)
 
 TenkiDevice::~TenkiDevice()
 {
-	usb_close(tenki_hdl);
+	usbtenki_closeDevice(tenki_hdl);
 	tenki_hdl = 0;
 }
 

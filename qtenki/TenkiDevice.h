@@ -27,7 +27,7 @@ class TenkiDevice
 		
 	private:
 		void initChannels();
-		usb_dev_handle *tenki_hdl;
+		USBTenki_dev_handle tenki_hdl;
 		struct USBTenki_info tenki_info;
 		int num_channels;
 };

@@ -25,11 +25,14 @@ int TenkiSources::init()
 // For now, please call only once!
 int TenkiSources::scanForDevices()
 {
-	struct USBTenki_list_ctx ctx;
+	struct USBTenki_list_ctx *ctx;
 	struct USBTenki_info info;
 
-	usbtenki_initListCtx(&ctx);
-	while (usbtenki_listDevices(&info, &ctx)) {
+	ctx = usbtenki_allocListCtx();
+	if (!ctx)
+		return -1;
+
+	while (usbtenki_listDevices(&info, ctx)) {
 		TenkiDevice *td;
 
 		td = new TenkiDevice(info.str_serial);
@@ -39,6 +42,8 @@ int TenkiSources::scanForDevices()
 
 		addDeviceSources(td);
 	}
+
+	usbtenki_freeListCtx(ctx);
 
 	return 0;
 }
