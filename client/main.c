@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for USBTenki sensors.
- * Copyright (C) 2007  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2012  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,16 +17,13 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #ifdef WINDOWS_VERSION
-#include "usb.h"
-//#include "getopt.h"
-#include <windows.h>
-#define usleep(t) Sleep(t/1000)
-#else
-#include <usb.h>
+	#include <windows.h>
+	#define usleep(t) Sleep(t/1000)
 #endif
 
 #include <math.h>
@@ -59,7 +56,7 @@ FILE *g_log_fptr = NULL;
 
 int g_num_attempts = 1;
 
-int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns);
+int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_req_chns);
 int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 
 																	int max_channels);
@@ -93,7 +90,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007-2010, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2012, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -102,10 +99,10 @@ static void printVersion(void)
 
 int main(int argc, char **argv)
 {
-	usb_dev_handle *hdl;
-	struct usb_device *cur_dev, *dev=NULL;
+	USBTenki_dev_handle hdl;
+	USBTenki_device cur_dev, dev=NULL;
 	int res, i;
-	struct USBTenki_list_ctx rgblistctx;
+	struct USBTenki_list_ctx *listContext;
 	struct USBTenki_info info;
 
 	char *use_serial = NULL;
@@ -281,16 +278,20 @@ int main(int argc, char **argv)
 		printf("}\n");
 	}
 
-	usb_init();
+	usbtenki_init();
 
 reopen:
 	dev = NULL;
-	usb_find_busses();
-	usb_find_devices();
+//	usb_find_busses();
+//	usb_find_devices();
 
-	usbtenki_initListCtx(&rgblistctx);
+	listContext = usbtenki_allocListCtx();
+	if (!listContext) {
+		fprintf(stderr, "Error: Failed to allocate device listing context.\n");
+		return -1;
+	}
 
-	while ((cur_dev=usbtenki_listDevices(&info, &rgblistctx)))
+	while ((cur_dev=usbtenki_listDevices(&info, listContext)))
 	{
 		if (use_serial) {
 			if (strcmp(use_serial, info.str_serial)==0) {
@@ -314,10 +315,10 @@ reopen:
 		
 			if (list_mode)
 			{
-				hdl = usb_open(dev);
+				hdl = usbtenki_openDevice(dev);
 				if (!hdl) {
 					printf("\n");
-					printf("    Error, cannot open device (%s)\n", usb_strerror());
+					printf("    Error, cannot open device\n");
 					continue;
 				}
 
@@ -348,10 +349,12 @@ reopen:
 					}
 				}
 
-				usb_close(hdl);
+				usbtenki_closeDevice(hdl);
 			}
 		}
 	}
+
+	usbtenki_freeListCtx(listContext);
 
 	if (!dev) {
 		if (use_serial)
@@ -372,30 +375,11 @@ reopen:
 		return 0;
 	}
 
-	hdl = usb_open(dev);
+	hdl = usbtenki_openDevice(dev);
 	if (!hdl) {
-		printf("USB Error: %s\n", usb_strerror());
+		printf("Failed to open device.\n");
 		return 1;
 	}
-
-/*
-	if (g_verbose)
-		printf("Setting configuration\n");
-	res = usb_set_configuration(hdl, rgblistctx.bConfigurationValue);
-	if (res<0) {
-		printf("USB Error (usb_set_configuration: %s)\n", usb_strerror());
-		return 2;
-	}	
-*/	
-
-	if (g_verbose)
-		printf("Claiming interface\n");
-
-	res = usb_claim_interface(hdl, 0);
-	if (res<0) {
-		printf("USB Error (usb_claim_interface: %s)\n", usb_strerror());
-		return 2;
-	}	
 
 	if (g_log_file)
 	{
@@ -404,8 +388,7 @@ reopen:
 			g_log_fptr = fopen(g_log_file, "a");
 			if (!g_log_file) {
 				fprintf(stderr, "Failed to open log file\n");
-				usb_release_interface(hdl, 0);
-				usb_close(hdl);
+				usbtenki_closeDevice(hdl);
 				return -1;
 			}
 			printf("Opened file '%s' for logging. Append mode.\n", g_log_file);
@@ -428,8 +411,7 @@ reopen:
 
 			if (res<0) {
 				fprintf(stderr, "Data acquisition error. Re-opening port...\n");
-				usb_release_interface(hdl, 0);
-				usb_close(hdl);
+				usbtenki_closeDevice(hdl);
 				goto reopen;
 			}
 		}
@@ -442,8 +424,7 @@ reopen:
 		processChannels(hdl, requested_channels, num_requested_channels);
 	}
 
-	usb_release_interface(hdl, 0);
-	usb_close(hdl);
+	usbtenki_closeDevice(hdl);
 
 	return res;
 }
@@ -589,7 +570,7 @@ static int chipIdToChannelId(struct USBTenki_channel *channels, int num_channels
  * Returns a pointer to a specific channel_id from a list of channels, optionally
  * reading data from the device if the channel's data was not yet valid.
  * */
-static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_channel_id)
+static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_channel_id)
 {
 	int i, res;	
 
@@ -625,7 +606,7 @@ static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBT
 	return NULL;
 }
 
-static struct USBTenki_channel *getValidChannelFromChip(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id)
+static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id)
 {
 	int channel_id;
 
@@ -635,7 +616,7 @@ static struct USBTenki_channel *getValidChannelFromChip(usb_dev_handle *hdl, str
 	return getValidChannel(hdl, channels, num_channels, channel_id);
 }
 
-int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channels, 
+int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, 
 							int num_channels, int *reqst_chns, int num_req_chns)
 {
 	int i;
@@ -906,7 +887,7 @@ int processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channel
 	return 0;
 }
 
-int processChannels(usb_dev_handle *hdl, int *requested_channels, int num_req_chns)
+int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_req_chns)
 {
 	struct USBTenki_channel channels[MAX_CHANNELS];
 	int num_channels=0;

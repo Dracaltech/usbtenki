@@ -1,11 +1,28 @@
+/* usbtenkiget: A command-line tool for USBTenki sensors.
+ * Copyright (C) 2007-2012  Raphael Assenat <raph@raphnet.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef WINDOWS_VERSION
-#include "getopt.h"
-#include "usb.h"
+	#include "getopt.h"
 #else
-#include <usb.h>
+	#include <getopt.h>
 #endif
 
 #include "usbtenki.h"
@@ -16,7 +33,7 @@ int g_verbose = 0;
 
 static void printVersion(void)
 {
-	printf("Usbtenkisetup version %s, Copyright (C) 2007-2011, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("Usbtenkisetup version %s, Copyright (C) 2007-2012, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -47,9 +64,9 @@ int main(int argc, char **argv)
 	char *use_serial = NULL;
 	int n_extra_args=0;
 	char *eargv[MAX_EXTRA_ARGS];
-	usb_dev_handle *hdl = NULL;
+	USBTenki_dev_handle hdl = NULL;
 	struct usb_device *cur_dev, *dev=NULL;
-	struct USBTenki_list_ctx rgblistctx;
+	struct USBTenki_list_ctx *listContext;
 	struct USBTenki_info info;
 	unsigned char repBuf[8];
 	int retval = 0;
@@ -91,14 +108,11 @@ int main(int argc, char **argv)
 			printf("  %d: %s\n", i-optind, eargv[i-optind]);
 	}
 
+	usbtenki_init();
 
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
+	listContext = usbtenki_allocListCtx();
 
-	usbtenki_initListCtx(&rgblistctx);
-
-	while ((cur_dev=usbtenki_listDevices(&info, &rgblistctx))) {
+	while ((cur_dev=usbtenki_listDevices(&info, listContext))) {
 		if (use_serial) {
 			if (strcmp(use_serial, info.str_serial)==0) {
 				dev = cur_dev;
@@ -110,6 +124,9 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+
+	usbtenki_freeListCtx(listContext);
+
 	if (!dev) {
 		fprintf(stderr, "Could not locate device with serial '%s'. Try usbtekiget -l\n",
 							use_serial);
@@ -121,9 +138,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	hdl = usb_open(dev);
+	hdl = usbtenki_openDevice(dev);
 	if (!hdl) {
-		fprintf(stderr, "Cannot open device (%s)\n", usb_strerror());
+		fprintf(stderr, "Cannot open device\n");
 		return 2;
 	}
 
@@ -255,7 +272,7 @@ int main(int argc, char **argv)
 
 cleanAndExit:
 	if (hdl)
-		usb_close(hdl);
+		usbtenki_closeDevice(hdl);
 
 	return retval;
 }
