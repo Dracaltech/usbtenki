@@ -1,3 +1,21 @@
+Version 1.9.0:
+	QTenki: 
+		- Merged measurement type and unit together (gives Temperature - C,
+		  Humidity - % etc).
+		- The last heading line before the actual data is now alias.
+		  Should reduce manipulations when importing in spreadsheet software.
+		- Added a configuration tab.
+		- System gui colors can be overridden. (For a special user who dislikes
+		  the win7 default theme (too much white). Instead of changing his 
+		  system theme (the sensible thing to do), he insists the application 
+		  should change the colors itself. The customer is always right, but
+		  at least I made this feature configurable, and off by default.
+
+	Misc:
+		- Updated Makefile.mingw in client/ and added conditionals for win32 in
+			qtenki/
+		- Public library API does not require including usb.h anymore
+
 Version 1.8:
 	New QTbased GUI for easy logging
     Added support for:
