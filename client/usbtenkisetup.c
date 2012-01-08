@@ -19,11 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WINDOWS_VERSION
-	#include "getopt.h"
-#else
-	#include <getopt.h>
-#endif
+#include <getopt.h>
 
 #include "usbtenki.h"
 #include "../common/usbtenki_cmds.h"
