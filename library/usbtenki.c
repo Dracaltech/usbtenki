@@ -17,10 +17,11 @@
  */
 #include <stdio.h>
 #include <string.h>
-#include <usb.h>
+//#include <usb.h>
 #include <math.h>
 
 #include "usbtenki.h"
+#include "usbtenki_priv.h"
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
 
@@ -52,9 +53,22 @@ static unsigned char xor_buf(unsigned char *buf, int len)
 	return x;
 }
 
-void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx)
+static void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx)
 {
 	memset(ctx, 0, sizeof(struct USBTenki_list_ctx));
+}
+
+struct USBTenki_list_ctx *usbtenki_allocListCtx(void)
+{
+	struct USBTenki_list_ctx *ctx;
+	ctx = calloc(1, sizeof(struct USBTenki_list_ctx));
+	return ctx;	
+}
+
+void usbtenki_freeListCtx(struct USBTenki_list_ctx *ctx)
+{
+	if (ctx)
+		free(ctx);
 }
 
 /**
@@ -62,7 +76,7 @@ void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx)
  * \param dst Destination buffer for device serial number/id. 
  * \param dstbuf_size Destination buffer size.
  */
-struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki_list_ctx *ctx)
+USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki_list_ctx *ctx)
 {
 	struct usb_bus *start_bus;
 	struct usb_device *start_dev;
@@ -132,12 +146,36 @@ jumpin:
 	return NULL;
 }
 
+USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
+{
+	struct usb_dev_handle *hdl;
+	int res;
+
+	hdl = usb_open(tdev);
+	if (!hdl)
+		return NULL;
+
+	res = usb_claim_interface(hdl, 0);
+	if (res<0) {
+		usb_close(hdl);
+		return NULL;
+	}
+
+	return hdl;
+}
+
+void usbtenki_closeDevice(USBTenki_dev_handle hdl)
+{
+	usb_release_interface(hdl, 0);
+	usb_close(hdl);
+}
+
 /**
  * \brief Search for an USBTenki device with a specific serial and open it.
  * \param serial Case-sensitive serial number
  * \param info Pointer to store device info. Pass a NULL if you don't need it.
  */
-usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *info)
+USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_info *info)
 {
 	struct USBTenki_list_ctx devlistctx;
 	struct USBTenki_info inf;
@@ -194,11 +232,11 @@ usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *
 		return NULL;
 	}
 
-	return hdl;
+	return (USBTenki_dev_handle) hdl;
 
 }
 
-int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
+int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd, 
 										int id, unsigned char *dst)
 {
 	unsigned char buffer[8];
@@ -265,12 +303,12 @@ int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd,
 	return datlen;
 }
 
-int usbtenki_getRaw(usb_dev_handle *hdl, int id, unsigned char *dst)
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst)
 {
 	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst);
 }
 
-int usbtenki_getNumChannels(usb_dev_handle *hdl)
+int usbtenki_getNumChannels(USBTenki_dev_handle hdl)
 {
 	unsigned char dst[8];
 	int res;
@@ -283,7 +321,7 @@ int usbtenki_getNumChannels(usb_dev_handle *hdl)
 	return dst[0];	
 }
 
-int usbtenki_getChipID(usb_dev_handle *hdl, int id)
+int usbtenki_getChipID(USBTenki_dev_handle hdl, int id)
 {
 	unsigned char dst[8];
 	int res;
@@ -584,7 +622,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 	return "";
 }
 
-int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn)
+int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn)
 {
 	return usbtenki_readChannelList(hdl, &chn->channel_id, 1, chn, 1, 1);
 }
@@ -598,7 +636,7 @@ int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn)
  *
  * dst must have been setup by usbtenki_listChannels() first!
  */
-int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts)
+int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts)
 {
 	int i, j, res;
 	int n;
@@ -653,7 +691,7 @@ int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, str
  * \return The number of channels
  * This does not read the channels.
  */
-int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray, int arr_size)
+int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstArray, int arr_size)
 {
 	int n_channels;
 	int i;
@@ -720,7 +758,7 @@ static int chipIdToChannelId(struct USBTenki_channel *channels, int num_channels
  * Returns a pointer to a specific channel_id from a list of channels, optionally
  * reading data from the device if the channel's data was not yet valid.
  * */
-static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_channel_id)
+static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_channel_id)
 {
 	int i, res;	
 
@@ -757,7 +795,7 @@ static struct USBTenki_channel *getValidChannel(usb_dev_handle *hdl, struct USBT
 }
 
 
-static struct USBTenki_channel *getValidChannelFromChip(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id)
+static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id)
 {
 	int channel_id;
 
@@ -767,7 +805,7 @@ static struct USBTenki_channel *getValidChannelFromChip(usb_dev_handle *hdl, str
 	return getValidChannel(hdl, channels, num_channels, channel_id);
 }
 
-int usbtenki_processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels)
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels)
 {
 	int i;
 	struct USBTenki_channel *chn;

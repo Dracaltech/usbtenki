@@ -18,7 +18,7 @@
 #ifndef _usbtenki_h__
 #define _usbtenki_h__
 
-#include <usb.h>
+//#include <usb.h>
 
 #include "usbtenki_units.h"
 
@@ -38,10 +38,7 @@ struct USBTenki_info {
 	int major, minor;
 };
 
-struct USBTenki_list_ctx {
-	struct usb_bus *bus;
-	struct usb_device *dev;
-};
+struct USBTenki_list_ctx;
 
 struct USBTenki_channel {
 	int channel_id;
@@ -54,24 +51,33 @@ struct USBTenki_channel {
 	int converted_unit;
 };
 
+typedef void* USBTenki_dev_handle; // Cast from usb_dev_handle
+typedef void* USBTenki_device; // Cast from usb_device
+
 int usbtenki_init(void);
 void unsbtenki_shutdown(void);
 
-void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx);
-struct usb_device *usbtenki_listDevices(struct USBTenki_info *info, 
+struct USBTenki_list_ctx *usbtenki_allocListCtx(void);
+void usbtenki_freeListCtx(struct USBTenki_list_ctx *ctx);
+
+USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, 
 										struct USBTenki_list_ctx *ctx);
 
-usb_dev_handle *usbtenki_openBySerial(const char *serial, struct USBTenki_info *info);
+USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev);
+USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_info *info);
 
-int usbtenki_command(usb_dev_handle *hdl, unsigned char cmd, 
+void usbtenki_closeDevice(USBTenki_dev_handle hdl);
+
+
+int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd, 
 										int id, unsigned char *dst);
-int usbtenki_getRaw(usb_dev_handle *hdl, int id, unsigned char *dst);
-int usbtenki_getChipID(usb_dev_handle *hdl, int id);
-int usbtenki_getNumChannels(usb_dev_handle *hdl);
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
+int usbtenki_getChipID(USBTenki_dev_handle hdl, int id);
+int usbtenki_getNumChannels(USBTenki_dev_handle hdl);
 
 int usbtenki_convertRaw(struct USBTenki_channel *chn);
 
-int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray, int arr_size);
+int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstArray, int arr_size);
 
 /**
  * \brief Add virtual channels based on previously listed ones (see usbtenki_listChannels)
@@ -80,10 +86,10 @@ int usbtenki_listChannels(usb_dev_handle *hdl, struct USBTenki_channel *dstArray
  * \param arr_size The maximum number of channels that can be held by the array.
  */
 int usbtenki_addVirtualChannels(struct USBTenki_channel *chnArray, int *num_channels, int arr_size);
-int usbtenki_processVirtualChannels(usb_dev_handle *hdl, struct USBTenki_channel *channels, int num_channels);
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels);
 
-int usbtenki_readChannelList(usb_dev_handle *hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
-int usbtenki_readChannel(usb_dev_handle *hdl, struct USBTenki_channel *chn);
+int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
+int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn);
 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
 float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
