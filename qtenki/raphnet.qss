@@ -2,13 +2,13 @@
 QGroupBox#source {
 	Border: 2px solid #078f9d;
 	Border-radius: 5px;
-	margin-top: 2ex;
+	margin-top: 7px;
 	font: bold 14px;
 }
 
 QGroupBox::title#source {
 	subcontrol-origin: margin;
-	subcontrol-position: top;
+	subcontrol-position: top center;
 	padding: 1 3px;
 }
 
