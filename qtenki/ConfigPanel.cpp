@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 #include <QGroupBox>
+#include <QLabel>
 #include <QApplication>
 
 #include "SelectableColor.h"
@@ -17,7 +18,7 @@ ConfigPanel::ConfigPanel()
 
 	default_palette = QApplication::palette();
 
-	QGroupBox *appearanceBox = new QGroupBox(tr("Apparence"));
+	QGroupBox *appearanceBox = new QGroupBox(tr("Appearance"));
 	QGridLayout *appBox_layout = new QGridLayout();
 	appearanceBox->setLayout(appBox_layout);
 
@@ -30,8 +31,10 @@ ConfigPanel::ConfigPanel()
 	appBox_layout->addWidget(sys_btn_color);	
 
 	QColor def_base_color = QApplication::palette().color(QPalette::Active,QPalette::Base);
-	sys_base_color = new SelectableColor("config/ovr_base_color", tr("Customize button color"), def_base_color);
+	sys_base_color = new SelectableColor("config/ovr_base_color", tr("Customize base color"), def_base_color);
 	appBox_layout->addWidget(sys_base_color);	
+
+	appBox_layout->addWidget(new QLabel(tr("Note: The application may need to be restarted for appearance changes to take full effect.")));
 
 
 	connect(sys_win_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
@@ -90,6 +93,7 @@ void ConfigPanel::defaultColor(QString name)
 	}
 
 	qApp->setPalette(myPalette);
+	update();
 }
 
 void ConfigPanel::customColor(QString name, QColor col)
@@ -116,7 +120,7 @@ void ConfigPanel::customColor(QString name, QColor col)
 		qApp->setPalette(myPalette);
 	}
 
-	if (name == "config/ovr_base_color" && sys_btn_color->getSelected()) 
+	if (name == "config/ovr_base_color" && sys_base_color->getSelected()) 
 	{
 		QPalette myPalette;
 
