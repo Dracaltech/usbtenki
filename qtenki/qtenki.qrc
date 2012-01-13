@@ -11,5 +11,7 @@
 	<file>fileopen.png</file>
 	<file>view.png</file>
 	<file>configure.png</file>
+
+	<file>raphnet.qss</file>
 </qresource>
 </RCC>

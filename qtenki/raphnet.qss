@@ -1,0 +1,18 @@
+
+QGroupBox#source {
+	Border: 2px solid #078f9d;
+	Border-radius: 5px;
+	margin-top: 2ex;
+	font: bold 14px;
+}
+
+QGroupBox::title#source {
+	subcontrol-origin: margin;
+	subcontrol-position: top;
+	padding: 1 3px;
+}
+
+QLabel#source_head {
+	border-bottom-style: solid 1px black;
+}
+

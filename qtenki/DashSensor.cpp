@@ -7,7 +7,7 @@ DashSensor::DashSensor(TenkiDevice *td)
 	int col =0;
 	title = QString::fromAscii(td->getSerial());
 	setTitle(title);
-	
+	setObjectName("source"); // selector for stylesheet	
 	tenki_device = td;
 
 	layout = new QGridLayout();
