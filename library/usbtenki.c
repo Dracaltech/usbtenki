@@ -959,11 +959,17 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 						if (g_usbtenki_verbose)
 							printf("Processing dew point virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
-	
+						
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP);
+						if (!temp_chn) {
+							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP);
+						}
+
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH);
+						if (!rh_chn) {
+							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH);
+						}
+
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
 							return -1;
@@ -984,14 +990,20 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 					{
 						struct USBTenki_channel *temp_chn, *rh_chn;
 						float H, Dp, T, h, e;
+						int non_significant = 0;
 
 						if (g_usbtenki_verbose)
 							printf("Processing humidex virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP);
+						if (!temp_chn) {
+							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP);
+						}
+
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH);
+						if (!rh_chn) {
+							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH);
+						}
 	
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
@@ -999,19 +1011,35 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 						}
 
 						T = temp_chn->converted_data;
-						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + 
-							(17.62*T)/(243.12+T);
+						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + (17.62*T)/(243.12+T);
 						Dp = 243.12 * H / (17.62 - H);
+	
+						if (Dp < 0) {
+							// Weatheroffice.gc.ca: We only display humidex values of 25 or higher for a 
+							// location which reports a dew point temperature above zero (0°C) ...
+							non_significant = 1;
+						}
+						if (T < 20) {
+							// ... AND an air temperature of 20°C or more.
+							//
+							non_significant = 1;
+						}
 		
 						/* We need dewpoint in kelvins... */
 						Dp = usbtenki_convertTemperature(Dp, TENKI_UNIT_CELCIUS, TENKI_UNIT_KELVIN);
 		
 						e = 6.11 * exp(5417.7530 * ((1.0/273.16) - (1.0/Dp)));
 						h = (5.0/9.0)*(e - 10.0);
-
+						
+						if (!non_significant) {
+							chn->converted_data = T + h;
+							chn->converted_unit = TENKI_UNIT_CELCIUS;
+						} else {
+							chn->converted_data = T;
+							chn->converted_unit = TENKI_UNIT_CELCIUS;
+						}
+						
 						chn->data_valid = 1;
-						chn->converted_data = T + h;
-						chn->converted_unit = TENKI_UNIT_CELCIUS;
 					}
 					break;
 
@@ -1023,10 +1051,15 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 						if (g_usbtenki_verbose)
 							printf("Processing heat index virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
+						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP);
+						if (!temp_chn) {
+							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP);
+						}
+
+						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH);
+						if (!rh_chn) {
+							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH);
+						}
 	
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
@@ -1070,7 +1103,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 
 	int real_channels = *num_channels;
 
-	/* Dew point, humidex and heat index from Temp+RH for sensirion sht1x/7x */
+	/* Dew point, humidex and heat index from Temp+RH for sensirion sht1x/7x and BS02 */
 	if (1)
 	{
 		int hfound=0, tfound=0;
@@ -1080,6 +1113,11 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 				tfound = 1;
 			if (channels[i].chip_id == USBTENKI_CHIP_SHT_RH)
 				hfound = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_BS02_TEMP)
+				tfound = 1;
+			if (channels[i].chip_id == USBTENKI_CHIP_BS02_RH)
+				hfound = 1;
+
 		}
 
 		if (hfound && tfound) {
