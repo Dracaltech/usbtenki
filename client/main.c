@@ -57,9 +57,8 @@ FILE *g_log_fptr = NULL;
 int g_num_attempts = 1;
 
 int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_req_chns);
-int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
-
-																	int max_channels);
+//int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
+//																	int max_channels);
 
 
 
@@ -328,7 +327,7 @@ reopen:
 					continue;
 				}
 
-				addVirtualChannels(tmpchannels, &n_channels, MAX_CHANNELS);
+				usbtenki_addVirtualChannels(tmpchannels, &n_channels, MAX_CHANNELS);
 				printf("Channels: %d\n", n_channels);
 				for (i=0; i<n_channels; i++) {
 					if (tmpchannels[i].channel_id >= USBTENKI_VIRTUAL_START) {
@@ -429,6 +428,7 @@ reopen:
 	return res;
 }
 
+#if 0
 /**
  * \brief Add a virtual channel to a list of channels.
  * \param channels The channel list
@@ -547,6 +547,7 @@ int addVirtualChannels(struct USBTenki_channel *channels, int *num_channels,
 
 	return 0;
 }
+#endif
 
 /**
  * \brief Search the list of channels for the channel_id corresponding to a specific chip id.
@@ -616,12 +617,15 @@ static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl,
 	return getValidChannel(hdl, channels, num_channels, channel_id);
 }
 
+
 int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, 
 							int num_channels, int *reqst_chns, int num_req_chns)
 {
 	int i;
 	struct USBTenki_channel *chn;
 	int j;
+
+	return usbtenki_processVirtualChannels(hdl, channels, num_channels);
 
 	for (i=0; i<num_channels; i++)
 	{
@@ -639,7 +643,7 @@ int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *cha
 				/* not requested! */
 				continue;
 			}
-	
+			
 
 			switch(chn->channel_id)
 			{
@@ -905,7 +909,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	/* Add virtual channels to the list, depending on the real
 	 * channels already present. (eg: Dew point and humidex can
 	 * only be calculated with temperature and humidity readings. */
-	addVirtualChannels(channels, &num_channels, MAX_CHANNELS);
+	usbtenki_addVirtualChannels(channels, &num_channels, MAX_CHANNELS);
 
 	/* When user request all channels, num_req_chns is 0. Generate a 
 	 * list of requested channels using all available real and
