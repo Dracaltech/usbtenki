@@ -1,3 +1,13 @@
+Version 1.9.1:
+    General:
+        - For Humidex and Heat index, when the input temperature/humidity is out of
+          range, simply pass the temperature to the output. Better than displaying
+          innaccurate and sometimes insane values.
+	Command-line:
+	    - Use the library to compute virtual channels. (code deduplication)
+	QTenki:
+	    - Changes to the theme.
+
 Version 1.9.0:
 	QTenki: 
 		- Merged measurement type and unit together (gives Temperature - C,
