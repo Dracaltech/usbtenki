@@ -1047,6 +1047,7 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 					{
 						struct USBTenki_channel *temp_chn, *rh_chn;
 						float T, R, HI;
+						int out_of_range = 0;
 
 						if (g_usbtenki_verbose)
 							printf("Processing heat index virtual channel\n");
@@ -1072,7 +1073,10 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 						R = rh_chn->converted_data;
 		
 						/* Formula source: 
-						 * http://www.crh.noaa.gov/jkl/?n=heat_index_calculator */
+						 * Initially: http://www.crh.noaa.gov/jkl/?n=heat_index_calculator (2012: 404 error)
+						 *
+						 * http://en.wikipedia.org/wiki/Heat_index#Formula
+						 */
 						HI = 	-42.379 + 
 								2.04901523 * T + 
 								10.14333127 * R - 
@@ -1083,9 +1087,20 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 								8.5282 * pow(10,-4) * T * pow(R, 2) - 
 								1.99 * pow(10,-6) * pow(T,2) * pow(R,2);
 
-						chn->data_valid = 1;
-						chn->converted_data = HI;
-						chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
+			
+						if (T < 80 || R < 40) {
+							out_of_range = 1;
+						}
+
+						if (out_of_range) {
+							chn->data_valid = 1;
+							chn->converted_data = T;
+							chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
+						} else {
+							chn->data_valid = 1;
+							chn->converted_data = HI;
+							chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
+						}
 					}
 					break;
 			}
