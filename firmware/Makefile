@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.21 2011-12-27 03:20:23 cvs Exp $
+# This Revision: $Id: Makefile,v 1.22 2012-02-12 04:46:22 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -26,7 +26,7 @@ SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl256x.o
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex tsl2568.hex bs02.hex sensirion_pc23.hex se95.hex adt7410.hex
+all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex tsl2568.hex bs02.hex sensirion_pc23.hex se95.hex adt7410.hex tachometer.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -104,6 +104,12 @@ flash_bs02: bs02.hex
 flash_sensirion_pc23: sensirion_pc23.hex
 	$(UISP) --erase --upload $(VERIFY) if=sensirion_pc23.hex
 
+flash_tachometer: tachometer.hex
+	$(UISP) --erase --upload $(VERIFY) if=tachometer.hex
+
+flash_tachometer_usb: tachometer.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
 #
 # Fuse high byte = 0xC1
 #  | RSTDISBL | WDTON | SPIEN | CKOPT | EESAVE | BOOTSZ1-0 | BOOTRST |
@@ -158,6 +164,9 @@ se95.elf: $(COMMON_OBJECTS) interface_se95.o mcp9800.o
 	$(COMPILE) -o $@ $^
 
 adt7410.elf: $(COMMON_OBJECTS) interface_adt7410.o mcp9800.o
+	$(COMPILE) -o $@ $^
+
+tachometer.elf: $(COMMON_OBJECTS) interface_int1_tachometer.o
 	$(COMPILE) -o $@ $^
 
 %.hex: %.elf

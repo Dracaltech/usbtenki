@@ -103,6 +103,8 @@
 
 #define USBTENKI_CHIP_MP3H6115A	0x93
 
+#define USBTENKI_CHIP_TACHOMETER	0xA0
+
 #define USBTENKI_CHIP_NONE		0xFF
 
 /* High channel numbers used in client. Not
