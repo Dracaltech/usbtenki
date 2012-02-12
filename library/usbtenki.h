@@ -93,6 +93,7 @@ int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn);
 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
 float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
+float usbtenki_convertFrequency(float freq, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 const char *chipToShortString(int id);
 const char *unitToString(int unit, int no_fancy_chars);

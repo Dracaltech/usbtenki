@@ -23,5 +23,12 @@
 
 #define TENKI_UNIT_METER_SEC	0x40
 
+#define TENKI_UNIT_MILLIHZ		0x50
+#define TENKI_UNIT_HZ			0x51
+#define TENKI_UNIT_KHZ			0x52
+#define TENKI_UNIT_MHZ			0x53
+
+#define TENKI_UNIT_RPM			0x55
+
 #endif
 

@@ -334,6 +334,51 @@ int usbtenki_getChipID(USBTenki_dev_handle hdl, int id)
 	return dst[0];	
 }
 
+float usbtenki_convertFrequency(float freq, int src_fmt, int dst_fmt)
+{
+	double hz;
+
+	if (src_fmt == dst_fmt)
+		return freq;
+
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_MILLIHZ:
+			hz = freq / 1000;
+			break;
+		case TENKI_UNIT_HZ:
+			hz = freq;
+			break;
+		case TENKI_UNIT_KHZ:
+			hz = freq * 1000;
+			break;
+		case TENKI_UNIT_MHZ:
+			hz = freq * 1000000;
+			break;
+		case TENKI_UNIT_RPM:
+			hz = freq / 60;
+			break;
+		default:
+			return freq;
+	}
+
+	switch (dst_fmt)
+	{
+		case TENKI_UNIT_MILLIHZ:
+			return hz * 1000;
+		case TENKI_UNIT_HZ:
+			return hz;
+		case TENKI_UNIT_KHZ:
+			return hz / 1000;
+		case TENKI_UNIT_MHZ:
+			return hz / 1000000;
+		case TENKI_UNIT_RPM:
+			return hz * 60;
+	}
+
+	return freq;
+}
+
 float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt)
 {
 	float pascals;
@@ -504,6 +549,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 			return "Inverted ratiometric volts from ADC";
 
+		case USBTENKI_CHIP_TACHOMETER:
+			return "Tachometer";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -577,6 +625,9 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_D6F_V03A1:
 			return "Air speed";
 
+		case USBTENKI_CHIP_TACHOMETER:
+			return "Frequency";
+
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -617,6 +668,9 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_VOLTS: return "V";
 		case TENKI_UNIT_LUX: return "lx";
 		case TENKI_UNIT_METER_SEC: return "m/sec";
+		case TENKI_UNIT_HZ: return "Hz";
+		case TENKI_UNIT_KHZ: return "kHz";
+		case TENKI_UNIT_RPM: return "rpm";
 	}
 
 	return "";

@@ -314,10 +314,31 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 			chip_fmt = TENKI_UNIT_RAW;
 			break;
 
+		case USBTENKI_CHIP_TACHOMETER:
+			{
+				float clk = 12000000 / 1024;
+				unsigned short count = raw_data[0]<<8 | raw_data[1];
+
+				temperature = 1 / ((1/clk) * count);
+
+				chip_fmt = TENKI_UNIT_HZ;
+				if (1)
+				{
+					int i;
+					for (i=0; i<chn->raw_length; i++) {
+						printf("%02X ", raw_data[i]);
+					}
+					printf("\n");
+				}
+			}
+			break;
+
 		default:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
-			//printf("Unknown chip id 0x%02x\n", chn->chip_id);
+			
+			printf("Unknown chip id 0x%02x\n", chn->chip_id);
+
 			break;
 	}
 
