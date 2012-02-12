@@ -668,8 +668,10 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_VOLTS: return "V";
 		case TENKI_UNIT_LUX: return "lx";
 		case TENKI_UNIT_METER_SEC: return "m/sec";
+		case TENKI_UNIT_MILLIHZ: return "mHz";
 		case TENKI_UNIT_HZ: return "Hz";
 		case TENKI_UNIT_KHZ: return "kHz";
+		case TENKI_UNIT_MHZ: return "MHz";
 		case TENKI_UNIT_RPM: return "rpm";
 	}
 
