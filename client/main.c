@@ -45,6 +45,7 @@
 int g_verbose = 0;
 int g_temp_format = TENKI_UNIT_CELCIUS;
 int g_pressure_format = TENKI_UNIT_KPA;
+int g_frequency_format = TENKI_UNIT_HZ;
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_7bit_clean = 0;
@@ -76,6 +77,7 @@ static void printUsage(void)
 	printf("    -R num       If an USB command fails, retry it num times before bailing out\n");
 	printf("    -T unit      Select the temperature unit to use. Default: Celcius\n");
 	printf("    -P unit      Select the pressure unit to use. Default: kPa\n");
+	printf("    -F unit      Select the frequency unit to use. Default: Hz\n");
 	printf("    -p           Enable pretty output\n");
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
 	printf("    -L logfile   Log to specified file\n");
@@ -85,6 +87,8 @@ static void printUsage(void)
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
 	printf("\nValid pressure units:\n");
 	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi\n");
+	printf("\nValid frequency units:\n");
+	printf("    mHz, Hz, kHz, MHz, rpm\n");
 }
 
 static void printVersion(void)
@@ -114,7 +118,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:")))
 	{
 		switch (res)
 		{
@@ -203,7 +207,33 @@ int main(int argc, char **argv)
 					return -1;
 				}					
 				break;
-	
+
+			case 'F':
+				{
+					struct {
+						const char *name;
+						int fmt;
+					} tbl[] = { 
+						{ "mHz", TENKI_UNIT_MILLIHZ },
+						{ "Hz", TENKI_UNIT_HZ },
+						{ "kHz", TENKI_UNIT_KHZ },
+						{ "MHz", TENKI_UNIT_MHZ },
+						{ "rpm", TENKI_UNIT_RPM },
+					};
+					
+					for (i=0; i<ARRAY_SIZE(tbl); i++) {
+						if (strcasecmp(tbl[i].name, optarg)==0) {
+							g_frequency_format = tbl[i].fmt;
+							break;
+						}
+					}
+					if (i==ARRAY_SIZE(tbl)) {
+						fprintf(stderr, 
+							"Unknown frequency unit: '%s'\n", optarg);
+					}
+				}
+				break;
+		
 			case 'P':
 				{
 					struct {
@@ -998,6 +1028,16 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 																chn->converted_unit,
 																	g_pressure_format);
 				chn->converted_unit = g_pressure_format;
+				break;
+
+			case TENKI_UNIT_MILLIHZ:
+			case TENKI_UNIT_HZ:
+			case TENKI_UNIT_KHZ:
+			case TENKI_UNIT_MHZ:
+				chn->converted_data = usbtenki_convertFrequency(chn->converted_data,
+																chn->converted_unit,
+																g_frequency_format);
+				chn->converted_unit = g_frequency_format;
 				break;
 
 		}
