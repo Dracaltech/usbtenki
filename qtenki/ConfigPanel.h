@@ -20,12 +20,16 @@ class ConfigPanel : public QWidget
 		void defaultColor(QString name);
 		void customColor(QString name, QColor col);
 		void selectedChanged(QString name, int state, QColor col);
+		void updateFlagsFromCheckboxes(int);
 
 	private:
 		QPalette default_palette;
 		SelectableColor *sys_win_color;
 		SelectableColor *sys_btn_color;
 		SelectableColor *sys_base_color;
+		QCheckBox *cb_disable_heat_index_validation;
+		QCheckBox *cb_disable_humidex_validation;
+
 };
 
 #endif // _ConfigPanel_h__

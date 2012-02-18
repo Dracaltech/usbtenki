@@ -39,6 +39,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void timestampChanged(int idx);
 		void intervalChanged(int i);
 		void filenameEdited();
+		void errorStrategyChanged(int);
 
 	private:
 		TenkiSources *tenkisources;
@@ -52,6 +53,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QComboBox *comb_fmt;
 		QComboBox *comb_decimal;
 		QComboBox *comb_timestamp;
+		QComboBox *comb_on_error;
 		QLineEdit *path;
 		QPushButton *browseButton, *viewButton;
 		

@@ -3,7 +3,7 @@
 #include <QtGui>
 //#include <QHostInfo>
 
-SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt)
+SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, enum SimpleLogger::OnError onerr)
 {
 	this->output_file = output_file;
 	this->interval_s = interval_s;
@@ -28,7 +28,8 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s
 			break;
 	}
 
-	timestamp_format = tfmt;	
+	timestamp_format = tfmt;
+	on_error = onerr;	
 	use_utc = 0;
 }
 
@@ -125,6 +126,27 @@ void SimpleLogger::logItem(QString str, int last)
 	}
 }
 
+void SimpleLogger::logError(float v, int last)
+{
+	switch (on_error)
+	{
+		case WriteEmpty:
+			logItem("", last);
+			break;
+		case RepeatPrevious:
+			logValue(v, last);
+			break;
+		case WriteZero:
+			logValue(0, last);
+			break;
+		case WriteMinusOne:
+			logValue(-1, last);
+			break;
+		case WriteError:
+			logItem("error", last);
+			break;
+	}
+}
 
 void SimpleLogger::logValue(float v, int last)
 {
@@ -268,10 +290,19 @@ void SimpleLogger::doLog()
 		sd = tenkisources->getSourceByName(sources.at(i));
 
 		if (sd == NULL) {
+			// this would be an internal error.
 			emit logMessage("Source '" + sources.at(i)+ "' not found");
 		} else {
-			logValue(sd->chn_data->converted_data, i==(sources.size()-1));
-			// write values to file
+			if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
+				// call log error with a value. Knowing the converted data
+				// will stay at it's last value, this makes it possible for
+				// the OnError/RepeatPrevious function to work.
+				logError(sd->chn_data->converted_data, i==(sources.size()-1));
+				emit logMessage("ERROR: An error occured on '" +sources.at(i) + "'.");
+			}
+			else {
+				logValue(sd->chn_data->converted_data, i==(sources.size()-1));
+			}
 		}
 	}
 }

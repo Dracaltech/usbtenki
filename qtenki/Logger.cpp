@@ -69,6 +69,21 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(comb_timestamp, y, 1, 1, 4);
 	y++;
 
+
+	comb_on_error = new QComboBox();
+	/* Note: Added in order matching SimpleLogger::OnError */
+	comb_on_error->addItem(tr("Write empty field(s)"));
+	comb_on_error->addItem(tr("Repeat previous value(s)"));
+	comb_on_error->addItem(tr("Write 0 in field(s)"));
+	comb_on_error->addItem(tr("Write -1 in field(s)"));
+	comb_on_error->addItem(tr("Write 'error' in field(s)"));
+
+	comb_on_error->setCurrentIndex(settings.value("logger/on_error").toInt());
+	connect(comb_on_error, SIGNAL(currentIndexChanged(int)), this, SLOT(errorStrategyChanged(int)));
+	dbl->addWidget(new QLabel(tr("On error:")), y, 0);
+	dbl->addWidget(comb_on_error, y, 1, 1, 4);
+	y++;
+
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
@@ -95,6 +110,8 @@ Logger::Logger(TenkiSources *s)
 	
 	log_interval->setValue(settings.value("logger/interval").toInt());
 	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
+
+
 
 
 	control = new QGroupBox(tr("Control"));
@@ -232,7 +249,16 @@ void Logger::startLogging()
 		case 5: tfmt = SimpleLogger::ISO8601TimeOnly;	break;
 	}
 
-	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt);
+	SimpleLogger::OnError onerr = SimpleLogger::WriteEmpty;
+	switch(comb_on_error->currentIndex()) {
+		case 0: onerr = SimpleLogger::WriteEmpty;		break;
+		case 1: onerr = SimpleLogger::RepeatPrevious; 	break;
+		case 2: onerr = SimpleLogger::WriteZero; 		break;
+		case 3: onerr = SimpleLogger::WriteMinusOne; 	break;
+		case 4: onerr = SimpleLogger::WriteError; 		break;
+	}
+
+	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt, onerr);
 
 	for (int i=0; i<sources.size(); i++) {
 		DataSourceCheckBox *cb = sources.at(i);
@@ -321,6 +347,12 @@ void Logger::loggerStopped()
 
 	delete current_logger;
 	current_logger = NULL;
+}
+
+void Logger::errorStrategyChanged(int idx)
+{
+	QSettings settings;
+	settings.setValue("logger/on_error", idx);
 }
 
 void Logger::timestampChanged(int idx)

@@ -6,15 +6,31 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QApplication>
+#include <QCheckBox>
 
 #include "SelectableColor.h"
 #include "ConfigPanel.h"
+#include "globals.h"
 
 ConfigPanel::ConfigPanel()
 {
 	QSettings settings;
 	QVBoxLayout *lay = new QVBoxLayout();
 	setLayout(lay);
+
+	QGroupBox *dataBox = new QGroupBox(tr("Data processing and formatting"));
+	QGridLayout *dataBox_layout = new QGridLayout();
+	dataBox->setLayout(dataBox_layout);
+
+	cb_disable_heat_index_validation = new QCheckBox(tr("Disable heat index input range check (may produce inaccurate values)"));
+	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
+	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
+	cb_disable_humidex_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
+
+	dataBox_layout->addWidget(cb_disable_heat_index_validation);
+	dataBox_layout->addWidget(cb_disable_humidex_validation);	
+	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
+	connect(cb_disable_humidex_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 
 	default_palette = QApplication::palette();
 
@@ -34,7 +50,7 @@ ConfigPanel::ConfigPanel()
 	sys_base_color = new SelectableColor("config/ovr_base_color", tr("Customize base color"), def_base_color);
 	appBox_layout->addWidget(sys_base_color);	
 
-	appBox_layout->addWidget(new QLabel(tr("Note: The application may need to be restarted for appearance changes to take full effect.")));
+	appBox_layout->addWidget(new QLabel(tr("Note: The application may need to be restarted for appearance changes to take full effect.<br>Depending on your OS and/or theme, it might not be possible to change all colors.")));
 
 
 	connect(sys_win_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
@@ -45,7 +61,8 @@ ConfigPanel::ConfigPanel()
 	
 	connect(sys_base_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
 	connect(sys_base_color, SIGNAL(selectedChanged(QString,int,QColor)), this, SLOT(selectedChanged(QString,int,QColor)));
-	
+
+	lay->addWidget(dataBox);	
 	lay->addWidget(appearanceBox);	
 	lay->addStretch();
 
@@ -58,6 +75,19 @@ ConfigPanel::ConfigPanel()
 	if (sys_base_color->getSelected()) {
 		customColor(sys_base_color->getName(), sys_base_color->getColor());
 	}
+
+}
+
+void ConfigPanel::updateFlagsFromCheckboxes(int ignored)
+{
+	long flags = 0;
+
+	if (cb_disable_heat_index_validation->isChecked())
+		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
+	if (cb_disable_humidex_validation->isChecked())
+		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
+
+	g_usbtenki_flags = flags;
 
 }
 

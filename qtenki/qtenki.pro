@@ -17,12 +17,12 @@ win32: LIBS += -L../../libusb/lib/gcc
 HEADERS += ../library/usbtenki.h ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h \
 			 TextViewer.h TenkiSources.h DashSensor.h TenkiDashboard.h TenkiDevice.h Logger.h \
 			DataSourceCheckBox.h SimpleLogger.h MainWindow.h \
-			ConfigPanel.h SelectableColor.h
+			ConfigPanel.h SelectableColor.h globals.h
 
 
 SOURCES += ../library/usbtenki.c ../library/convertRaw.c main.cpp \
 			TextViewer.cpp TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp \
 			TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp About.cpp MainWindow.cpp \
-			ConfigPanel.cpp SelectableColor.cpp
+			ConfigPanel.cpp SelectableColor.cpp globals.cpp
 
 LIBS += -lusb

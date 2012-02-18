@@ -31,8 +31,15 @@ class SimpleLogger : public QThread
 			SplitISO8601=4,
 			ISO8601TimeOnly=5,
 		};
+		enum OnError {
+			WriteEmpty=0,
+			RepeatPrevious=1,
+			WriteZero=2,
+			WriteMinusOne=3,
+			WriteError=4,
+		};
 
-		SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt);
+		SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, SimpleLogger::OnError onerr);
 		~SimpleLogger();
 		void addSource(QString src, QString alias);
 		void setUseUTC(bool use);
@@ -42,6 +49,7 @@ class SimpleLogger : public QThread
 		void run();
 		void logItem(QString str, int last = 0);
 		void logValue(float v, int last = 0);
+		void logError(float repeated_value, int last = 0);
 		void logLineEnd();
 		void colTitles();
 		void tsTitlesPre(int step);
@@ -68,6 +76,8 @@ class SimpleLogger : public QThread
 
 		enum TimeStampFormat timestamp_format;
 		bool use_utc;
+
+		enum OnError on_error;
 
 		int count;
 };

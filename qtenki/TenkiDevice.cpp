@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "TenkiDevice.h"
 #include "../common/usbtenki_cmds.h"
+#include "globals.h"
 
 TenkiDevice::TenkiDevice(const char *serial)
 {
@@ -100,7 +101,7 @@ int TenkiDevice::updateChannelData()
 	}
 	while(need_retry);
 	
-	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels);	
+	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels, g_usbtenki_flags);	
 	
 	return 0;
 }
