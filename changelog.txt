@@ -1,3 +1,10 @@
+Version 1.9.2:
+    General:
+		Added options to disable input range validation for humidex and heat index.
+		Added firmware and host support for a tachometer.
+	       
+	QTenki: Better error handling (auto-reopen) and related logging options.
+
 Version 1.9.1:
     General:
         - For Humidex and Heat index, when the input temperature/humidity is out of
