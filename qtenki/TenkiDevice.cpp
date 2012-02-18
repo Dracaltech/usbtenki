@@ -1,9 +1,13 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "TenkiDevice.h"
 #include "../common/usbtenki_cmds.h"
 
 TenkiDevice::TenkiDevice(const char *serial)
 {
+	serno = strdup(serial);
+	
 	tenki_hdl = usbtenki_openBySerial(serial, &tenki_info);
 	if (tenki_hdl != NULL) {
 		status = TENKI_DEVICE_STATUS_OK;
@@ -19,10 +23,14 @@ TenkiDevice::~TenkiDevice()
 {
 	usbtenki_closeDevice(tenki_hdl);
 	tenki_hdl = 0;
+	free(serno);
 }
 
 void TenkiDevice::initChannels()
 {
+	if (!tenki_hdl)
+		return;
+
 	num_channels = usbtenki_getNumChannels(tenki_hdl);
 	if (num_channels > MAX_CHANNELS)
 		num_channels = MAX_CHANNELS;
@@ -34,21 +42,67 @@ void TenkiDevice::initChannels()
 	usbtenki_addVirtualChannels(channel_data, &num_channels, MAX_CHANNELS);
 }
 
-void TenkiDevice::updateChannelData()
+int TenkiDevice::updateChannelData()
 {
-	int i, res;
-	for (i=0; i<num_channels; i++) {
-		if (channel_data[i].chip_id == USBTENKI_CHIP_NONE)
-			continue;
+	int i, res, error=0, need_retry=0;
+	struct USBTenki_channel tmpdata;
 
-		channel_data[i].data_valid = 0;
-		res = usbtenki_readChannel(tenki_hdl, &channel_data[i]);
+	do
+	{
+		// Having no handle at this point means there was an error. This is
+		// either and immediate retry (need_retry=1) or a retry delayed
+		// to the next capture cycle.
+		if (!tenki_hdl) {
+			tenki_hdl = usbtenki_openBySerial(serno, &tenki_info);
+			if (tenki_hdl != NULL) {
+				status = TENKI_DEVICE_STATUS_OK;
+				initChannels();
+			} else {
+				// just get out	
+				status = TENKI_DEVICE_STATUS_UNABLE_TO_OPEN;
+				return -1;
+			}
 
-//		printf("Read channel res=%d, %.3f\n", res, channel_data[i].converted_data);
+			// success!
+		}
+
+		// Everything ok. Try to read the channel(s).
+//		printf("%s updating...\n", serno);
+		for (error=0,i=0; i<num_channels; i++) {
+			if (channel_data[i].chip_id == USBTENKI_CHIP_NONE)
+				continue;
+
+			memcpy(&tmpdata, &channel_data[i], sizeof(struct USBTenki_channel));
+			tmpdata.data_valid = 0;
+
+			res = usbtenki_readChannel(tenki_hdl, &tmpdata);
+			if (res) {
+				error = 1;
+				break;
+			}
+			
+			memcpy(&channel_data[i], &tmpdata, sizeof(struct USBTenki_channel));
+		}
+
+		if (error) {
+//			printf("Error reading '%s', reopening...\n", serno);
+			usbtenki_closeDevice(tenki_hdl);
+			tenki_hdl = 0;
+			
+			// If we are here from a retry, don't retry again.
+			if (need_retry) {
+				break;
+			} else {
+//				printf("Retry...\n");
+				need_retry = 1;
+			}
+		}
 	}
-
-	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels);
-
+	while(need_retry);
+	
+	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels);	
+	
+	return 0;
 }
 
 int TenkiDevice::isChannelHidden(int id)

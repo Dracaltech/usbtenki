@@ -20,7 +20,7 @@ class DashSensor : public QGroupBox
 
 		TenkiDevice *tenki_device;
 		void refresh();
-				
+
 	private:
 		void addChannel(int channel, int row);
 		QString title;

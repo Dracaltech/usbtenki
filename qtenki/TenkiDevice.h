@@ -22,7 +22,7 @@ class TenkiDevice
 	
 		int status;
 
-		void updateChannelData();
+		int updateChannelData();
 		struct USBTenki_channel channel_data[MAX_CHANNELS];
 		
 	private:
@@ -30,6 +30,7 @@ class TenkiDevice
 		USBTenki_dev_handle tenki_hdl;
 		struct USBTenki_info tenki_info;
 		int num_channels;
+		char *serno;
 };
 
 class TenkiDeviceAddRemove

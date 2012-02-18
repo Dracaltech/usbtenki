@@ -82,11 +82,18 @@ DashSensor::~DashSensor()
 	delete layout;
 }
 
-
 void DashSensor::refresh()
 {
 	USBTenki_channel *ch;
 //	qDebug() << "DashSensor::refresh()";
+
+	if (tenki_device->status == TENKI_DEVICE_STATUS_UNABLE_TO_OPEN) {
+		title = QString::fromAscii(tenki_device->getSerial());
+		title += " [ERROR]";
+	} else {
+		title = QString::fromAscii(tenki_device->getSerial());
+	}
+	setTitle(title);
 
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;
