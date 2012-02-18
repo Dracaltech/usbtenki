@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for reading USBTenki sensors.
- * Copyright (C) 2007  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2012  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,6 +51,9 @@ struct USBTenki_channel {
 	int converted_unit;
 };
 
+#define USBTENKI_FLAG_NO_HUMIDEX_RANGE			1
+#define USBTENKI_FLAG_NO_HEAT_INDEX_RANGE		2
+
 typedef void* USBTenki_dev_handle; // Cast from usb_dev_handle
 typedef void* USBTenki_device; // Cast from usb_device
 
@@ -86,7 +89,7 @@ int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstA
  * \param arr_size The maximum number of channels that can be held by the array.
  */
 int usbtenki_addVirtualChannels(struct USBTenki_channel *chnArray, int *num_channels, int arr_size);
-int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels);
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, unsigned long flags);
 
 int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
 int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn);

@@ -861,7 +861,7 @@ static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl,
 	return getValidChannel(hdl, channels, num_channels, channel_id);
 }
 
-int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels)
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, unsigned long flags)
 {
 	int i;
 	struct USBTenki_channel *chn;
@@ -1069,16 +1069,19 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 						T = temp_chn->converted_data;
 						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + (17.62*T)/(243.12+T);
 						Dp = 243.12 * H / (17.62 - H);
-	
-						if (Dp < 0) {
-							// Weatheroffice.gc.ca: We only display humidex values of 25 or higher for a 
-							// location which reports a dew point temperature above zero (0°C) ...
-							non_significant = 1;
-						}
-						if (T < 20) {
-							// ... AND an air temperature of 20°C or more.
-							//
-							non_significant = 1;
+
+						if (!(flags & USBTENKI_FLAG_NO_HUMIDEX_RANGE))
+						{	
+							if (Dp < 0) {
+								// Weatheroffice.gc.ca: We only display humidex values of 25 or higher for a 
+								// location which reports a dew point temperature above zero (0°C) ...
+								non_significant = 1;
+							}
+							if (T < 20) {
+								// ... AND an air temperature of 20°C or more.
+								//
+								non_significant = 1;
+							}
 						}
 		
 						/* We need dewpoint in kelvins... */
@@ -1143,9 +1146,10 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 								8.5282 * pow(10,-4) * T * pow(R, 2) - 
 								1.99 * pow(10,-6) * pow(T,2) * pow(R,2);
 
-			
-						if (T < 80 || R < 40) {
-							out_of_range = 1;
+						if (!(flags & USBTENKI_FLAG_NO_HEAT_INDEX_RANGE)) {
+							if (T < 80 || R < 40) {
+								out_of_range = 1;
+							}
 						}
 
 						if (out_of_range) {
