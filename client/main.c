@@ -54,6 +54,7 @@ int g_log_interval = DEFAULT_LOG_INTERVAL;
 int g_must_run = 1;
 const char *g_log_file = NULL;
 FILE *g_log_fptr = NULL;
+long g_flags = 0;
 
 int g_num_attempts = 1;
 
@@ -82,6 +83,7 @@ static void printUsage(void)
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
 	printf("    -L logfile   Log to specified file\n");
 	printf("    -I interval  Log interval. In milliseconds. Default: %d\n", DEFAULT_LOG_INTERVAL);
+	printf("    -o option    Enable specified option. (you may use multiple -o)\n");
 
 	printf("\nValid temperature units:\n");
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
@@ -89,6 +91,9 @@ static void printUsage(void)
 	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi\n");
 	printf("\nValid frequency units:\n");
 	printf("    mHz, Hz, kHz, MHz, rpm\n");
+	printf("\nOptions:\n");
+	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
+	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
 }
 
 static void printVersion(void)
@@ -118,7 +123,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:")))
 	{
 		switch (res)
 		{
@@ -260,6 +265,30 @@ int main(int argc, char **argv)
 							"Unknown pressure format: '%s'\n", optarg);
 					}
 				}
+				break;
+
+			case 'o':
+				{
+					struct {
+						const char *name;
+						long flag;
+					} tbl[] = { 
+						{ "no_heat_index_range", USBTENKI_FLAG_NO_HEAT_INDEX_RANGE },
+						{ "no_humidex_range", USBTENKI_FLAG_NO_HUMIDEX_RANGE },
+					};
+					
+					for (i=0; i<ARRAY_SIZE(tbl); i++) {
+						if (strcasecmp(tbl[i].name, optarg)==0) {
+							g_flags |= tbl[i].flag;
+							break;
+						}
+					}
+					if (i==ARRAY_SIZE(tbl)) {
+						fprintf(stderr, 
+							"Unknown option: '%s'\n", optarg);
+					}
+				}
+
 				break;
 
 			case 'p':
@@ -651,274 +680,7 @@ static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl,
 int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, 
 							int num_channels, int *reqst_chns, int num_req_chns)
 {
-	int i;
-	struct USBTenki_channel *chn;
-	int j;
-
-	return usbtenki_processVirtualChannels(hdl, channels, num_channels);
-
-	for (i=0; i<num_channels; i++)
-	{
-		chn = &channels[i];
-
-		if (chn->channel_id >= USBTENKI_VIRTUAL_START)
-		{
-			// Check if this virtual channel was requested
-			for (j=0; j<num_req_chns; j++)
-			{
-				if (reqst_chns[j]==chn->channel_id)
-					break;
-			}
-			if (j==num_req_chns) {
-				/* not requested! */
-				continue;
-			}
-			
-
-			switch(chn->channel_id)
-			{
-				case USBTENKI_VIRTUAL_TSL2568_LUX:
-					{
-						struct USBTenki_channel *vir_chn, *ir_chn;
-						double ch0,ch1,lx;
-
-						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2568_IR);
-
-						vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2568_IR_VISIBLE);
-
-						if (ir_chn==NULL || vir_chn==NULL) {
-							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
-							return -1;
-						}
-
-						ch0 = vir_chn->converted_data;
-						ch1 = ir_chn->converted_data;
-
-						if ((vir_chn->converted_data < 3000) && (ir_chn->converted_data < 3000)) {
-							struct USBTenki_channel *vir_chn_g, *ir_chn_g;
-							double ch0_g, ch1_g;
-
-							/* Based on these values, a 16x gain would not overflow. */
-//							printf("Switching to 16x gain\n");
-							ir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2568_IR_16X);
-	
-							vir_chn_g = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2568_IR_VISIBLE_16X);
-
-						
-							ch0_g = vir_chn_g->converted_data;
-							ch1_g = ir_chn_g->converted_data;
-	
-//							printf("%.f %.f %.f %.f\n", ch0, ch0_g/16.0, ch1, ch1_g/16.0);
-				
-							if (ir_chn_g != NULL && vir_chn_g != NULL) {
-								// stick to the low gain channels in case of saturation
-								if (ir_chn_g->converted_data != 65535 && 
-									vir_chn_g->converted_data != 65535) {
-									ch0 = ch0_g / 16.0;
-									ch1 = ch1_g / 16.0;
-								}
-							}
-						}
-						
-						if (ch0 > 65534 || ch1 > 65534) {	
-							chn->data_valid = 0;
-							chn->saturated = 1;
-							chn->converted_data = -1;
-							chn->converted_unit = TENKI_UNIT_LUX;
-							break;
-						}
-
-						/*						 
-						TMB Package
-							For 0 < CH1/CH0 < 0.35     Lux = 0.00763  CH0 - 0.01031  CH1
-							For 0.35 < CH1/CH0 < 0.50  Lux = 0.00817  CH0 - 0.01188  CH1
-							For 0.50 < CH1/CH0 < 0.60  Lux = 0.00723  CH0 - 0.01000  CH1
-							For 0.60 < CH1/CH0 < 0.72  Lux = 0.00573  CH0 - 0.00750  CH1
-							For 0.72 < CH1/CH0 < 0.85  Lux = 0.00216  CH0 - 0.00254  CH1
-							For CH1/CH0 > 0.85         Lux = 0
-						*/
-						if (ch1/ch0 < 0.35)
-							lx = 0.00763 * ch0 - 0.01031 * ch1;
-						else if (ch1/ch0 < 0.50)
-							lx = 0.00817 * ch0 - 0.01188 * ch1;
-						else if (ch1/ch0 < 0.60)
-							lx = 0.00723 * ch0 - 0.01000 * ch1;
-						else if (ch1/ch0 < 0.72)
-							lx = 0.00573 * ch0 - 0.00750 * ch1;
-						else if (ch1/ch0 < 0.85)
-							lx = 0.00216 * ch0 - 0.00254 * ch1;
-						else
-							lx = 0.0;
-						
-//						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
-
-						chn->data_valid = 1;
-						chn->converted_data = lx;
-						chn->converted_unit = TENKI_UNIT_LUX;
-					}
-					break;
-
-
-				case USBTENKI_VIRTUAL_TSL2561_LUX:
-					{
-						struct USBTenki_channel *vir_chn, *ir_chn;
-						float ch0,ch1,lx;
-
-						ir_chn = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2561_IR);
-
-						vir_chn = getValidChannelFromChip(hdl, channels, num_channels,
-														USBTENKI_CHIP_TSL2561_IR_VISIBLE);
-
-						if (ir_chn==NULL || vir_chn==NULL) {
-							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
-							return -1;
-						}
-
-						ch0 = vir_chn->converted_data;
-						ch1 = ir_chn->converted_data;
-						
-						/*
-						 * TMB Package
-						 *
-						 * For 0 < CH1/CH0 <= 0.50 		Lux = 0.0304 * CH0 - .062 * CH0 * ((CH1/CH0)1.4)
-						 * For 0.50 < CH1/CH0 <=  0.61 	Lux = 0.0224 * CH0 - .031 * CH1
-						 * For 0.61 < CH1/CH0 <= 0.80 	Lux = 0.0128 * CH0 - .0153 * CH1
-						 * For 0.80 < CH1/CH0 <= 1.30 	Lux = 0.00146 *  CH0 - .00112 * CH1
-						 * For CH1/CH0 > 1.30			Lux = 0
-						 *
-						 */
-						if (ch1/ch0 < 0.50)
-							lx = 0.0304 * ch0 - 0.062 * ch0 * (pow((ch1/ch0),1.4));
-						else if (ch1/ch0 < 0.61)
-							lx = 0.0224 * ch0 - 0.031 * ch1;
-						else if (ch1/ch0 < 0.80)
-							lx = 0.0128 * ch0 - 0.0153 * ch1;
-						else
-							lx = 0.0;
-						
-//						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
-
-						chn->data_valid = 1;
-						chn->converted_data = lx;
-						chn->converted_unit = TENKI_UNIT_LUX;
-					}
-					break;
-				
-				case USBTENKI_VIRTUAL_DEW_POINT:
-					{
-						struct USBTenki_channel *temp_chn, *rh_chn;
-						float H, Dp, T;
-
-						if (g_verbose)
-							printf("Processing dew point virtual channel\n");
-
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
-	
-						if (temp_chn == NULL || rh_chn == NULL) {
-							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
-							return -1;
-						}
-
-						T = temp_chn->converted_data;
-						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + 
-							(17.62*T)/(243.12+T);
-						Dp = 243.12 * H / (17.62 - H);
-
-						chn->data_valid = 1;
-						chn->converted_data = Dp;
-						chn->converted_unit = TENKI_UNIT_CELCIUS;
-
-					}
-					break;
-
-				case USBTENKI_VIRTUAL_HUMIDEX:
-					{
-						struct USBTenki_channel *temp_chn, *rh_chn;
-						float H, Dp, T, h, e;
-
-						if (g_verbose)
-							printf("Processing dew point virtual channel\n");
-
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
-	
-						if (temp_chn == NULL || rh_chn == NULL) {
-							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
-							return -1;
-						}
-
-						T = temp_chn->converted_data;
-						H = (log10(rh_chn->converted_data)-2.0)/0.4343 + 
-							(17.62*T)/(243.12+T);
-						Dp = 243.12 * H / (17.62 - H);
-		
-						/* We need dewpoint in kelvins... */
-						Dp = usbtenki_convertTemperature(Dp, TENKI_UNIT_CELCIUS, TENKI_UNIT_KELVIN);
-		
-						e = 6.11 * exp(5417.7530 * ((1.0/273.16) - (1.0/Dp)));
-						h = (5.0/9.0)*(e - 10.0);
-
-						chn->data_valid = 1;
-						chn->converted_data = T + h;
-						chn->converted_unit = TENKI_UNIT_CELCIUS;
-					}
-					break;
-
-				case USBTENKI_VIRTUAL_HEAT_INDEX:
-					{
-						struct USBTenki_channel *temp_chn, *rh_chn;
-						float T, R, HI;
-
-						if (g_verbose)
-							printf("Processing dew point virtual channel\n");
-
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																USBTENKI_CHIP_SHT_TEMP);
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, 
-																	USBTENKI_CHIP_SHT_RH);
-	
-						if (temp_chn == NULL || rh_chn == NULL) {
-							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
-							return -1;
-						}
-
-						T = temp_chn->converted_data;
-						T =  usbtenki_convertTemperature(T, TENKI_UNIT_CELCIUS, 
-															TENKI_UNIT_FAHRENHEIT);
-						R = rh_chn->converted_data;
-		
-						/* Formula source: 
-						 * http://www.crh.noaa.gov/jkl/?n=heat_index_calculator */
-						HI = 	-42.379 + 
-								2.04901523 * T + 
-								10.14333127 * R - 
-								0.22475541 * T * R - 
-								6.83783 * pow(10,-3) * pow(T, 2) - 
-								5.481717 * pow(10,-2) * pow(R, 2) + 
-								1.22874 * pow(10,-3) * pow(T, 2) * R + 
-								8.5282 * pow(10,-4) * T * pow(R, 2) - 
-								1.99 * pow(10,-6) * pow(T,2) * pow(R,2);
-
-						chn->data_valid = 1;
-						chn->converted_data = HI;
-						chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
-					}
-					break;
-			}
-		}
-	}
-	
-	return 0;
+	return usbtenki_processVirtualChannels(hdl, channels, num_channels, g_flags);
 }
 
 int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_req_chns)
