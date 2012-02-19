@@ -14,6 +14,9 @@ TenkiDashboard::TenkiDashboard(TenkiSources *src)
 	vbox->addWidget(mainLabel);
 	setLayout(vbox);
 
+	nosensorsLabel = new QLabel(tr("No sensor connected, driver not installed or permission denied.<br>Please refer to the manual for instructions."));
+	vbox->addWidget(nosensorsLabel);
+
 	tsrc = src;
 }
 
@@ -26,6 +29,8 @@ TenkiDashboard::~TenkiDashboard()
 void TenkiDashboard::addDashSensor(DashSensor *ds)
 {
 	vbox->addWidget(ds);
+
+	vbox->removeWidget(nosensorsLabel);
 }
 
 void TenkiDashboard::addTenkiDevice(TenkiDevice *td)
