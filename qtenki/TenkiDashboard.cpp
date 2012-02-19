@@ -31,6 +31,7 @@ void TenkiDashboard::addDashSensor(DashSensor *ds)
 	vbox->addWidget(ds);
 
 	vbox->removeWidget(nosensorsLabel);
+	nosensorsLabel->setVisible(false);
 }
 
 void TenkiDashboard::addTenkiDevice(TenkiDevice *td)
