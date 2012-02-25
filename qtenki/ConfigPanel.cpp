@@ -22,13 +22,17 @@ ConfigPanel::ConfigPanel()
 	QGridLayout *dataBox_layout = new QGridLayout();
 	dataBox->setLayout(dataBox_layout);
 
+	cb_use_old_sht_coefficients = new QCheckBox(tr("Use old SHT75 relative humidity non-linearity correction coefficients (Datasheet rev.3, 2007)"));
+	cb_use_old_sht_coefficients->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_heat_index_validation = new QCheckBox(tr("Disable heat index input range check (may produce inaccurate values)"));
 	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
 	cb_disable_humidex_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 
+	dataBox_layout->addWidget(cb_use_old_sht_coefficients);
 	dataBox_layout->addWidget(cb_disable_heat_index_validation);
 	dataBox_layout->addWidget(cb_disable_humidex_validation);	
+	connect(cb_use_old_sht_coefficients, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_humidex_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 
@@ -86,6 +90,9 @@ void ConfigPanel::updateFlagsFromCheckboxes(int ignored)
 		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
 	if (cb_disable_humidex_validation->isChecked())
 		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
+	if (cb_use_old_sht_coefficients->isChecked()) {
+		flags |= USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION;
+	}
 
 	g_usbtenki_flags = flags;
 

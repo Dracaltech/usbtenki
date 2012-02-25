@@ -27,6 +27,7 @@ class ConfigPanel : public QWidget
 		SelectableColor *sys_win_color;
 		SelectableColor *sys_btn_color;
 		SelectableColor *sys_base_color;
+		QCheckBox *cb_use_old_sht_coefficients;
 		QCheckBox *cb_disable_heat_index_validation;
 		QCheckBox *cb_disable_humidex_validation;
 

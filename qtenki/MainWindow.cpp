@@ -4,8 +4,10 @@
 #include <QPushButton>
 #include <QWidget>
 #include <QTabWidget>
+#include <QImage>
 
 #include "usbtenki.h"
+#include "usbtenki_version.h"
 #include "TenkiSources.h"
 #include "TenkiDashboard.h"
 #include "DashSensor.h"
@@ -21,8 +23,14 @@ MainWindow::MainWindow()
 	QHBoxLayout *bot_lay = new QHBoxLayout();
 	QWidget *bot_btns = new QWidget();
 	bot_btns->setLayout(bot_lay);
-	bot_lay->addStretch();
+
+	QLabel *img_logo = new QLabel("raphnet technologies\nhttp://www.raphnet-tech.com");
+	img_logo->setPixmap(QPixmap(":rnt_logo200.png"));
+
 	QPushButton *exit_button = new QPushButton(QIcon(":application-exit.png"), QObject::tr("Quit QTenki"));
+	
+	bot_lay->addWidget(img_logo);
+	bot_lay->addStretch();
 	bot_lay->addWidget(exit_button);
 	connect(exit_button, SIGNAL(clicked()), this, SLOT(close()));
 
@@ -32,9 +40,11 @@ MainWindow::MainWindow()
 	TenkiDashboard *td;
 	About *about;
 
+	// If the following changes, configuration will be lost.
 	QCoreApplication::setOrganizationName("raphnet technologies");
 	QCoreApplication::setOrganizationDomain("raphnet.net");
-	QCoreApplication::setApplicationName("QTenki");
+	QCoreApplication::setApplicationName("Qtenki");
+	
 
 	TenkiSources *tenkisources = new TenkiSources();
 	tenkisources->init();
@@ -74,7 +84,9 @@ MainWindow::MainWindow()
 	layout->addWidget(tw);
 	layout->addWidget(bot_btns);
 	QIcon ico(":qtenki.ico");
+	
 	setWindowIcon(ico);
+	setWindowTitle("QTenki "USBTENKI_VERSION);
 }
 
 MainWindow::~MainWindow()
