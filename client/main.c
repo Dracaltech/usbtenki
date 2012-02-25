@@ -94,6 +94,7 @@ static void printUsage(void)
 	printf("\nOptions:\n");
 	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
 	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
+	printf("    old_sht75            Use the old SHT RH compensention coefficients.\n");
 }
 
 static void printVersion(void)
@@ -275,6 +276,7 @@ int main(int argc, char **argv)
 					} tbl[] = { 
 						{ "no_heat_index_range", USBTENKI_FLAG_NO_HEAT_INDEX_RANGE },
 						{ "no_humidex_range", USBTENKI_FLAG_NO_HUMIDEX_RANGE },
+						{ "old_sht75", USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION },
 					};
 					
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
@@ -648,7 +650,7 @@ static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct 
 				return &channels[i];
 			}				
 
-			res = usbtenki_readChannelList(hdl, &requested_channel_id, 1, channels, num_channels, g_num_attempts);
+			res = usbtenki_readChannelList(hdl, &requested_channel_id, 1, channels, num_channels, g_num_attempts, g_flags);
 			if (res!=0) {
 				fprintf(stderr, "Failed to read channel %d data from device! (%d)\n",
 					requested_channel_id, res);
@@ -735,7 +737,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 
 	/* Read all requested, real channels */
 	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns, 
-													channels, num_channels, g_num_attempts);
+													channels, num_channels, g_num_attempts, g_flags);
 	if (res<0) {
 		return -1;
 	}
