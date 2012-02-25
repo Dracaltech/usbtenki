@@ -2,6 +2,10 @@ Version 1.9.2:
     General:
 		Added options to disable input range validation for humidex and heat index.
 		Added firmware and host support for a tachometer.
+		Updated SHT75 Relative humidity non-linearity compensation
+			coefficients according to datasheet rev.5 (2011).
+		Added an option to use the old coefficients (Datasheet rev.3, 2007)
+		Added a temperature corrected RH reading (sensirion only)
 	       
 	QTenki: Better error handling (auto-reopen) and related logging options.
 
