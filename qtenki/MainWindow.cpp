@@ -24,12 +24,14 @@ MainWindow::MainWindow()
 	QWidget *bot_btns = new QWidget();
 	bot_btns->setLayout(bot_lay);
 
-	QLabel *img_logo = new QLabel("raphnet technologies\nhttp://www.raphnet-tech.com");
+	QLabel *img_logo = new QLabel();
 	img_logo->setPixmap(QPixmap(":rnt_logo200.png"));
+	QLabel *txt_logo = new QLabel("raphnet technologies");
 
 	QPushButton *exit_button = new QPushButton(QIcon(":application-exit.png"), QObject::tr("Quit QTenki"));
 	
 	bot_lay->addWidget(img_logo);
+	bot_lay->addWidget(txt_logo);
 	bot_lay->addStretch();
 	bot_lay->addWidget(exit_button);
 	connect(exit_button, SIGNAL(clicked()), this, SLOT(close()));
