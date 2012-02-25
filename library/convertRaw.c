@@ -5,7 +5,7 @@
 #include "usbtenki_units.h"
 
 
-int usbtenki_convertRaw(struct USBTenki_channel *chn)
+int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 {
 	float temperature;
 	int chip_fmt = TENKI_UNIT_KELVIN;
@@ -116,15 +116,27 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn)
 
 		case USBTENKI_CHIP_SHT_RH:
 			{
-				float c1 = -4.0;
-				float c2 = 0.0405;
-				float c3 = -2.8 * powf(10.0, -6.0);
+				// The following coefficients are from the 2011 Datasheet
+				float c1 = -2.0468;
+				float c2 = 0.0367;
+				float c3 = -1.5955 * powf(10.0, -6.0);
 				float sorh;
+
+				if (flags & USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION) {
+					// The following coefficients are from the 2007 Datasheet
+					c1 = -4.0;
+					c2 = 0.0405;
+					c3 = -2.8 * powf(10.0, -6.0);
+				}
 
 				if (chn->raw_length!=2)
 					goto wrongData;
 
 				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
+	
+				// Keep the raw value around for the temperature compensated
+				// humidity reading	
+				chn->raw_value = sorh;
 			
 				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
 				chip_fmt = TENKI_UNIT_RH;

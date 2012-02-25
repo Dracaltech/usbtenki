@@ -47,12 +47,14 @@ struct USBTenki_channel {
 	char saturated;
 	unsigned char raw_data[8];
 	int raw_length;
+	float raw_value; // Not always used.
 	float converted_data;
 	int converted_unit;
 };
 
-#define USBTENKI_FLAG_NO_HUMIDEX_RANGE			1
-#define USBTENKI_FLAG_NO_HEAT_INDEX_RANGE		2
+#define USBTENKI_FLAG_NO_HUMIDEX_RANGE				1
+#define USBTENKI_FLAG_NO_HEAT_INDEX_RANGE			2
+#define USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION	4
 
 typedef void* USBTenki_dev_handle; // Cast from usb_dev_handle
 typedef void* USBTenki_device; // Cast from usb_device
@@ -78,7 +80,7 @@ int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
 int usbtenki_getChipID(USBTenki_dev_handle hdl, int id);
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl);
 
-int usbtenki_convertRaw(struct USBTenki_channel *chn);
+int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags);
 
 int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstArray, int arr_size);
 
@@ -91,8 +93,8 @@ int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstA
 int usbtenki_addVirtualChannels(struct USBTenki_channel *chnArray, int *num_channels, int arr_size);
 int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, unsigned long flags);
 
-int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts);
-int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn);
+int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts, unsigned long flags);
+int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn, unsigned long flags);
 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
 float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
