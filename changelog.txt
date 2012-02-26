@@ -1,3 +1,8 @@
+Version 1.9.3:
+	QTenki:
+	    - Minimize to tray configuration option added.
+		- Fix some configuration options which were not saved.
+
 Version 1.9.2:
     General:
 		- Added options to disable input range validation for humidex and heat index.
