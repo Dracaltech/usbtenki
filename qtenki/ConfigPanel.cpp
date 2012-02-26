@@ -23,11 +23,11 @@ ConfigPanel::ConfigPanel()
 	dataBox->setLayout(dataBox_layout);
 
 	cb_use_old_sht_coefficients = new QCheckBox(tr("Use old SHT75 relative humidity non-linearity correction coefficients (Datasheet rev.3, 2007)"));
-	cb_use_old_sht_coefficients->setChecked(settings.value("data/disable_heat_index_range").toBool());
+	cb_use_old_sht_coefficients->setChecked(settings.value("data/use_old_coefficients").toBool());
 	cb_disable_heat_index_validation = new QCheckBox(tr("Disable heat index input range check (may produce inaccurate values)"));
 	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
-	cb_disable_humidex_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
+	cb_disable_humidex_validation->setChecked(settings.value("data/disable_humidex_range").toBool());
 
 	dataBox_layout->addWidget(cb_use_old_sht_coefficients);
 	dataBox_layout->addWidget(cb_disable_heat_index_validation);
@@ -41,6 +41,11 @@ ConfigPanel::ConfigPanel()
 	QGroupBox *appearanceBox = new QGroupBox(tr("Appearance"));
 	QGridLayout *appBox_layout = new QGridLayout();
 	appearanceBox->setLayout(appBox_layout);
+
+	cb_minimize_to_system_tray = new QCheckBox(tr("Minimize window to system tray"));
+	cb_minimize_to_system_tray->setChecked(settings.value("ui/minimize_to_tray").toBool());
+	appBox_layout->addWidget(cb_minimize_to_system_tray);
+	connect(cb_minimize_to_system_tray, SIGNAL(stateChanged(int)), this, SLOT(updateMinimizeToTray(int)));
 
 	QColor def_win_color = QApplication::palette().color(QPalette::Active,QPalette::Window);
 	sys_win_color = new SelectableColor("config/ovr_win_color", tr("Customize window color"), def_win_color);
@@ -84,19 +89,37 @@ ConfigPanel::ConfigPanel()
 
 void ConfigPanel::updateFlagsFromCheckboxes(int ignored)
 {
+	QSettings settings;
 	long flags = 0;
 
-	if (cb_disable_heat_index_validation->isChecked())
+	if (cb_disable_heat_index_validation->isChecked()) {
 		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
-	if (cb_disable_humidex_validation->isChecked())
-		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
+	}
+
+	if (cb_disable_humidex_validation->isChecked()) {
+		flags |= USBTENKI_FLAG_NO_HUMIDEX_RANGE;
+	}
+
 	if (cb_use_old_sht_coefficients->isChecked()) {
 		flags |= USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION;
 	}
 
 	g_usbtenki_flags = flags;
 
+	settings.setValue("data/disable_heat_index_range", cb_disable_heat_index_validation->isChecked());
+	settings.setValue("data/disable_humidex_range", cb_disable_humidex_validation->isChecked());
+	settings.setValue("data/use_old_coefficients", cb_use_old_sht_coefficients->isChecked());
 }
+
+void ConfigPanel::updateMinimizeToTray(int ig)
+{
+	QSettings settings;
+
+	minimize_to_tray = cb_minimize_to_system_tray->isChecked();
+
+	settings.setValue("ui/minimize_to_tray", cb_minimize_to_system_tray->isChecked());
+}
+
 
 void ConfigPanel::selectedChanged(QString name, int state, QColor color)
 {

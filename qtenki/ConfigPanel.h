@@ -21,6 +21,7 @@ class ConfigPanel : public QWidget
 		void customColor(QString name, QColor col);
 		void selectedChanged(QString name, int state, QColor col);
 		void updateFlagsFromCheckboxes(int);
+		void updateMinimizeToTray(int);
 
 	private:
 		QPalette default_palette;
@@ -30,6 +31,7 @@ class ConfigPanel : public QWidget
 		QCheckBox *cb_use_old_sht_coefficients;
 		QCheckBox *cb_disable_heat_index_validation;
 		QCheckBox *cb_disable_humidex_validation;
+		QCheckBox *cb_minimize_to_system_tray;
 
 };
 

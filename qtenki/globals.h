@@ -4,5 +4,6 @@
 #include "usbtenki.h" 
 
 extern long g_usbtenki_flags;
+extern int minimize_to_tray;
 
 #endif 

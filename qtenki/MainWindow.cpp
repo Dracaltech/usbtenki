@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QTabWidget>
 #include <QImage>
+#include <QMenu>
 
 #include "usbtenki.h"
 #include "usbtenki_version.h"
@@ -14,6 +15,7 @@
 #include "Logger.h"
 #include "ConfigPanel.h"
 #include "About.h"
+#include "globals.h"
 
 MainWindow::MainWindow()
 {
@@ -89,6 +91,27 @@ MainWindow::MainWindow()
 	
 	setWindowIcon(ico);
 	setWindowTitle("QTenki "USBTENKI_VERSION);
+
+	// The tray icon stuff
+	trayicon = new QSystemTrayIcon(this);
+	trayicon->setIcon(ico);
+
+	connect(trayicon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_show_hide(QSystemTrayIcon::ActivationReason)));
+	
+	QAction *quit_action = new QAction( "Exit", trayicon);
+	connect(quit_action, SIGNAL(triggered()), this, SLOT(close()));
+
+	QAction *hide_action = new QAction( "Show/Hide", trayicon);
+	connect(hide_action, SIGNAL(triggered()), this, SLOT(on_show_hide()));
+
+	QMenu *tray_icon_menu = new QMenu;
+	tray_icon_menu->addAction(hide_action);
+	tray_icon_menu->addAction(quit_action);
+
+	trayicon->setContextMenu(tray_icon_menu);
+
+	trayicon->show();
+
 }
 
 MainWindow::~MainWindow()
@@ -98,9 +121,64 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
 	if (logger->confirmMayExit()) {
+		// hide tray icon here. Otherwise it lingers until we hover the
+		// mouse over it.
+		trayicon->hide();
 		ev->accept();
 		return;
 	}
 
 	ev->ignore();
+}
+
+void MainWindow::changeEvent(QEvent *ev)
+{
+	switch (ev->type())
+	{
+		case QEvent::WindowStateChange:
+		{
+			if (this->windowState() & Qt::WindowMinimized)
+			{
+				if (minimize_to_tray) {
+					QTimer::singleShot(0, this, SLOT(hide()));
+					ev->ignore();
+					show();
+				}
+			}	
+		}
+		break;
+
+		default:
+			break;
+	}
+
+	QWidget::changeEvent(ev);
+}
+
+void MainWindow::on_show_hide()
+{
+
+	if ( isVisible() ) {
+		lower();
+		if (minimize_to_tray) {
+			hide();
+		}
+	}
+	else {
+		show();
+		raise();
+		setFocus();
+		showNormal();
+	}
+}
+
+void MainWindow::on_show_hide(QSystemTrayIcon::ActivationReason reason)
+{
+	if (reason)
+	{
+		if (reason != QSystemTrayIcon::DoubleClick)
+			return;
+	}
+
+	on_show_hide();
 }
