@@ -13,6 +13,7 @@ do
 	echo " g) bs02.hex             BS02 sensor (sht clone) to USB cable"
 	echo " h) lm75.hex             LM75 to USB"
 	echo " i) se95.hex             SE95 to USB"
+	echo " j) adt7410.hex          ADT7410 to USB"
 	echo
 	read -p "Your choice? " CHOICE
 
@@ -26,6 +27,7 @@ do
 		g|G) ./program.sh bs02.hex 	;;
 		h|H) ./program.sh lm75.hex 	;;
 		i|I) ./program.sh se95.hex 	;;
+		j|J) ./program.sh adt7410.hex 	;;
 	esac
 
 done
