@@ -184,8 +184,8 @@ int main(void)
 	PORTC= 0xff;
 	DDRC = 0x00;
 
-	adc_init();
 	eeprom_init();
+	adc_init();
 	serno_init();
 
 	
