@@ -5,6 +5,58 @@
 #include "usbtenki_units.h"
 
 
+/* Calculate the theoric resistance of an RTD for a given temperature. */
+static double temp_to_pt100_r(double temp)
+{
+	// DIN 43760
+	double r0 = 100;
+	double a = 3.9080 * pow(10, -3);
+	double b = -5.8019 * pow(10, -7);
+	double c = -4.2735 * pow(10, -12);
+
+//	printf("Considering %.4f\n", temp);
+
+	if (temp > 0) {
+		return r0 * (1 + a*temp + b*pow(temp,2));
+	} else {
+		return r0 * (1 + a*temp + b*pow(temp,2) + c*pow(temp,3));
+	}
+}
+
+/* Recusively zoom-in a temperature to resistance match. */
+static double _searchTempFromR(double r, double t_start, double step)
+{
+	double t;
+	double sr;
+
+	sr = temp_to_pt100_r(t_start);
+	if (sr > r) {
+		return -999;
+	}
+
+	// looks like we are close enough.
+	if (step < 0.001)
+		return t_start;
+
+	for (t=t_start; t<1000; t+=step)
+	{
+		sr = temp_to_pt100_r(t);
+
+		if (sr > r) {
+			return _searchTempFromR(r, t-step, step/10.0);
+		}
+	}
+
+	return -999;
+}
+
+/* Using a recursive algorithm, find the RTD temperature from its resistance. */
+double searchTempFromR(double r)
+{
+	// completes after approx. 40 calls to temp_to_pt100_r
+	return _searchTempFromR(r, -274, 100);
+}
+
 int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 {
 	float temperature;
@@ -342,6 +394,51 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 					}
 					printf("\n");
 				}
+			}
+			break;
+
+		case USBTENKI_CHIP_PT100_RTD:
+			{
+				unsigned int raw_ch0, raw_ch1;
+				double lsb = 15.625 * pow(10, -6); // 15.625 uV
+				double volts_ch0, volts_ch1;
+				double i_src = 0.001; // 1mA
+				double r_wire;
+				double rt;
+				double r_pt100;
+
+				if (chn->raw_length != 6)
+					return -1;
+				
+				raw_ch0 = (raw_data[0] & 0x03) << 18;
+				raw_ch0 |= raw_data[1] << 8;
+				raw_ch0 |= raw_data[2];
+				
+				raw_ch1 = (raw_data[3] & 0x03) << 18;
+				raw_ch1 |= raw_data[4] << 8;
+				raw_ch1 |= raw_data[5];
+
+//				printf("ch0: %02X %02X %02X\n", raw_data[0], raw_data[1], raw_data[2]);
+//				printf("ch1: %02X %02X %02X\n", raw_data[3], raw_data[4], raw_data[5]);
+//
+				volts_ch0 = raw_ch0 * lsb / 1;
+				volts_ch1 = raw_ch1 * lsb / 1;
+
+//				printf("ch0: %.8f volts\n", volts_ch0);
+//				printf("ch1: %.8f volts\n", volts_ch1);
+
+				r_wire = volts_ch1 / i_src;
+
+//				printf("Lead resistance: %.8f ohm\n", r_wire);
+
+				rt = volts_ch0 / i_src;				
+//				printf("Total resistance: %.8f ohm\n", rt);
+
+				r_pt100 = rt - r_wire * 2;
+//				printf("PT100 resistance: %.8f ohm\n", r_pt100);
+
+				chip_fmt = TENKI_UNIT_CELCIUS;
+				temperature = searchTempFromR(r_pt100);
 			}
 			break;
 

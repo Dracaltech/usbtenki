@@ -1,4 +1,6 @@
 Version 1.9.3:
+	General:
+	    - Support for PT100 RTD Sensor using 18bit ADC
 	QTenki:
 	    - Minimize to tray configuration option added.
 		- Fix some configuration options which were not saved.

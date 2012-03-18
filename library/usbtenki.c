@@ -552,6 +552,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Tachometer";
 
+		case USBTENKI_CHIP_PT100_RTD:
+			return "PT100 Temperature sensor";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -587,6 +590,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_LM92:
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
+		case USBTENKI_CHIP_PT100_RTD:
 			return "Temperature";
 		
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
