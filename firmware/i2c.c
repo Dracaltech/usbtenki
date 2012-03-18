@@ -38,6 +38,7 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 								int rd_len, unsigned char *rd_data)
 {
 	int ret =0;
+	unsigned char twsr;
 
 	if (wr_len==0 && rd_len==0)
 		return -1;
@@ -79,11 +80,13 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 
 	if (rd_len != 0)
 	{
-		/* Do a repeated start condition */
+		/* Do a (repeated) start condition */
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
 		while (!(TWCR & (1<<TWINT))) 
 			{ /* do nothing */ }
-		if (TWSR != TW_REP_START) {
+		twsr = TWSR;
+
+		if ((twsr != TW_REP_START) && (twsr != TW_START) ) {
 			ret = 3;
 			goto err;
 		}
