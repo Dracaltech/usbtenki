@@ -476,7 +476,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
 				
-				r_pt100 = 90; // fake ~-20
+				//r_pt100 = 90; // fake ~-20
 				temperature = searchTempFromR(r_pt100);
 			}
 			break;
