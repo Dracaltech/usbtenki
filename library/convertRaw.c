@@ -50,9 +50,43 @@ static double _searchTempFromR(double r, double t_start, double step)
 	return -999;
 }
 
+double zk(double k, double p, double q)
+{
+	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((-q/2.0)*sqrt(27/-(p*p*p))) + 2*k*M_PI/3.0);   
+//	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((3*q/2*p)*sqrt(-3 / p)) - k*((2*M_PI)/3.0));   
+}
+
 /* Using a recursive algorithm, find the RTD temperature from its resistance. */
 double searchTempFromR(double r)
 {
+	double a = 3.9080 * pow(10, -3);
+	double b = -5.8019 * pow(10, -7);
+	double c = -4.2735 * pow(10, -12);
+
+	if (r > 100) {
+//		printf("Using formula\n");
+		return (-a + sqrt(pow(a,2)-4*b*(1-(r/100.0))) ) / (2*b);
+	} 
+#if 0
+	else {
+		double p = (-(b*b / (3*c*c)) + (a/c) );
+		double q = ( (b/(27*c)) * (  ( (2*(b*b)) / (c*c) )  - (9*a/c)) ) + (1-(r/100.0))/c;
+		double delta = q*q + 4.0 / 27.0 * p*p*p;
+		double z0, z1, z2;
+
+		z0 = zk(0, p, q);
+		z1 = zk(1, p, q);
+		z2 = zk(2, p, q);
+
+		printf("%f %f\n", p, q);
+		printf("%f %f %f\n", z0,z1,z2);
+
+		return pow((-q * sqrt(delta) / 2.0)  , (1/3.0) ) + pow ((-q - sqrt(delta)) / 2.0 , (1/3.0));
+		
+
+	}
+#endif
+
 	// completes after approx. 40 calls to temp_to_pt100_r
 	return _searchTempFromR(r, -274, 100);
 }
@@ -406,6 +440,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 				double r_wire;
 				double rt;
 				double r_pt100;
+				double chn0_gain = 2;
+				double chn1_gain = 8;
+				double ferrite_r = 0.8;
 
 				if (chn->raw_length != 6)
 					return -1;
@@ -421,12 +458,12 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 //				printf("ch0: %02X %02X %02X\n", raw_data[0], raw_data[1], raw_data[2]);
 //				printf("ch1: %02X %02X %02X\n", raw_data[3], raw_data[4], raw_data[5]);
 //
-				volts_ch0 = raw_ch0 * lsb / 1;
-				volts_ch1 = raw_ch1 * lsb / 1;
+				volts_ch0 = raw_ch0 * lsb / chn0_gain;
+				volts_ch1 = raw_ch1 * lsb / chn1_gain;
 
 //				printf("ch0: %.8f volts\n", volts_ch0);
 //				printf("ch1: %.8f volts\n", volts_ch1);
-
+//
 				r_wire = volts_ch1 / i_src;
 
 //				printf("Lead resistance: %.8f ohm\n", r_wire);
@@ -434,10 +471,12 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 				rt = volts_ch0 / i_src;				
 //				printf("Total resistance: %.8f ohm\n", rt);
 
-				r_pt100 = rt - r_wire * 2;
+				r_pt100 = rt - r_wire * 2 - ferrite_r;
 //				printf("PT100 resistance: %.8f ohm\n", r_pt100);
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
+				
+				r_pt100 = 90; // fake ~-20
 				temperature = searchTempFromR(r_pt100);
 			}
 			break;
