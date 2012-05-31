@@ -1213,7 +1213,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 															int max_channels)
 {
 	int i;
-	struct USBTenki_channel chn;
+	struct USBTenki_channel chn = { };
 
 	int real_channels = *num_channels;
 
