@@ -1213,9 +1213,10 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 															int max_channels)
 {
 	int i;
-	struct USBTenki_channel chn = { };
-
+	struct USBTenki_channel chn;
 	int real_channels = *num_channels;
+
+	memset(&chn, 0, sizeof(struct USBTenki_channel));
 
 	/* Dew point, humidex and heat index from Temp+RH for sensirion sht1x/7x and BS02 */
 	if (1)
