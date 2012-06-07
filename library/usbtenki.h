@@ -77,10 +77,11 @@ void usbtenki_closeDevice(USBTenki_dev_handle hdl);
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd, 
 										int id, unsigned char *dst);
 int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst);
 int usbtenki_getChipID(USBTenki_dev_handle hdl, int id);
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl);
 
-int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags);
+int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsigned char *caldata, int caldata_len);
 
 int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstArray, int arr_size);
 

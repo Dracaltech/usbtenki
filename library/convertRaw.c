@@ -63,6 +63,7 @@ double searchTempFromR(double r)
 	double b = -5.8019 * pow(10, -7);
 	double c = -4.2735 * pow(10, -12);
 
+
 	if (r > 100) {
 //		printf("Using formula\n");
 		return (-a + sqrt(pow(a,2)-4*b*(1-(r/100.0))) ) / (2*b);
@@ -91,7 +92,7 @@ double searchTempFromR(double r)
 	return _searchTempFromR(r, -274, 100);
 }
 
-int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
+int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsigned char *caldata, int caldata_len)
 {
 	float temperature;
 	int chip_fmt = TENKI_UNIT_KELVIN;
@@ -442,24 +443,43 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 				double r_pt100;
 				double chn0_gain = 2;
 				double chn1_gain = 8;
-				double ferrite_r = 0.8;
+				double ferrite_r = 0;
 
 				if (chn->raw_length != 6)
 					return -1;
+			
 				
-				raw_ch0 = (raw_data[0] & 0x03) << 18;
+				raw_ch0 = (raw_data[0] & 0x03) << 16;
 				raw_ch0 |= raw_data[1] << 8;
 				raw_ch0 |= raw_data[2];
 				
-				raw_ch1 = (raw_data[3] & 0x03) << 18;
+				raw_ch1 = (raw_data[3] & 0x03) << 16;
 				raw_ch1 |= raw_data[4] << 8;
 				raw_ch1 |= raw_data[5];
+		
 
 //				printf("ch0: %02X %02X %02X\n", raw_data[0], raw_data[1], raw_data[2]);
 //				printf("ch1: %02X %02X %02X\n", raw_data[3], raw_data[4], raw_data[5]);
-//
+		
+				// CALIBRATION
+				//
+				// The most significant factor seems to be the current source precision
+				// of 1%. The ADC gain error and offset has almost no influence.
+				//
+				if (caldata_len > 0) {
+					double current_error = 0;
+
+					current_error = (double)((signed char)caldata[0]) / 100.0; // +/- 1.27% 
+					i_src += i_src * current_error / 100.0;
+//					printf("Current source error: %.2f%%\n", current_error);
+				}
+				//chn0_gain += chn0_gain * 0.35 / 100;
+				//chn1_gain += chn1_gain * 0.35 / 100;
+
+
 				volts_ch0 = raw_ch0 * lsb / chn0_gain;
 				volts_ch1 = raw_ch1 * lsb / chn1_gain;
+
 
 //				printf("ch0: %.8f volts\n", volts_ch0);
 //				printf("ch1: %.8f volts\n", volts_ch1);
@@ -471,7 +491,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags)
 				rt = volts_ch0 / i_src;				
 //				printf("Total resistance: %.8f ohm\n", rt);
 
-				r_pt100 = rt - r_wire * 2 - ferrite_r;
+				r_pt100 = rt - r_wire * 2  - ferrite_r;
 //				printf("PT100 resistance: %.8f ohm\n", r_pt100);
 
 				chip_fmt = TENKI_UNIT_CELCIUS;

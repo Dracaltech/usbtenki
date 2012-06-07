@@ -303,6 +303,11 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	return datlen;
 }
 
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
+{
+	return usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst);
+}
+
 int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst)
 {
 	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst);
@@ -704,6 +709,8 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 {
 	int i, j, res;
 	int n;
+	unsigned char caldata[16];
+	int caldata_len = 0;
 
 	for (i=0; i<num; i++)
 	{
@@ -733,14 +740,33 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 			}
 			break;
 		}
-		
+
 		/* all attempts failed? */
 		if (n==num_attempts) {
 			return -1;
 		}
 		
+		// handle chips with calibration data
+		if (dst[j].chip_id == USBTENKI_CHIP_PT100_RTD) {
+//			printf("Fetching PT100 calibration data...\n");
+			for (n=0; n<num_attempts; n++) {
+				caldata_len = usbtenki_getCalibration(hdl, dst[j].channel_id, caldata);
+				if (caldata_len<0) {
+					usleep(200);
+					continue;
+				}
+				break;
+			}
+
+			/* all attempts failed? */
+			if (n==num_attempts) {
+				return -1;
+			}
+		}
+		
+		
 		dst[j].data_valid = 1;
-		res = usbtenki_convertRaw(&dst[j], flags);
+		res = usbtenki_convertRaw(&dst[j], flags, caldata, caldata_len);
 		if (res==-1) {
 			fprintf(stderr, "Failed to convert raw value from chip %d, channel: %d\n",
 								dst[j].chip_id, dst[j].channel_id);
