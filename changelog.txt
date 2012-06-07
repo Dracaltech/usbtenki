@@ -1,3 +1,6 @@
+Version 1.9.4:
+	    - Support for Calibrated PT100 RTD Sensor. 
+
 Version 1.9.3:
 	General:
 	    - Support for PT100 RTD Sensor using 18bit ADC
