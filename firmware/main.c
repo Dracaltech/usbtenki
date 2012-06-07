@@ -58,6 +58,12 @@ static unsigned char xor_buf(unsigned char *buf, int len)
 	return x;
 }
 
+int sensors_getCalibration(unsigned char id, unsigned char *dst) __attribute__((weak));
+int sensors_getCalibration(unsigned char id, unsigned char *dst)
+{
+	return 0;
+}
+
 uchar   usbFunctionSetup(uchar data[8])
 {
 	static uchar    replyBuf[8];
@@ -74,6 +80,23 @@ uchar   usbFunctionSetup(uchar data[8])
 
 	switch (data[1])
 	{
+		case USBTENKI_GET_CALIBRATION:
+			if (data[2] >= sensors_channels) 
+				break;
+
+			res = sensors_getCalibration(data[2], &replyBuf[1]);
+				
+			if (res<0) {
+				replyBuf[0] = USBTENKI_ERROR;
+				replen = 1;
+				break;
+			}
+
+			replyBuf[0] = USBTENKI_GET_CALIBRATION;
+			replyBuf[res+1] = xor_buf(replyBuf, res+1);	
+			replen = res + 2;
+			break;
+
 		case USBTENKI_GET_RAW:
 			if (data[2] >= total_channels) 
 				break;
@@ -161,6 +184,15 @@ uchar   usbFunctionSetup(uchar data[8])
 			eeprom_commit();
 
 			replyBuf[0] = USBTENKI_SET_ADC_REF;
+			replyBuf[1] = xor_buf(replyBuf, 1);
+			replen = 2;
+			break;
+
+		case USBTENKI_SET_RTD_CORR:
+			g_eeprom_data.rtd_corr = data[2];
+			eeprom_commit();
+
+			replyBuf[0] = USBTENKI_SET_RTD_CORR;
 			replyBuf[1] = xor_buf(replyBuf, 1);
 			replen = 2;
 			break;

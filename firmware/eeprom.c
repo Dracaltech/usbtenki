@@ -28,7 +28,7 @@ void eeprom_commit(void)
 
 void eeprom_init(void)
 {
-	char *magic = "TenkiCf1";
+	char *magic = "TenkiCf2";
 	eeprom_read_block(&g_eeprom_data, (void*)0x00, sizeof(struct eeprom_data_struct));
 
 	/* Check for magic number */
@@ -38,6 +38,7 @@ void eeprom_init(void)
 		memset(g_eeprom_data.adc_chips, USBTENKI_CHIP_NONE, 
 										EEPROM_ADC_CHIPS_SIZE);
 		g_eeprom_data.use_aref = 0;
+		g_eeprom_data.rtd_corr = 0;
 
 		eeprom_commit();
 	}

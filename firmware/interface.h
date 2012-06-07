@@ -29,6 +29,7 @@ int sensors_getChipID(unsigned char id);
  **/
 int sensors_getRaw(unsigned char id, unsigned char *dst);
 
+int sensors_getCalibration(unsigned char id, unsigned char *dst);
 
 #endif // _interface_h__
 

@@ -20,6 +20,7 @@
 #include "usbtenki_cmds.h"
 #include "i2c.h"
 #include "mcp3423.h"
+#include "eeprom.h"
 
 static unsigned char mcp_addr = MCP3423_BASE_ADDR;
 
@@ -50,7 +51,15 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 
 	// At I = 1mA, this channels saturates with a 128 ohm wire.
 	mcp3423_readChannel(mcp_addr, 1, MCP3423_GAIN8X , dst + 3);
+
 	return 6;
 }
 
+// overwire weak funtion in main.c
+int sensors_getCalibration(unsigned char id, unsigned char *dst)
+{
+	((char*)dst)[0] = g_eeprom_data.rtd_corr;
+
+	return 1;
+}
 
