@@ -48,6 +48,7 @@ static void printUsage(void)
 	printf("    setadcchip  adc_id chip\n");
 	printf("    setserial   serial (8 characters)\n");
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
+	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
 
 }
 
@@ -145,8 +146,6 @@ int main(int argc, char **argv)
 		int ref_id;
 		char *e;
 
-		printf("hmm\n");
-	
 		/* printf("    setadcchip  adc_id chip\n"); */
 
 		if (n_extra_args<2) {
@@ -175,6 +174,41 @@ int main(int argc, char **argv)
 
 		goto cleanAndExit;
 	}
+
+	/**************** Setref ****************/
+	if (strcmp(eargv[0], "set_rtd_cal")==0) {
+		int ref_id;
+		char *e;
+
+		/* printf("    setadcchip  adc_id chip\n"); */
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		ref_id = strtol(eargv[1], &e, 0);
+		if (e==eargv[1]) {
+			fprintf(stderr, "Bad ref id\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+		
+	if (g_verbose) 
+			printf("Setting rtd calibration to %d\n", ref_id);
+
+		res = usbtenki_command(hdl, USBTENKI_SET_RTD_CORR, 
+								(ref_id & 0xff), repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error setting adc calibration to %d\n",
+								ref_id);
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
 
 
 	/**************** Setadcchip ****************/
