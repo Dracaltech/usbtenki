@@ -434,7 +434,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 		case USBTENKI_CHIP_PT100_RTD:
 			{
-				unsigned int raw_ch0, raw_ch1;
+				int raw_ch0, raw_ch1;
 				double lsb = 15.625 * pow(10, -6); // 15.625 uV
 				double volts_ch0, volts_ch1;
 				double i_src = 0.001; // 1mA
@@ -448,18 +448,18 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				if (chn->raw_length != 6)
 					return -1;
 			
+				// Assign with most significant bits aligned (signed).
+				// Even though the negative inputs of the ADC are at GND,
+				// the conversion can still result venture below 0 (values of -1 or -2). This
+				// happens when using 2 wire RTDs because we short CH1 to GND.
+				raw_ch0 = ( ((raw_data[0] & 0x03) << 30) | (raw_data[1] << 22) | (raw_data[2] << 14) );
+				raw_ch0 >>= 14;	
 				
-				raw_ch0 = (raw_data[0] & 0x03) << 16;
-				raw_ch0 |= raw_data[1] << 8;
-				raw_ch0 |= raw_data[2];
-				
-				raw_ch1 = (raw_data[3] & 0x03) << 16;
-				raw_ch1 |= raw_data[4] << 8;
-				raw_ch1 |= raw_data[5];
-		
+				raw_ch1 = ( ((raw_data[3] & 0x03) << 30) | (raw_data[4] << 22) | (raw_data[5] << 14) );
+				raw_ch1 >>= 14;	
 
-//				printf("ch0: %02X %02X %02X\n", raw_data[0], raw_data[1], raw_data[2]);
-//				printf("ch1: %02X %02X %02X\n", raw_data[3], raw_data[4], raw_data[5]);
+//				printf("ch0: %02X %02X %02X %08x\n", raw_data[0], raw_data[1], raw_data[2], raw_ch0);
+//				printf("ch1: %02X %02X %02X %08x\n", raw_data[3], raw_data[4], raw_data[5], raw_ch1);
 		
 				// CALIBRATION
 				//
@@ -473,9 +473,6 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					i_src += i_src * current_error / 100.0;
 //					printf("Current source error: %.2f%%\n", current_error);
 				}
-				//chn0_gain += chn0_gain * 0.35 / 100;
-				//chn1_gain += chn1_gain * 0.35 / 100;
-
 
 				volts_ch0 = raw_ch0 * lsb / chn0_gain;
 				volts_ch1 = raw_ch1 * lsb / chn1_gain;
