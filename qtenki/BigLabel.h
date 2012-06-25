@@ -12,8 +12,6 @@ class BigLabel : public QLabel
 
 		void resizeEvent(QResizeEvent *event);
 		void refresh();
-
-	private:
 		QString src_name;
 };
 

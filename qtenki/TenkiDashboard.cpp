@@ -4,7 +4,7 @@
 #include "TenkiDashboard.h"
 #include "DashSensor.h"
 
-TenkiDashboard::TenkiDashboard(TenkiSources *src)
+TenkiDashboard::TenkiDashboard()
 {
 	mainLabel = new QLabel();	
 	mainLabel->setText("Connected sensor(s):");
@@ -17,7 +17,6 @@ TenkiDashboard::TenkiDashboard(TenkiSources *src)
 	nosensorsLabel = new QLabel(tr("No sensor connected, driver not installed or permission denied.<br>Please refer to the manual for instructions."));
 	vbox->addWidget(nosensorsLabel);
 
-	tsrc = src;
 }
 
 TenkiDashboard::~TenkiDashboard()

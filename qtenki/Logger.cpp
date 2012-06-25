@@ -164,6 +164,8 @@ void Logger::addTenkiSource(struct sourceDescription *sd)
 	 DataSourceCheckBox *cb = new DataSourceCheckBox(sd->q_name + "  --  " + sd->chipShortString, sd->q_name);
 	 svb->addWidget(cb);
 	 sources.append(cb);
+
+	 connect(tenkisources, SIGNAL(changed()), cb, SLOT(refreshAlias()));
 }
 
 void Logger::removeTenkiSource(struct sourceDescription *sd)

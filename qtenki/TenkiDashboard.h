@@ -12,7 +12,7 @@ class TenkiDashboard : public QWidget, public TenkiDeviceAddRemove
 	Q_OBJECT
 
 	public:
-		TenkiDashboard(TenkiSources *src);
+		TenkiDashboard();
 		~TenkiDashboard();
 		void addDashSensor(DashSensor *ds);
 
@@ -26,7 +26,6 @@ class TenkiDashboard : public QWidget, public TenkiDeviceAddRemove
 		QLabel *mainLabel;
 		QVBoxLayout *vbox;
 		QList<DashSensor*> sensors;
-		TenkiSources *tsrc;
 		QLabel *nosensorsLabel;
 };
 

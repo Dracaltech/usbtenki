@@ -2,6 +2,7 @@
 #include "usbtenki.h"
 #include <QTimer>
 #include <QDebug>
+#include <QSettings>
 #include <string.h>
 
 TenkiSources::TenkiSources()
@@ -63,6 +64,8 @@ int TenkiSources::addDeviceSources(TenkiDevice *td)
 
 int TenkiSources::addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_channel *chndat)
 {
+	QSettings settings;
+
 	struct sourceDescription *sd;
 	const char *serial = td->getSerial();
 
@@ -85,7 +88,11 @@ int TenkiSources::addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_c
 	sd->chipString = QString::fromAscii(chipToString(chndat->chip_id));
 	sd->chn_data = chndat;
 
+	sd->q_alias = settings.value("sourcesAliases/"+sd->q_name).toString();
+
 	sourceList.append(sd);
+
+	emit changed();
 
 	return 0;
 }
@@ -144,3 +151,38 @@ struct sourceDescription *TenkiSources::getSourceByName(QString source_name)
 	return NULL;
 }
 
+QString TenkiSources::getSourceAliasByName(QString source_name)
+{
+//	qDebug() << "Looking for " + source_name;
+
+	for (int i=0; i<sourceList.size(); i++) {
+		struct sourceDescription *sd = sourceList.at(i);
+	
+//		qDebug() << "Considering " + sd->q_name;
+		
+		if (sd->q_name == source_name) {
+			return sd->q_alias;
+		}
+	}
+
+	return "";
+}
+
+void TenkiSources::updateAlias(QString source_name, QString alias)
+{
+	QSettings settings;
+	struct sourceDescription *sd;
+
+	sd = getSourceByName(source_name);
+	if (sd)
+	{
+		sd->q_alias = alias;
+		settings.setValue("sourcesAliases/"+source_name, alias);
+	
+		qDebug() << "Updated alias for source '"+source_name+"' for '" + alias + "'";
+
+		emit changed();
+	} else {
+		qDebug() << "Source not found: "+source_name;
+	}
+}

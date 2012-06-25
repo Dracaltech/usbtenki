@@ -1,6 +1,11 @@
 #include <QDebug>
+#include <QSettings>
+#include <QLineEdit>
 #include "DashSensor.h"
 #include "TenkiDevice.h"
+#include "SourceAliasEdit.h"
+#include "ConfigCheckbox.h"
+#include "globals.h"
 
 DashSensor::DashSensor(TenkiDevice *td)
 {
@@ -26,6 +31,10 @@ DashSensor::DashSensor(TenkiDevice *td)
 	layout->setColumnMinimumWidth(col, 4);
 	layout->addWidget(new QLabel("<b>Unit</b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
+	layout->addWidget(new QLabel("<b>Alias</b>"), 0, col++);
+	layout->setColumnStretch(col, 0);
+	layout->addWidget(new QLabel("<b>In Big View</b>"), 0, col++);
+	layout->setColumnStretch(col, 0);
 
 	for (int i=0; i<tenki_device->getNumChannels(); i++)
 	{
@@ -39,8 +48,9 @@ DashSensor::DashSensor(TenkiDevice *td)
 
 void DashSensor::addChannel(int chn, int row)
 {
+	QSettings settings;
 	USBTenki_channel *ch;
-	QString a, b, c, d, e, f;
+	QString a, b, c, d, e, f, g;
 	QLabel *value_label, *unit_label;
 	int col=0;
 
@@ -50,7 +60,7 @@ void DashSensor::addChannel(int chn, int row)
 	a.sprintf("%d", chn);
 	layout->addWidget(new QLabel(a), row, col++);*/
 
-	f.sprintf("%s:%02x", tenki_device->getSerial(), chn);
+	f.sprintf("%s:%02X", tenki_device->getSerial(), chn);
 	layout->addWidget(new QLabel(f), row, col++);
 
 
@@ -69,6 +79,15 @@ void DashSensor::addChannel(int chn, int row)
 	unit_label = new QLabel(e);
 	layout->addWidget(unit_label, row, col++);
 	units.append(unit_label);
+
+	// alias
+	SourceAliasEdit *se = new SourceAliasEdit(f);
+	layout->addWidget(se, row, col++);
+	connect(se, SIGNAL(sourceAliasChanged(QString,QString)), g_tenkisources, SLOT(updateAlias(QString,QString)));
+
+	// In bigview
+	ConfigCheckbox *ccb = new ConfigCheckbox("", "bigviewChecked/" + f);
+	layout->addWidget(ccb, row, col++);
 
 	channel_id.append(chn);
 }

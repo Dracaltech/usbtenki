@@ -7,6 +7,7 @@
 
 #include "Logger.h"
 #include "ConfigPanel.h"
+#include "BigView.h"
 
 class MainWindow : public QWidget
 {
@@ -27,6 +28,7 @@ class MainWindow : public QWidget
 	private:
 		Logger *logger;
 		ConfigPanel *cfgPanel;
+		BigView *bigView;
 		QSystemTrayIcon *trayicon;
 };
 

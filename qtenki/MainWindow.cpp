@@ -16,6 +16,7 @@
 #include "ConfigPanel.h"
 #include "About.h"
 #include "globals.h"
+#include "BigView.h"
 
 MainWindow::MainWindow()
 {
@@ -50,12 +51,12 @@ MainWindow::MainWindow()
 	QCoreApplication::setApplicationName("Qtenki");
 	
 
-	TenkiSources *tenkisources = new TenkiSources();
-	tenkisources->init();
-	tenkisources->start();
+	g_tenkisources = new TenkiSources();
+	g_tenkisources->init();
+	g_tenkisources->start();
 
 	/* prepare tab elements */
-	td = new TenkiDashboard(tenkisources);
+	td = new TenkiDashboard();
 	dash_container = new QWidget();
 	dash_container_layout = new QVBoxLayout();
 	dash_container->setLayout(dash_container_layout);
@@ -63,11 +64,16 @@ MainWindow::MainWindow()
 	dash_container_layout->addStretch();
 
 
-	tenkisources->syncDevicesTo(td);
-	QObject::connect(tenkisources, SIGNAL(captureCycleCompleted()), td, SLOT(refreshView()));
+	g_tenkisources->syncDevicesTo(td);
+	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), td, SLOT(refreshView()));
 
 	// loggers
-	logger = new Logger(tenkisources);
+	logger = new Logger(g_tenkisources);
+
+	// big view
+	bigView = new BigView();
+	
+	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), bigView, SLOT(refreshView()));
 
 	// messages
 	// configuration
@@ -79,6 +85,7 @@ MainWindow::MainWindow()
 	/* Tabs */
 	tw->addTab(dash_container, QIcon(":sensors.png"), QObject::tr("Sources"));
 	tw->addTab(logger, QIcon(":logger.png"), QObject::tr("Logging"));	
+	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));	
 	tw->addTab(cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
 	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 

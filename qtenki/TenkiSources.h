@@ -11,6 +11,7 @@
 struct sourceDescription {
 	char name[32]; // XXXXXX:XX form.
 	QString q_name;
+	QString q_alias;
 	int chn_id;
 	
 	int chip_id;
@@ -44,18 +45,21 @@ class TenkiSources : public QThread
 		void addSourcesTo(TenkiSourceAddRemove *tsar);
 
 		struct sourceDescription *getSourceByName(QString src);
+		QString getSourceAliasByName(QString src);
 
 	protected:
 		void run();
 
 	public slots:
 		void doCaptures();
+		void updateAlias(QString source_name, QString alias);
 	
 	signals:
 		void newDeviceFound(TenkiDevice *td);
 		void deviceGone(TenkiDevice *td);
 
 		void captureCycleCompleted();
+		void changed();
 
 	private:
 		QTimer *timer;

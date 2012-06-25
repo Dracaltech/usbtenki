@@ -11,6 +11,7 @@
 #include "SelectableColor.h"
 #include "ConfigPanel.h"
 #include "globals.h"
+#include "ConfigCheckbox.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -41,6 +42,11 @@ ConfigPanel::ConfigPanel()
 	QGroupBox *appearanceBox = new QGroupBox(tr("Appearance"));
 	QGridLayout *appBox_layout = new QGridLayout();
 	appearanceBox->setLayout(appBox_layout);
+
+	ConfigCheckbox *cb_bv_aliases = new ConfigCheckbox(tr("Show aliases in big view"), "bigview/show_aliases");
+	appBox_layout->addWidget(cb_bv_aliases);
+	ConfigCheckbox *cb_bv_units = new ConfigCheckbox(tr("Show units in big view"), "bigview/show_units");
+	appBox_layout->addWidget(cb_bv_units);
 
 	cb_minimize_to_system_tray = new QCheckBox(tr("Minimize window to system tray"));
 	cb_minimize_to_system_tray->setChecked(settings.value("ui/minimize_to_tray").toBool());

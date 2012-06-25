@@ -2,8 +2,10 @@
 #define _DataSourceCheckBox
 
 #include <QString>
+#include <QLabel>
 #include <QCheckBox>
 #include <QLineEdit>
+#include "TenkiSources.h"
 
 class DataSourceCheckBox : public QWidget
 {
@@ -17,13 +19,16 @@ class DataSourceCheckBox : public QWidget
 		QString getAlias();
 		bool isChecked();
 
+	public slots:
+		void refreshAlias(void);
+		
 	private slots:
-		void aliasChanged();
 		void checkChanged(int state);
 
 	private:
 		QCheckBox *checkbox;
-		QLineEdit *alias_edit;
+		QLabel *lbl_alias;
+
 };
 
 #endif
