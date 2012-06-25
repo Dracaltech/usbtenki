@@ -48,6 +48,8 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 	// worst case wire resistance of 128 ohm. At 428ohm, we have 0.428 volt.
 	// The maximum common mode value is 1.024. We can therefore afford a 2x gain. (.856mV)
 	mcp3423_readChannel(mcp_addr, 0, MCP3423_GAIN2X , dst);
+	
+	_delay_ms(1);
 
 	// At I = 1mA, this channels saturates with a 128 ohm wire.
 	mcp3423_readChannel(mcp_addr, 1, MCP3423_GAIN8X , dst + 3);
