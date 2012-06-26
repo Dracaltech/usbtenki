@@ -61,7 +61,7 @@ double searchTempFromR(double r)
 {
 	double a = 3.9080 * pow(10, -3);
 	double b = -5.8019 * pow(10, -7);
-	double c = -4.2735 * pow(10, -12);
+//	double c = -4.2735 * pow(10, -12);
 
 
 	if (r > 100) {

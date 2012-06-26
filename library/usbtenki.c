@@ -1344,3 +1344,44 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 
 	return 0;
 }
+
+void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency)
+{
+	/* Perform format conversion */
+	switch (chn->converted_unit)
+	{
+		case TENKI_UNIT_FAHRENHEIT:
+		case TENKI_UNIT_CELCIUS:
+		case TENKI_UNIT_KELVIN:
+			chn->converted_data = usbtenki_convertTemperature(chn->converted_data, 
+																chn->converted_unit,
+																		unit_temp);
+			chn->converted_unit = unit_temp;
+			break;
+
+		case TENKI_UNIT_KPA:
+		case TENKI_UNIT_HPA:
+		case TENKI_UNIT_BAR:
+		case TENKI_UNIT_AT:
+		case TENKI_UNIT_ATM:
+		case TENKI_UNIT_TORR:
+		case TENKI_UNIT_PSI:
+			chn->converted_data = usbtenki_convertPressure(chn->converted_data, 
+															chn->converted_unit,
+																unit_pressure);
+			chn->converted_unit = unit_pressure;
+			break;
+
+		case TENKI_UNIT_MILLIHZ:
+		case TENKI_UNIT_HZ:
+		case TENKI_UNIT_KHZ:
+		case TENKI_UNIT_MHZ:
+			chn->converted_data = usbtenki_convertFrequency(chn->converted_data,
+															chn->converted_unit,
+															unit_frequency);
+			chn->converted_unit = unit_frequency;
+			break;
+
+	}
+}
+
