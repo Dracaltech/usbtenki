@@ -1,7 +1,8 @@
 Version 1.9.4:
-	    - Support for Calibrated PT100 RTD Sensor.
+		- Configurable units in qtneki
 		- New tab "Big View" in qtenki for displaying selected channels using
 		  a big font, readable from afar.
+	    - Support for Calibrated PT100 RTD Sensor.
 
 Version 1.9.3:
 	General:
