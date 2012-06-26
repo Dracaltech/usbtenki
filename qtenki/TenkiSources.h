@@ -47,6 +47,10 @@ class TenkiSources : public QThread
 		struct sourceDescription *getSourceByName(QString src);
 		QString getSourceAliasByName(QString src);
 
+		void setTemperatureUnit(int temperature_unit);
+		void setPressureUnit(int pressure_unit);
+		void setFrequencyUnit(int frequency_unit);
+
 	protected:
 		void run();
 
@@ -68,6 +72,9 @@ class TenkiSources : public QThread
 		int scanForDevices();
 		int addDeviceSources(TenkiDevice *td);
 		int addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_channel *chndat);
+		int pressure_unit;
+		int temperature_unit;
+		int frequency_unit;
 };
 
 #endif // _tenki_sources_h__

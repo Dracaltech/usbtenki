@@ -18,12 +18,14 @@ win32:RC_FILE = qtenki.rc
 HEADERS += ../library/usbtenki.h ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h \
 			 TextViewer.h TenkiSources.h DashSensor.h TenkiDashboard.h TenkiDevice.h Logger.h \
 			DataSourceCheckBox.h SimpleLogger.h MainWindow.h BigView.h BigLabel.h SourceAliasEdit.h \
-			ConfigCheckbox.h ConfigPanel.h SelectableColor.h globals.h
+			TemperaturePreference.h PressurePreference.h FrequencyPreference.h ConfigCheckbox.h \
+			ConfigPanel.h SelectableColor.h globals.h
 
 
 SOURCES += ../library/usbtenki.c ../library/convertRaw.c main.cpp \
 			TextViewer.cpp TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp \
 			TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp About.cpp MainWindow.cpp BigView.cpp \
-			ConfigCheckbox.cpp SourceAliasEdit.cpp BigLabel.cpp ConfigPanel.cpp SelectableColor.cpp globals.cpp
+			TemperaturePreference.cpp PressurePreference.cpp FrequencyPreference.cpp ConfigCheckbox.cpp \
+			SourceAliasEdit.cpp BigLabel.cpp ConfigPanel.cpp SelectableColor.cpp globals.cpp
 
 LIBS += -lusb

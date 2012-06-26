@@ -12,6 +12,9 @@
 #include "ConfigPanel.h"
 #include "globals.h"
 #include "ConfigCheckbox.h"
+#include "TemperaturePreference.h"
+#include "FrequencyPreference.h"
+#include "PressurePreference.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -19,6 +22,7 @@ ConfigPanel::ConfigPanel()
 	QVBoxLayout *lay = new QVBoxLayout();
 	setLayout(lay);
 
+	///////////////////
 	QGroupBox *dataBox = new QGroupBox(tr("Data processing and formatting"));
 	QGridLayout *dataBox_layout = new QGridLayout();
 	dataBox->setLayout(dataBox_layout);
@@ -29,14 +33,31 @@ ConfigPanel::ConfigPanel()
 	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
 	cb_disable_humidex_validation->setChecked(settings.value("data/disable_humidex_range").toBool());
+	TemperaturePreference *t_pref = new TemperaturePreference();
+	PressurePreference *p_pref = new PressurePreference();
+	FrequencyPreference *f_pref = new FrequencyPreference();
+	
+	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), 0, 0 );
+	dataBox_layout->addWidget(t_pref, 0, 1);
+	
+	dataBox_layout->addWidget(new QLabel(tr("Pressure unit: ")), 1, 0 );
+	dataBox_layout->addWidget(p_pref, 1, 1);
+	
+	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
+	dataBox_layout->addWidget(f_pref, 2, 1);
 
-	dataBox_layout->addWidget(cb_use_old_sht_coefficients);
-	dataBox_layout->addWidget(cb_disable_heat_index_validation);
-	dataBox_layout->addWidget(cb_disable_humidex_validation);	
+	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 3, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_heat_index_validation, 4, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_humidex_validation, 5, 0, 1, -1);	
+
+	dataBox_layout->setColumnStretch(2, 100);
+	
 	connect(cb_use_old_sht_coefficients, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_humidex_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 
+
+	///////////////////////////
 	default_palette = QApplication::palette();
 
 	QGroupBox *appearanceBox = new QGroupBox(tr("Appearance"));

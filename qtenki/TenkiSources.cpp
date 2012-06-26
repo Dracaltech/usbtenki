@@ -4,15 +4,36 @@
 #include <QDebug>
 #include <QSettings>
 #include <string.h>
+#include "usbtenki_units.h"
 
 TenkiSources::TenkiSources()
 {
+	QSettings settings;
+
+	pressure_unit = TENKI_UNIT_KPA;
+	temperature_unit = TENKI_UNIT_CELCIUS;
+	frequency_unit = TENKI_UNIT_HZ;
 }
 
 TenkiSources::~TenkiSources()
 {
 	// todo : delete all sourceDescriptions
 	delete timer;
+}
+
+void TenkiSources::setTemperatureUnit(int tenki_temp_unit)
+{
+	this->temperature_unit = tenki_temp_unit;
+}
+
+void TenkiSources::setPressureUnit(int pressure_unit)
+{
+	this->pressure_unit = pressure_unit;
+}
+
+void TenkiSources::setFrequencyUnit(int frequency_unit)
+{
+	this->frequency_unit = frequency_unit;
 }
 
 int TenkiSources::init()
@@ -130,6 +151,16 @@ void TenkiSources::doCaptures()
 //		printf("Updating %s\n", device_list.at(i)->getSerial());
 		device_list.at(i)->updateChannelData();
 	}
+
+
+	// Unit conversion
+	for (int i=0; i<sourceList.size(); i++) {
+		struct sourceDescription *sd = sourceList.at(i);
+
+		usbtenki_convertUnits(sd->chn_data, temperature_unit, pressure_unit, frequency_unit);
+	}
+
+
 
 	emit captureCycleCompleted();
 }

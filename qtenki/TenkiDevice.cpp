@@ -51,7 +51,7 @@ int TenkiDevice::updateChannelData()
 	do
 	{
 		// Having no handle at this point means there was an error. This is
-		// either and immediate retry (need_retry=1) or a retry delayed
+		// either an immediate retry (need_retry=1) or a retry delayed
 		// to the next capture cycle.
 		if (!tenki_hdl) {
 			tenki_hdl = usbtenki_openBySerial(serno, &tenki_info);
