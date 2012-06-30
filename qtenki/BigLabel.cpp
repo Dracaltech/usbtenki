@@ -70,7 +70,10 @@ void BigLabel::resizeEvent(QResizeEvent *event)
 	while (fontBoundRect.width() > resize.width() && orig > 0 ) {
 
 		f.setPixelSize(orig);
-		orig -= 0.1;
+		
+		orig -= (orig*0.1); // 10% decrements. Every resize then requires approx. 10 iterations
+		
+		qDebug() << "Testing size: " << orig;
 	
 		fontBoundRect = QFontMetrics(f).boundingRect(resize,flags, text());
 	}
