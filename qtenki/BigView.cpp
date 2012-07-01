@@ -25,11 +25,9 @@ void BigView::removeTenkiSource(struct sourceDescription *sd)
 
 void BigView::addSourceByName(QString sname)
 {
-	// testing
 	BigLabel *lbl = new BigLabel("...", sname);
 	lay->addWidget(lbl);	
 	labels.append(lbl);
-
 }
 
 void BigView::refreshView()
@@ -37,8 +35,8 @@ void BigView::refreshView()
 	QSettings settings;
 
 	for (int i=0; i<labels.size(); i++) {
-		labels.at(i)->refresh();
 		if (settings.value("bigviewChecked/"+labels.at(i)->src_name).toBool()) {
+			labels.at(i)->refresh();
 			labels.at(i)->setVisible(true);
 		} else {
 			labels.at(i)->setVisible(false);
