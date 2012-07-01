@@ -41,6 +41,7 @@ void BigLabel::refresh()
 	final += d;
 	
 	if (settings.value("bigview/show_units").toBool()) {
+		final += " ";
 		final += units;
 	}
 
@@ -73,7 +74,7 @@ void BigLabel::resizeEvent(QResizeEvent *event)
 		
 		orig -= (orig*0.1); // 10% decrements. Every resize then requires approx. 10 iterations
 		
-		qDebug() << "Testing size: " << orig;
+//		qDebug() << "Testing size: " << orig;
 	
 		fontBoundRect = QFontMetrics(f).boundingRect(resize,flags, text());
 	}
