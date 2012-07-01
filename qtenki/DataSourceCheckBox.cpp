@@ -14,7 +14,11 @@ DataSourceCheckBox::DataSourceCheckBox(QString caption, QString src)
 
 	checkbox->setChecked(settings.value("sourcesChecked/"+src).toBool());
 
-	lbl_alias = new QLabel(g_tenkisources->getSourceAliasByName(src));
+	if (g_tenkisources->getSourceAliasByName(src).length() > 0) {
+		lbl_alias = new QLabel("(" + g_tenkisources->getSourceAliasByName(src) + ")");
+	} else {
+		lbl_alias = new QLabel("");
+	}
 
 //	alias_edit = new QLineEdit();
 //	alias_edit->setText(settings.value("sourcesAliases/"+src).toString());
@@ -26,9 +30,9 @@ DataSourceCheckBox::DataSourceCheckBox(QString caption, QString src)
 	setLayout(lay);
 
 	lay->addWidget(checkbox);
-	lay->addStretch();
-	lay->addWidget(new QLabel(tr("Alias:")));
+//	lay->addWidget(new QLabel(tr("Alias:")));
 	lay->addWidget(lbl_alias);
+	lay->addStretch();
 
 //	alias_edit->setMinimumWidth(150);
 //	alias_edit->setMaximumWidth(200);
