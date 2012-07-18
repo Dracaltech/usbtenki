@@ -318,11 +318,19 @@ void Logger::openViewer()
 void Logger::browse_clicked()
 {
 	QString filename;
-
+	QString default_dir;
 	
-	filename = QFileDialog::getSaveFileName(this, tr("Output file"), "", "(*.txt *.csv *.tsv)" );
+	if (0 == path->text().size()) {
+		default_dir = QDir::homePath();
+	} else {
+		default_dir = path->text();
+	}
+	filename = QFileDialog::getSaveFileName(this, tr("Output file"), default_dir, "(*.txt *.csv *.tsv)" );
+	
+	if (filename.size()) {
+		path->setText(filename);
+	}
 
-	path->setText(filename);
 	filenameEdited(); // QLineEdit does not emit a signal in this case.
 }
 
