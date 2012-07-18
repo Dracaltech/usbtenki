@@ -273,7 +273,7 @@ void SimpleLogger::doLog()
 			break;
 
 		case SplitISO8601:
-			logItem(now.toString("yyyy-mm-dd"));
+			logItem(now.toString("yyyy-MM-dd"));
 			logItem(now.toString("hh:mm:ss"));
 			break;
 
