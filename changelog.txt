@@ -1,3 +1,8 @@
+Version 1.9.5:
+	- Default to the user's home directory in the log file selection dialog.
+	- Fixed a timestamp bug where the current minute was logged instead of
+		the current month.
+
 Version 1.9.4:
 		- Configurable units in qtenki
 		- New tab "Big View" in qtenki for displaying selected channels using
