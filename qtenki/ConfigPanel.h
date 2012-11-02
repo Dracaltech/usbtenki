@@ -5,6 +5,7 @@
 #include <QString>
 #include <QColor>
 #include <QPalette>
+#include <QLabel>
 
 #include "SelectableColor.h"
 
@@ -16,6 +17,9 @@ class ConfigPanel : public QWidget
 		ConfigPanel();
 		~ConfigPanel();
 
+	public slots:
+		void setEnabled(bool b);
+
 	private slots:
 		void defaultColor(QString name);
 		void customColor(QString name, QColor col);
@@ -24,6 +28,7 @@ class ConfigPanel : public QWidget
 		void updateMinimizeToTray(int);
 
 	private:
+		void displaySaved();
 		QPalette default_palette;
 		SelectableColor *sys_win_color;
 		SelectableColor *sys_btn_color;
@@ -32,6 +37,7 @@ class ConfigPanel : public QWidget
 		QCheckBox *cb_disable_heat_index_validation;
 		QCheckBox *cb_disable_humidex_validation;
 		QCheckBox *cb_minimize_to_system_tray;
+		QLabel *messageLabel;
 
 };
 

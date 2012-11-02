@@ -21,7 +21,8 @@
 MainWindow::MainWindow()
 {
 	QVBoxLayout *layout = new QVBoxLayout();
-	QTabWidget *tw = new QTabWidget();
+	
+	tw = new QTabWidget();
 
 	QHBoxLayout *bot_lay = new QHBoxLayout();
 	QWidget *bot_btns = new QWidget();
@@ -69,6 +70,8 @@ MainWindow::MainWindow()
 
 	// loggers
 	logger = new Logger(g_tenkisources);
+	
+	QObject::connect(logger, SIGNAL(loggerStatusChanged(int)), this, SLOT(loggerStatusChanged(int)));
 
 	// big view
 	bigView = new BigView();
@@ -78,6 +81,7 @@ MainWindow::MainWindow()
 	// messages
 	// configuration
 	cfgPanel = new ConfigPanel();
+
 
 	// about
 	about = new About();
@@ -188,4 +192,11 @@ void MainWindow::on_show_hide(QSystemTrayIcon::ActivationReason reason)
 	}
 
 	on_show_hide();
+}
+
+void MainWindow::loggerStatusChanged(int running)
+{
+	// Prevent the problem of configured unit changes by disabling
+	// the whole configuration dialog.
+	cfgPanel->setEnabled(!running);
 }

@@ -336,6 +336,8 @@ void Logger::browse_clicked()
 
 void Logger::loggerStarted()
 {
+	emit loggerStatusChanged(1);
+
 	logMessage("logger started successfully");
 	status_label->setText(tr("Running."));
 }
@@ -357,6 +359,8 @@ void Logger::loggerStopped()
 
 	delete current_logger;
 	current_logger = NULL;
+
+	emit loggerStatusChanged(0);
 }
 
 void Logger::errorStrategyChanged(int idx)

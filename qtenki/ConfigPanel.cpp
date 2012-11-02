@@ -46,6 +46,7 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
 	dataBox_layout->addWidget(f_pref, 2, 1);
 
+
 	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 3, 0, 1, -1);
 	dataBox_layout->addWidget(cb_disable_heat_index_validation, 4, 0, 1, -1);
 	dataBox_layout->addWidget(cb_disable_humidex_validation, 5, 0, 1, -1);	
@@ -98,9 +99,16 @@ ConfigPanel::ConfigPanel()
 	connect(sys_base_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
 	connect(sys_base_color, SIGNAL(selectedChanged(QString,int,QColor)), this, SLOT(selectedChanged(QString,int,QColor)));
 
+	messageLabel = new QLabel("<img src=':/attention.png'><b>Configuration cannot be changed while logging.</b>");
+	lay->addWidget(messageLabel);
+	messageLabel->setVisible(false);
+
 	lay->addWidget(dataBox);	
 	lay->addWidget(appearanceBox);	
 	lay->addStretch();
+
+	lay->addWidget(new QLabel("Configuration changes are saved automatically and immediately effective."));
+
 
 	if (sys_win_color->getSelected()) {
 		customColor(sys_win_color->getName(), sys_win_color->getColor());
@@ -112,6 +120,12 @@ ConfigPanel::ConfigPanel()
 		customColor(sys_base_color->getName(), sys_base_color->getColor());
 	}
 
+}
+
+void ConfigPanel::setEnabled(bool b)
+{
+	messageLabel->setVisible(!b);
+	QWidget::setEnabled(b);
 }
 
 void ConfigPanel::updateFlagsFromCheckboxes(int ignored)

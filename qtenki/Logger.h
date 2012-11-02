@@ -25,6 +25,9 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void stopLogging();
 		bool confirmMayExit();
 
+	signals:
+		void loggerStatusChanged(int running);
+
 	protected:
 		void logMessage(QString str);
 		void cannotStartPopup(QString reason, QString hint);

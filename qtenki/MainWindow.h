@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QCloseEvent>
 #include <QSystemTrayIcon>
+#include <QTabWidget>
 
 #include "Logger.h"
 #include "ConfigPanel.h"
@@ -24,12 +25,14 @@ class MainWindow : public QWidget
 	private slots:
 		void on_show_hide(QSystemTrayIcon::ActivationReason reason);
 		void on_show_hide();
+		void loggerStatusChanged(int running);
 
 	private:
 		Logger *logger;
 		ConfigPanel *cfgPanel;
 		BigView *bigView;
 		QSystemTrayIcon *trayicon;
+		QTabWidget *tw;
 };
 
 #endif // _MainWindow_h__
