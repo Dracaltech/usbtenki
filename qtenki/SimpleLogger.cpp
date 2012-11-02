@@ -63,6 +63,10 @@ void SimpleLogger::writeHeader()
 	file->write(creation_time.toString("yyyy-MM-dd hh:mm:ss").toAscii());	
 	file->write("\n");
 
+	file->write("$ logging interval: ");
+	file->write(logLocale->toString(interval_s).toAscii());
+	file->write(" second(s)");
+	file->write("\n");
 	
 
 	file->write("#\n");
