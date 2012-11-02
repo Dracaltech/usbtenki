@@ -65,7 +65,10 @@ void SimpleLogger::writeHeader()
 
 	file->write("# logging interval: ");
 	file->write(logLocale->toString(interval_s).toAscii());
-	file->write(" second(s)");
+	file->write(" second");
+	if (interval_s != 1) {
+		file->write("s");
+	}
 	file->write("\n");
 	
 
