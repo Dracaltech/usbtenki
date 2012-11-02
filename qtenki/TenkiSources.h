@@ -51,6 +51,7 @@ class TenkiSources : public QThread
 		void setPressureUnit(int pressure_unit);
 		void setFrequencyUnit(int frequency_unit);
 
+		void convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst);
 	protected:
 		void run();
 

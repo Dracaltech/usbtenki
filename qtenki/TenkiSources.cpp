@@ -143,6 +143,15 @@ void TenkiSources::run()
 	exec();
 }
 
+void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst)
+{
+	struct USBTenki_channel tmp;
+
+	memcpy(&tmp, chn, sizeof(tmp));
+	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit);
+	memcpy(dst, &tmp, sizeof(tmp));
+}
+
 void TenkiSources::doCaptures()
 {
 //	qDebug() << "Capture time!";
@@ -151,16 +160,6 @@ void TenkiSources::doCaptures()
 //		printf("Updating %s\n", device_list.at(i)->getSerial());
 		device_list.at(i)->updateChannelData();
 	}
-
-
-	// Unit conversion
-	for (int i=0; i<sourceList.size(); i++) {
-		struct sourceDescription *sd = sourceList.at(i);
-
-		usbtenki_convertUnits(sd->chn_data, temperature_unit, pressure_unit, frequency_unit);
-	}
-
-
 
 	emit captureCycleCompleted();
 }

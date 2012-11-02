@@ -222,10 +222,13 @@ void SimpleLogger::colTitles()
 	for (int i=0; i<sources.size(); i++)
 	{
 		struct sourceDescription *sd;
+		struct USBTenki_channel tmp;
+
 		sd = tenkisources->getSourceByName(sources.at(i));
-		
+		tenkisources->convertToUnits(sd->chn_data, &tmp);
+
 		logItem(sd->chipShortString + " - " +
-		QString::fromAscii(unitToString(sd->chn_data->converted_unit,1))
+		QString::fromAscii(unitToString(tmp.converted_unit,1))
 		, i==(sources.size()-1));
 	}
 
@@ -301,7 +304,9 @@ void SimpleLogger::doLog()
 				emit logMessage("ERROR: An error occured on '" +sources.at(i) + "'.");
 			}
 			else {
-				logValue(sd->chn_data->converted_data, i==(sources.size()-1));
+				struct USBTenki_channel tmp;
+				tenkisources->convertToUnits(sd->chn_data, &tmp);
+				logValue(tmp.converted_data, i==(sources.size()-1));
 			}
 		}
 	}

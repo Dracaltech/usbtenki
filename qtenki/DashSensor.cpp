@@ -49,12 +49,12 @@ DashSensor::DashSensor(TenkiDevice *td)
 void DashSensor::addChannel(int chn, int row)
 {
 	QSettings settings;
-	USBTenki_channel *ch;
+	USBTenki_channel ch;
 	QString a, b, c, d, e, f, g;
 	QLabel *value_label, *unit_label;
 	int col=0;
 
-	ch = tenki_device->getChannelData(chn);
+	g_tenkisources->convertToUnits(tenki_device->getChannelData(chn), &ch);
 
 /*	
 	a.sprintf("%d", chn);
@@ -64,18 +64,18 @@ void DashSensor::addChannel(int chn, int row)
 	layout->addWidget(new QLabel(f), row, col++);
 
 
-	b = QString::fromAscii(chipToString(ch->chip_id));
+	b = QString::fromAscii(chipToString(ch.chip_id));
 	layout->addWidget(new QLabel(b), row, col++);
 	
-	c = QString::fromAscii(chipToShortString(ch->chip_id));
+	c = QString::fromAscii(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);
 
-	d.sprintf("%.3f", ch->converted_data);	
+	d.sprintf("%.3f", ch.converted_data);	
 	value_label = new QLabel(d);
 	values.append(value_label);
 	layout->addWidget(value_label, row, col++);
 
-	e = QString::fromUtf8(unitToString(ch->converted_unit, 0));
+	e = QString::fromUtf8(unitToString(ch.converted_unit, 0));
 	unit_label = new QLabel(e);
 	layout->addWidget(unit_label, row, col++);
 	units.append(unit_label);
@@ -103,7 +103,7 @@ DashSensor::~DashSensor()
 
 void DashSensor::refresh()
 {
-	USBTenki_channel *ch;
+	USBTenki_channel ch, *cdat;
 //	qDebug() << "DashSensor::refresh()";
 
 	if (tenki_device->status == TENKI_DEVICE_STATUS_UNABLE_TO_OPEN) {
@@ -117,17 +117,21 @@ void DashSensor::refresh()
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;
 
-		ch = tenki_device->getChannelData(channel_id.at(i));	
-		if (!ch->data_valid) {
+
+		cdat = tenki_device->getChannelData(channel_id.at(i));	
+		if (!cdat || !cdat->data_valid) {
 			values.at(i)->setText("Error");
 			continue;
 		}
-		d.sprintf("%.3f", ch->converted_data);	
+		
+		g_tenkisources->convertToUnits(cdat, &ch);		
+
+		d.sprintf("%.3f", ch.converted_data);	
 		values.at(i)->setText(d);
 
 		// those two QList are populated in the same
 		// order. So it will be the same index i.
-		e = QString::fromUtf8(unitToString(ch->converted_unit, 0));
+		e = QString::fromUtf8(unitToString(ch.converted_unit, 0));
 		units.at(i)->setText(e);
 
 	//	qDebug() << d;

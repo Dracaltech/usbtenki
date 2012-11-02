@@ -17,6 +17,7 @@ BigLabel::BigLabel(const QString &text, QString source_name)
 void BigLabel::refresh()
 {
 	QSettings settings;
+	struct USBTenki_channel chndata;
 
 	struct sourceDescription *sd = g_tenkisources->getSourceByName(src_name);
 	if (!sd) {
@@ -24,12 +25,14 @@ void BigLabel::refresh()
 		return;
 	}
 
+	g_tenkisources->convertToUnits(sd->chn_data, &chndata);
+
 	QString alias = sd->q_alias;
-	QString units = QString::fromUtf8(unitToString(sd->chn_data->converted_unit, 0));
+	QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 
 	QString d;
 
-	d.sprintf("%.3f",  sd->chn_data->converted_data );
+	d.sprintf("%.3f",  chndata.converted_data );
 
 	QString final;
 
