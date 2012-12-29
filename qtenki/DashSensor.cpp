@@ -52,6 +52,7 @@ void DashSensor::addChannel(int chn, int row)
 	USBTenki_channel ch;
 	QString a, b, c, d, e, f, g;
 	QLabel *value_label, *unit_label;
+	QLabel *tmp_label;
 	int col=0;
 
 	g_tenkisources->convertToUnits(tenki_device->getChannelData(chn), &ch);
@@ -65,7 +66,10 @@ void DashSensor::addChannel(int chn, int row)
 
 
 	b = QString::fromAscii(chipToString(ch.chip_id));
-	layout->addWidget(new QLabel(b), row, col++);
+	tmp_label = new QLabel(b);
+//	tmp_label->setWordWrap(true);
+//	tmp_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	layout->addWidget(tmp_label, row, col++);
 	
 	c = QString::fromAscii(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);

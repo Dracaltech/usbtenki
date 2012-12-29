@@ -21,6 +21,7 @@ class MainWindow : public QWidget
 	protected:
 		virtual void closeEvent(QCloseEvent *ev);
 		virtual void changeEvent(QEvent *e);
+		virtual void readSettings();
 
 	private slots:
 		void on_show_hide(QSystemTrayIcon::ActivationReason reason);

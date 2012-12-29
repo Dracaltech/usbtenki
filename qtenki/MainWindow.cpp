@@ -6,6 +6,7 @@
 #include <QTabWidget>
 #include <QImage>
 #include <QMenu>
+#include <QScrollArea>
 
 #include "usbtenki.h"
 #include "usbtenki_version.h"
@@ -70,7 +71,6 @@ MainWindow::MainWindow()
 
 	// loggers
 	logger = new Logger(g_tenkisources);
-	
 	QObject::connect(logger, SIGNAL(loggerStatusChanged(int)), this, SLOT(loggerStatusChanged(int)));
 
 	// big view
@@ -85,12 +85,21 @@ MainWindow::MainWindow()
 
 	// about
 	about = new About();
+
+	QScrollArea *scr_logger = new QScrollArea();
+	scr_logger->setWidget(logger);	
 	
+	QScrollArea *scr_cfgPanel = new QScrollArea();
+	scr_cfgPanel->setWidget(cfgPanel);	
+	
+	QScrollArea *scr_dash = new QScrollArea();
+	scr_dash->setWidget(dash_container);
+
 	/* Tabs */
-	tw->addTab(dash_container, QIcon(":sensors.png"), QObject::tr("Sources"));
-	tw->addTab(logger, QIcon(":logger.png"), QObject::tr("Logging"));	
+	tw->addTab(scr_dash, QIcon(":sensors.png"), QObject::tr("Sources"));
+	tw->addTab(scr_logger, QIcon(":logger.png"), QObject::tr("Logging"));	
 	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));	
-	tw->addTab(cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
+	tw->addTab(scr_cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
 	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 
 	/* The main window */
@@ -121,6 +130,8 @@ MainWindow::MainWindow()
 
 	trayicon->setContextMenu(tray_icon_menu);
 
+	readSettings();
+
 	trayicon->show();
 
 }
@@ -129,8 +140,18 @@ MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::readSettings()
+{
+	QSettings settings;
+	restoreGeometry(settings.value("geometry").toByteArray());
+}
+
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+	QSettings settings;
+
+	settings.setValue("geometry", saveGeometry());
+
 	if (logger->confirmMayExit()) {
 		// hide tray icon here. Otherwise it lingers until we hover the
 		// mouse over it.

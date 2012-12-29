@@ -13,6 +13,7 @@ Logger::Logger(TenkiSources *s)
 
 	main_layout = new QVBoxLayout();
 	setLayout(main_layout);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	/* Source channels selection */
 	sourcebox = new QGroupBox(tr("Data sources"));
@@ -152,7 +153,6 @@ Logger::Logger(TenkiSources *s)
 	main_layout->addWidget(control);
 	main_layout->addWidget(messages);
 	main_layout->setStretchFactor(messages, 100);
-
 }
 
 Logger::~Logger()
