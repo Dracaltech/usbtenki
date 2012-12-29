@@ -1,4 +1,4 @@
-Version 1.9.8:
+Version 1.9.7:
    - [QTenki] Scrollbars will now appear if there is not enough space.
    - [QTenki] Remember window positions and size
    - [QTenki] Options to append or overwrite file, with optional confirmation.
