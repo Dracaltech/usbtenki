@@ -43,6 +43,8 @@ class SimpleLogger : public QThread
 		~SimpleLogger();
 		void addSource(QString src, QString alias);
 		void setUseUTC(bool use);
+		void setAppend(bool append);
+		void setComment(QString comment);
 	
 	protected:
 		void writeHeader();
@@ -64,7 +66,7 @@ class SimpleLogger : public QThread
 	private:
 		TenkiSources *tenkisources;
 
-		QString output_file;
+		QString output_file, comments;
 		int interval_s;
 		FileFormat fmt;
 		QList<QString> sources;
@@ -76,6 +78,7 @@ class SimpleLogger : public QThread
 
 		enum TimeStampFormat timestamp_format;
 		bool use_utc;
+		bool append_to_file;
 
 		enum OnError on_error;
 

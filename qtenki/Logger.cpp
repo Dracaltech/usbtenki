@@ -1,6 +1,10 @@
 #include "Logger.h"
 #include "TextViewer.h"
 
+#define EXISTS_OVERWRITE	0
+#define EXISTS_APPEND		1
+#define EXISTS_CONFIRM		2
+
 Logger::Logger(TenkiSources *s)
 {
 	int y=0;
@@ -23,6 +27,9 @@ Logger::Logger(TenkiSources *s)
 	// have tenkisource call our addTenkiSource in loop for
 	// each source present.
 	tenkisources->addSourcesTo(this);
+
+//	svb->addWidget(new QPushButton("Test"));
+
 	svb->addStretch();
 
 	/* Output selection */
@@ -85,6 +92,21 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(comb_on_error, y, 1, 1, 4);
 	y++;
 
+	/* If file already exists, what to do? */
+	comb_file_exists = new QComboBox();
+	comb_file_exists->addItem(tr("Overwrite file without confirmation"));
+	comb_file_exists->addItem(tr("Append to file without confirmation"));
+	comb_file_exists->addItem(tr("Overwrite file with confirmation"));
+	comb_file_exists->addItem(tr("Append to file with confirmation"));
+	
+	comb_file_exists->setCurrentIndex(settings.value("logger/if_file_exists").toInt());
+	connect(comb_file_exists, SIGNAL(currentIndexChanged(int)), this, SLOT(fileExistsStrategyChanged(int)));
+	dbl->addWidget(new QLabel(tr("If file exists:")));
+	dbl->addWidget(comb_file_exists, y, 1, 1, 4);
+	y++;
+
+
+
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
@@ -108,12 +130,19 @@ Logger::Logger(TenkiSources *s)
 	log_interval->setMaximum(31536000); // one year
 	dbl->addWidget(log_interval, y, 1, 1, 1);
 	dbl->addWidget(new QLabel(tr("(seconds)")), y, 2 );
-	
+
+
 	log_interval->setValue(settings.value("logger/interval").toInt());
 	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
+	y++;
 
 
-
+	// comments
+	dbl->addWidget(new QLabel(tr("Log comment:")), y, 0);
+	file_comments = new QLineEdit(settings.value("logger/file_comments").toString());
+	dbl->addWidget(file_comments, y, 1, 1, 4);
+	connect(file_comments, SIGNAL(editingFinished()), this, SLOT(commentsEdited()));
+	y++;
 
 	control = new QGroupBox(tr("Control"));
 	control_layout = new QHBoxLayout();
@@ -195,6 +224,7 @@ void Logger::cannotStartPopup(QString reason, QString hint)
 
 void Logger::startLogging()
 {
+	int ex = comb_file_exists->currentIndex();
 
 	/* Make sure a file was specified.
 	 * TODO: Test for write access? */
@@ -207,6 +237,19 @@ void Logger::startLogging()
 	QFileInfo qf = QFileInfo(path->text());
 	if (qf.isFile()) {
 		logMessage("warning: File already exists");
+
+		if (ex & EXISTS_CONFIRM) {
+			QMessageBox msgBox;
+			msgBox.setText("File already exists. Continue?");
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);	
+			msgBox.setIcon(QMessageBox::Warning);
+			int selection = msgBox.exec();
+			if (selection != QMessageBox::Yes) {
+				logMessage("Logging cancelled by user.");
+				return;
+			}
+		}
+
 		if (!qf.isWritable()) {
 			cannotStartPopup(tr("File is not writeable."), tr("Select another file or check permissions."));
 			return;
@@ -261,6 +304,8 @@ void Logger::startLogging()
 	}
 
 	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt, onerr);
+	current_logger->setAppend(ex & EXISTS_APPEND ? true : false);
+	current_logger->setComment(file_comments->text());
 
 	for (int i=0; i<sources.size(); i++) {
 		DataSourceCheckBox *cb = sources.at(i);
@@ -363,6 +408,12 @@ void Logger::loggerStopped()
 	emit loggerStatusChanged(0);
 }
 
+void Logger::fileExistsStrategyChanged(int idx)
+{
+	QSettings settings;
+	settings.setValue("logger/if_file_exists", idx);
+}
+
 void Logger::errorStrategyChanged(int idx)
 {
 	QSettings settings;
@@ -397,4 +448,10 @@ void Logger::filenameEdited()
 {
 	QSettings settings;
 	settings.setValue("logger/filename", path->text());
+}
+
+void Logger::commentsEdited()
+{
+	QSettings settings;
+	settings.setValue("logger/file_comments", file_comments->text());
 }

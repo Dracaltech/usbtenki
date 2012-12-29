@@ -31,6 +31,8 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s
 	timestamp_format = tfmt;
 	on_error = onerr;	
 	use_utc = 0;
+	append_to_file = 0;
+	comments = QString("");
 }
 
 SimpleLogger::~SimpleLogger()
@@ -70,7 +72,10 @@ void SimpleLogger::writeHeader()
 		file->write("s");
 	}
 	file->write("\n");
-	
+
+	file->write("# log comments: ");
+	file->write(comments.toAscii());
+	file->write("\n");
 
 	file->write("#\n");
 }
@@ -89,7 +94,12 @@ void SimpleLogger::run()
 	emit logMessage("opening file..");
 
 	file = new QFile(output_file);
-	file->open(QIODevice::Text | QIODevice::WriteOnly /*| QIODevice::Append*/);
+	if (append_to_file) {
+		file->open(QIODevice::Text | QIODevice::WriteOnly | QIODevice::Append);
+	}
+	else {
+		file->open(QIODevice::Text | QIODevice::WriteOnly);
+	}
 
 	writeHeader();
 
@@ -254,6 +264,16 @@ void SimpleLogger::colTitles()
 void SimpleLogger::setUseUTC(bool use)
 {
 	use_utc = use;
+}
+
+void SimpleLogger::setAppend(bool append)
+{
+	append_to_file = append;
+}
+
+void SimpleLogger::setComment(QString comment)
+{
+	this->comments = comment;
 }
 
 void SimpleLogger::doLog()

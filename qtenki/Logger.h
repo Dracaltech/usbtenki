@@ -42,7 +42,9 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void timestampChanged(int idx);
 		void intervalChanged(int i);
 		void filenameEdited();
+		void commentsEdited();
 		void errorStrategyChanged(int);
+		void fileExistsStrategyChanged(int);
 
 	private:
 		TenkiSources *tenkisources;
@@ -56,8 +58,9 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QComboBox *comb_fmt;
 		QComboBox *comb_decimal;
 		QComboBox *comb_timestamp;
+		QComboBox *comb_file_exists;
 		QComboBox *comb_on_error;
-		QLineEdit *path;
+		QLineEdit *path, *file_comments;
 		QPushButton *browseButton, *viewButton;
 		
 		QSpinBox *log_interval;		
