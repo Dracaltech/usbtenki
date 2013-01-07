@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.23 2012-03-18 22:52:13 cvs Exp $
+# This Revision: $Id: Makefile,v 1.24 2013-01-07 03:56:38 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -26,7 +26,7 @@ SENSOR_OBJECTS = mcp9800.o mcp9800.o lm75.o sser.o tsl256x.o
 # driver-internal global variables!
 
 # symbolic targets:
-all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex tsl2568.hex bs02.hex sensirion_pc23.hex se95.hex adt7410.hex tachometer.hex pt100_rtd.hex
+all: mcp9800_00.hex mcp9800.hex lm75.hex sensirion.hex adc.hex tsl2561.hex tsl2568.hex bs02.hex sensirion_pc23.hex se95.hex adt7410.hex tachometer.hex pt100_rtd.hex ina226.hex
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
@@ -113,6 +113,9 @@ flash_tachometer_usb: tachometer.hex
 flash_pt100_rtd_usb: pt100_rtd.hex
 	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
+flash_ina226: ina226.hex
+	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+
 
 #
 # Fuse high byte = 0xC1
@@ -176,6 +179,8 @@ tachometer.elf: $(COMMON_OBJECTS) interface_int1_tachometer.o
 pt100_rtd.elf: $(COMMON_OBJECTS) interface_pt100_rtd.o mcp3423.o
 	$(COMPILE) -o $@ $^
 
+ina226.elf: $(COMMON_OBJECTS) interface_ina226.o ina226.o
+	$(COMPILE) -o $@ $^
 
 %.hex: %.elf
 	rm -f $@
