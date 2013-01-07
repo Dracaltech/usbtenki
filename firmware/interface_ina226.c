@@ -15,6 +15,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdio.h>
+#include <util/delay.h>
 #include "interface.h"
 #include "usbtenki_cmds.h"
 #include "i2c.h"
@@ -28,7 +29,7 @@ int sensors_init(void)
 {
 	unsigned short config;
 
-	i2c_init(I2C_FLAG_INTERNAL_PULLUP, 255);
+	i2c_init(I2C_FLAG_INTERNAL_PULLUP, 40); // 40 -> 128khz
 
 	usbtenki_delay_ms(10);
 
@@ -41,6 +42,8 @@ int sensors_init(void)
 	if (ina226_writeRegister(chip_addr, INA226_REG_CONFIGURATION, config)) {
 		return -1;
 	}
+
+	_delay_ms(1);
 
 	// Maximum supported current 20A
 	// Shunt resistor: 0.01 Ohm
@@ -60,7 +63,7 @@ int sensors_init(void)
 		return -1;
 	}
 
-	return -1;
+	return 0;
 }
 
 int sensors_getNumChannels(void)
