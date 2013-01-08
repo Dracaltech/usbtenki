@@ -98,12 +98,12 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 			return -1;
 	}
 
-	dst[0] = val >> 8;;
+	dst[0] = val >> 8;
 	dst[1] = val;
 	dst[2] = g_calibration >> 8;
 	dst[3] = g_calibration;
 			
-	return 2;
+	return 4;
 }
 
 

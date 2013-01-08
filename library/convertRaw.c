@@ -498,6 +498,25 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_INA226_BUS_VOLTAGE:
+			chip_fmt = TENKI_UNIT_VOLTS;
+			//printf("Bus voltage: %02x %02x \n", raw_data[0], raw_data[1]);
+			// LSB = 1.25mV
+			temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * 0.00125;
+			break;
+
+		case USBTENKI_CHIP_INA226_SHUNT_VOLTAGE:
+			// LSB = 2.5uV
+			chip_fmt = TENKI_UNIT_MILLIVOLT;
+			temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * 0.0025;
+			break;
+
+		case USBTENKI_CHIP_INA226_POWER:
+			break;
+
+		case USBTENKI_CHIP_INA226_CURRENT:
+			break;	
+
 		default:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;

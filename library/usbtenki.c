@@ -554,6 +554,19 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 			return "Inverted ratiometric volts from ADC";
 
+		case USBTENKI_CHIP_INA226_BUS_VOLTAGE:
+			return "INA226 Bus voltage";
+
+		case USBTENKI_CHIP_INA226_SHUNT_VOLTAGE:
+			return "INA226 Shunt voltage";
+
+		case USBTENKI_CHIP_INA226_POWER:
+			return "INA226 Power";
+			
+		case USBTENKI_CHIP_INA226_CURRENT:
+			return "INA226 Current";
+
+
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Tachometer";
 
@@ -597,7 +610,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_BS02_TEMP:
 		case USBTENKI_CHIP_PT100_RTD:
 			return "Temperature";
-		
+	
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 		case USBTENKI_CHIP_TSL2568_IR_VISIBLE:
 			return "Visible and IR";
@@ -631,9 +644,18 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MP3H6115A:
 			return "Pressure";
 
+		case USBTENKI_CHIP_INA226_BUS_VOLTAGE:
+		case USBTENKI_CHIP_INA226_SHUNT_VOLTAGE:
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 		case USBTENKI_CHIP_VOLTS:
 			return "Voltage";
+
+		case USBTENKI_CHIP_INA226_POWER:
+			return "Power";
+			
+		case USBTENKI_CHIP_INA226_CURRENT:
+			return "Current";
+
 
 		case USBTENKI_CHIP_D6F_V03A1:
 			return "Air speed";
@@ -679,6 +701,12 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_TORR: return "Torr";
 		case TENKI_UNIT_PSI: return "psi";
 		case TENKI_UNIT_VOLTS: return "V";
+		case TENKI_UNIT_MILLIVOLT: return "mV";
+		case TENKI_UNIT_MILLIWATTS: return "mW";
+		case TENKI_UNIT_WATTS: return "W";
+		case TENKI_UNIT_KILOWATTS: return "kW";
+		case TENKI_UNIT_AMPS: return "A";
+		case TENKI_UNIT_MILLIAMPS: return "mA";
 		case TENKI_UNIT_LUX: return "lx";
 		case TENKI_UNIT_METER_SEC: return "m/sec";
 		case TENKI_UNIT_MILLIHZ: return "mHz";
