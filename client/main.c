@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for USBTenki sensors.
- * Copyright (C) 2007-2012  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2013  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,6 +40,7 @@
 #define DEFAULT_NUM_SAMPLES 	1
 #define DEFAULT_LOG_INTERVAL	1000
 #define MAX_CHANNELS			256
+#define DEFAULT_DECIMAL_DIGITS	2
 
 
 int g_verbose = 0;
@@ -48,6 +49,7 @@ int g_pressure_format = TENKI_UNIT_KPA;
 int g_frequency_format = TENKI_UNIT_HZ;
 int g_pretty = 0;
 int g_full_display_mode = 0;
+int g_decimal_digits = DEFAULT_DECIMAL_DIGITS;
 int g_7bit_clean = 0;
 int g_log_mode = 0;
 int g_log_interval = DEFAULT_LOG_INTERVAL;
@@ -80,6 +82,7 @@ static void printUsage(void)
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
 	printf("    -L logfile   Log to specified file\n");
 	printf("    -I interval  Log interval. In milliseconds. Default: %d\n", DEFAULT_LOG_INTERVAL);
+	printf("    -x num       Set number of digits to display after the decimal separator. Default: %d\n", DEFAULT_DECIMAL_DIGITS);
 	printf("    -o option    Enable specified option. (you may use multiple -o)\n");
 
 	printf("\nValid temperature units:\n");
@@ -96,7 +99,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007-2012, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2013, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -121,12 +124,18 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:")))
 	{
 		switch (res)
 		{
 			case 'R':
 				g_num_attempts = atoi(optarg) + 1;
+				break;
+			case 'x':
+				g_decimal_digits = atoi(optarg);
+				if (g_decimal_digits < 0) {
+					fprintf(stderr, "Error, argument -x must be >= 0\n");
+				}
 				break;
 			case 'V':
 				printVersion();
@@ -415,7 +424,7 @@ reopen:
 
 	if (!dev) {
 		if (use_serial)
-			printf("Device with serial '%s' not found\n", use_serial);
+			fprintf(stderr, "Device with serial '%s' not found\n", use_serial);
 		else {
 			fprintf(stderr, "No device found\n");
 		}
@@ -434,7 +443,7 @@ reopen:
 
 	hdl = usbtenki_openDevice(dev);
 	if (!hdl) {
-		printf("Failed to open device.\n");
+		fprintf(stderr, "Failed to open device.\n");
 		return 1;
 	}
 
@@ -560,7 +569,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	for (i=0; i<num_req_chns; i++) {
 		int j;
 		struct USBTenki_channel *chn;
-		char *fmt;
+		char fmt[16];
 
 		/* find the requested channel */
 		chn = NULL;
@@ -578,11 +587,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 
 		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format);
 
-		if (chn->converted_unit == TENKI_UNIT_LUX) {
-			fmt = "%.6f";
-		} else {
-			fmt = "%.2f";
-		}
+		sprintf(fmt, "%%.%df", g_decimal_digits);
 	
 		if (g_pretty) {
 			printf("%s: ", chipToShortString(chn->chip_id));
