@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for reading USBTenki sensors.
- * Copyright (C) 2007-2012  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2013  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
