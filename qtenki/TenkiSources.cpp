@@ -21,6 +21,11 @@ TenkiSources::~TenkiSources()
 	delete timer;
 }
 
+void TenkiSources::setInterval_ms(int interval)
+{
+	timer->setInterval(interval);
+}
+
 void TenkiSources::setTemperatureUnit(int tenki_temp_unit)
 {
 	this->temperature_unit = tenki_temp_unit;
@@ -139,6 +144,7 @@ void TenkiSources::run()
 	timer = new QTimer();
 	timer->setInterval(1000);
 	connect(timer, SIGNAL(timeout()), this, SLOT(doCaptures()), Qt::DirectConnection);
+	doCaptures(); // Initial captures
 	timer->start();
 	exec();
 }

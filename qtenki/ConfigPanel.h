@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QPalette>
 #include <QLabel>
+#include <QSpinBox>
 
 #include "SelectableColor.h"
 
@@ -26,6 +27,7 @@ class ConfigPanel : public QWidget
 		void selectedChanged(QString name, int state, QColor col);
 		void updateFlagsFromCheckboxes(int);
 		void updateMinimizeToTray(int);
+		void intervalChanged(int i);
 
 	private:
 		void displaySaved();
@@ -38,6 +40,7 @@ class ConfigPanel : public QWidget
 		QCheckBox *cb_disable_humidex_validation;
 		QCheckBox *cb_minimize_to_system_tray;
 		QLabel *messageLabel;
+		QSpinBox *sample_interval;
 
 };
 
