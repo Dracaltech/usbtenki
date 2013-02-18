@@ -21,6 +21,8 @@
 #include "i2c.h"
 #include "ina226.h"
 
+#define MAX_CURRENT	20
+
 // A1 and A0 are connected to GND. Hence slave address is 100 0000
 static unsigned char chip_addr = 0x40;
 static unsigned short g_calibration; // The INA226 calibration register
@@ -46,7 +48,7 @@ int sensors_init(void)
 	_delay_ms(1);
 
 	// Maximum supported current 20A
-	// Shunt resistor: 0.01 Ohm
+	// Shunt resistor: 0.005 Ohm
 	// Shunt voltage at 20A: 20A * 0.01ohm = 0.2V
 	//
 	// Maximum voltage supported 30V (limited by on-board TVS)
@@ -55,10 +57,10 @@ int sensors_init(void)
 	// ----------
 	//
 	// Current_LSB = (max current) / 2^15 = 0.00061035156	[equation 2]
-	// CAL = 0.00512 / (Current_LSB * R_shunt) = 838.8608	[equation 1]
+	// CAL = 0.00512 / (Current_LSB * R_shunt) = 1677.7216	[equation 1]
 	//
 	//
-	g_calibration = 839;
+	g_calibration = 1678;
 	if (ina226_writeRegister(chip_addr, INA226_REG_CALIBRATION, g_calibration)) {
 		return -1;
 	}
@@ -102,6 +104,7 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 	dst[1] = val;
 	dst[2] = g_calibration >> 8;
 	dst[3] = g_calibration;
+	dst[4] = MAX_CURRENT;
 			
 	return 4;
 }
