@@ -106,7 +106,7 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 	dst[3] = g_calibration;
 	dst[4] = MAX_CURRENT;
 			
-	return 4;
+	return 5;
 }
 
 
