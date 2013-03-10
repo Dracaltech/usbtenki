@@ -554,18 +554,17 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 			return "Inverted ratiometric volts from ADC";
 
-		case USBTENKI_CHIP_INA226_BUS_VOLTAGE:
-			return "INA226 Bus voltage";
+		case USBTENKI_CHIP_DRACAL_EM1_BUS_VOLTAGE:
+			return "Bus voltage";
 
-		case USBTENKI_CHIP_INA226_SHUNT_VOLTAGE:
-			return "INA226 Shunt voltage";
+		case USBTENKI_CHIP_DRACAL_EM1_SHUNT_VOLTAGE:
+			return "Shunt voltage";
 
-		case USBTENKI_CHIP_INA226_POWER:
-			return "INA226 Power";
+		case USBTENKI_CHIP_DRACAL_EM1_POWER:
+			return "Power";
 			
-		case USBTENKI_CHIP_INA226_CURRENT:
-			return "INA226 Current";
-
+		case USBTENKI_CHIP_DRACAL_EM1_CURRENT:
+			return "Current";
 
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Tachometer";
@@ -644,16 +643,16 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MP3H6115A:
 			return "Pressure";
 
-		case USBTENKI_CHIP_INA226_BUS_VOLTAGE:
-		case USBTENKI_CHIP_INA226_SHUNT_VOLTAGE:
+		case USBTENKI_CHIP_DRACAL_EM1_BUS_VOLTAGE:
+		case USBTENKI_CHIP_DRACAL_EM1_SHUNT_VOLTAGE:
 		case USBTENKI_CHIP_VOLTS_REVERSE:
 		case USBTENKI_CHIP_VOLTS:
 			return "Voltage";
 
-		case USBTENKI_CHIP_INA226_POWER:
+		case USBTENKI_CHIP_DRACAL_EM1_POWER:
 			return "Power";
 			
-		case USBTENKI_CHIP_INA226_CURRENT:
+		case USBTENKI_CHIP_DRACAL_EM1_CURRENT:
 			return "Current";
 
 
