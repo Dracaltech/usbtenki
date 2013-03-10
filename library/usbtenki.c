@@ -33,6 +33,33 @@
 int g_usbtenki_verbose=0;
 int g_usbtenki_num_attempts = 3;
 
+#define VIDPID_NOT_HANDLED		0
+#define VIDPID_HANDLED			1 // Recognized by VID/PID, name irrelevant.
+#define VIDPID_HANDLED_STRING	2 // Shared VID/PID, needs name test
+char isHandledVidPid(unsigned short vid, unsigned short pid)
+{
+	// The raphnet.net ID
+	if ((vid == 0x1781) && (pid == 0x0a98)) {
+		return VIDPID_HANDLED_STRING;
+	}
+	// The Dracal technoloiges inc. ID range
+	if ((vid == 0x289b)) { 
+		if ((pid >= 0x0500) && (pid <= 0x5FF)) {
+			return VIDPID_HANDLED;
+		}
+	}
+	return VIDPID_NOT_HANDLED;
+}
+
+char isNameHandled(const char *str)
+{
+	if (strcmp(str, "USBTenki")==0)
+		return 1;
+	if (strcmp(str, "USB_Temp")==0)
+		return 1;
+	return 0;
+}
+
 int usbtenki_init(void)
 {
 	usb_init();
@@ -80,6 +107,7 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 {
 	struct usb_bus *start_bus;
 	struct usb_device *start_dev;
+	char isHandled;
 
 	memset(info, 0, sizeof(struct USBTenki_info));
 
@@ -101,46 +129,50 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 		return NULL;
 	}
 
-	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next) {
-		
+	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next) 
+	{
 		start_dev = ctx->bus->devices;
-		for (ctx->dev = start_dev; ctx->dev; ctx->dev = ctx->dev->next) {
-			if (ctx->dev->descriptor.idVendor == OUR_VENDOR_ID) {
-				if (ctx->dev->descriptor.idProduct == OUR_PRODUCT_ID) {
-					usb_dev_handle *hdl;
-					hdl = usb_open(ctx->dev);
-					if (!hdl) {
-						if (g_usbtenki_verbose)
-							printf("Failed to open device. Error '%s'\n", usb_strerror());
-						continue; 
-					}
-					
-					usb_get_string_simple(hdl, ctx->dev->descriptor.iProduct,
-										info->str_prodname, 256);
+		for (ctx->dev = start_dev; ctx->dev; ctx->dev = ctx->dev->next) 
+		{
+			isHandled = isHandledVidPid(ctx->dev->descriptor.idVendor, ctx->dev->descriptor.idProduct);
 
-					if (strcmp(info->str_prodname, ID_STRING) &&
-						strcmp(info->str_prodname, OLD_ID_STRING)) {
-						if (g_usbtenki_verbose)
+			if (isHandled)
+			{
+				usb_dev_handle *hdl;
+				hdl = usb_open(ctx->dev);
+				if (!hdl) {
+					if (g_usbtenki_verbose)
+						printf("Failed to open device. Error '%s'\n", usb_strerror());
+					continue; 
+				}
+				
+				usb_get_string_simple(hdl, ctx->dev->descriptor.iProduct,
+									info->str_prodname, 256);
+				
+				// Check the name if we need to (for shared vid/pid)				
+				if (isHandled == VIDPID_HANDLED_STRING) {
+					if (!isNameHandled(info->str_prodname)) {
+						if (g_usbtenki_verbose) {
 							printf("Ignored: %s\n", info->str_prodname);
-
+						}
 						usb_close(hdl);
 						continue;
 					}
-
-					usb_get_string_simple(hdl, ctx->dev->descriptor.iSerialNumber,
-										info->str_serial, 256);
-					info->minor = ctx->dev->descriptor.bcdDevice & 0xff;
-					info->major = (ctx->dev->descriptor.bcdDevice & 0xff00) >> 8;
-
-					usb_close(hdl);
-					return ctx->dev;
 				}
+
+				usb_get_string_simple(hdl, ctx->dev->descriptor.iSerialNumber,
+									info->str_serial, 256);
+				info->minor = ctx->dev->descriptor.bcdDevice & 0xff;
+				info->major = (ctx->dev->descriptor.bcdDevice & 0xff00) >> 8;
+
+				usb_close(hdl);
+				return ctx->dev;
 			}
+		}
 			
 jumpin:
 			// prevent 'error: label at end of compound statement' 
 			continue;
-		}
 	}
 
 	return NULL;

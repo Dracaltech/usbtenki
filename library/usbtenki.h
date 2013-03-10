@@ -26,10 +26,6 @@
 extern "C" {
 #endif
 
-#define OUR_VENDOR_ID 	0x1781
-#define OUR_PRODUCT_ID 	0x0a98
-#define ID_STRING		"USBTenki"
-#define OLD_ID_STRING	"USB_Temp"
 
 
 struct USBTenki_info {
