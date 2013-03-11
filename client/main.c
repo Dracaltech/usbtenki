@@ -47,6 +47,9 @@ int g_verbose = 0;
 int g_temp_format = TENKI_UNIT_CELCIUS;
 int g_pressure_format = TENKI_UNIT_KPA;
 int g_frequency_format = TENKI_UNIT_HZ;
+int g_voltage_format = TENKI_UNIT_VOLTS;
+int g_current_format = TENKI_UNIT_AMPS;
+int g_power_format = TENKI_UNIT_WATTS;
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_decimal_digits = DEFAULT_DECIMAL_DIGITS;
@@ -585,7 +588,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 			return -2;
 		}
 
-		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format);
+		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format);
 
 		sprintf(fmt, "%%.%df", g_decimal_digits);
 	
