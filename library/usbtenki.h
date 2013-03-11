@@ -96,11 +96,14 @@ int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn, 
 float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt);
 float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt);
 float usbtenki_convertFrequency(float freq, int src_fmt, int dst_fmt);
+float usbtenki_convertVoltage(float freq, int src_fmt, int dst_fmt);
+float usbtenki_convertCurrent(float freq, int src_fmt, int dst_fmt);
+float usbtenki_convertPower(float freq, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 const char *chipToShortString(int id);
 const char *unitToString(int unit, int no_fancy_chars);
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency);
+void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int voltage_unit, int current_unit, int power_unit);
 
 #ifdef __cplusplus
 }

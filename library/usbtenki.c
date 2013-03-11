@@ -519,6 +519,107 @@ float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt)
 }
 
 
+float usbtenki_convertVoltage(float v, int src_fmt, int dst_fmt)
+{
+	float converted = v;
+
+	switch (src_fmt) {
+		case TENKI_UNIT_VOLTS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_MILLIVOLT:
+					converted = v * 1000;
+					break;
+			}
+			break;
+
+		case TENKI_UNIT_MILLIVOLT:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_VOLTS:
+					converted = v / 1000;
+					break;
+			}
+			break;
+	}
+	
+	return v;
+}
+
+float usbtenki_convertCurrent(float c, int src_fmt, int dst_fmt)
+{
+	float converted = c;
+
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_AMPS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_MILLIAMPS:
+					converted = c * 1000;
+					break;
+			}
+			break;
+
+		case TENKI_UNIT_MILLIAMPS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_AMPS:
+					converted = c / 1000;
+					break;
+			}
+			break;
+	}
+
+	return c;
+}
+
+float usbtenki_convertPower(float p, int src_fmt, int dst_fmt)
+{
+	float converted = p;
+
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_KILOWATTS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_WATTS:
+					converted = p * 1000;
+					break;
+
+				case TENKI_UNIT_MILLIWATTS:
+					converted = p * 1000 * 1000;
+					break;
+			}
+			break;
+
+		case TENKI_UNIT_WATTS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_KILOWATTS:
+					converted = p / 1000;
+					break;
+				case TENKI_UNIT_MILLIWATTS:
+					converted = p * 1000;
+					break;
+			}
+			break;
+
+		case TENKI_UNIT_MILLIWATTS:
+			switch (dst_fmt)
+			{
+				case TENKI_UNIT_KILOWATTS:
+					converted = p / 1000 / 1000;
+					break;
+				case TENKI_UNIT_WATTS:
+					converted = p / 1000;
+					break;
+			}
+			break;
+	}
+
+	return p;
+}
 
 const char *chipToString(int id)
 {
@@ -1404,7 +1505,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 	return 0;
 }
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency)
+void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int unit_voltage, int unit_current, int unit_power)
 {
 	/* Perform format conversion */
 	switch (chn->converted_unit)
@@ -1440,7 +1541,31 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 															unit_frequency);
 			chn->converted_unit = unit_frequency;
 			break;
+	
+		case TENKI_UNIT_VOLTS:
+		case TENKI_UNIT_MILLIVOLT:
+			chn->converted_data = usbtenki_convertVoltage(chn->converted_data,
+															chn->converted_unit,
+															unit_voltage);
+			chn->converted_unit = unit_voltage;
+			break;
 
+		case TENKI_UNIT_AMPS:
+		case TENKI_UNIT_MILLIAMPS:
+			chn->converted_data = usbtenki_convertCurrent(chn->converted_data,
+															chn->converted_unit,
+															unit_current);
+			chn->converted_unit = unit_current;
+			break;
+
+		case TENKI_UNIT_KILOWATTS:
+		case TENKI_UNIT_WATTS:
+		case TENKI_UNIT_MILLIWATTS:
+			chn->converted_data = usbtenki_convertPower(chn->converted_data,
+															chn->converted_unit,
+															unit_power);
+			chn->converted_unit = unit_power;
+			break;
 	}
 }
 
