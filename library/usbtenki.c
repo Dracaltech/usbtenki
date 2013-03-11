@@ -543,7 +543,7 @@ float usbtenki_convertVoltage(float v, int src_fmt, int dst_fmt)
 			break;
 	}
 	
-	return v;
+	return converted;
 }
 
 float usbtenki_convertCurrent(float c, int src_fmt, int dst_fmt)
@@ -571,7 +571,7 @@ float usbtenki_convertCurrent(float c, int src_fmt, int dst_fmt)
 			break;
 	}
 
-	return c;
+	return converted;
 }
 
 float usbtenki_convertPower(float p, int src_fmt, int dst_fmt)
@@ -618,7 +618,7 @@ float usbtenki_convertPower(float p, int src_fmt, int dst_fmt)
 			break;
 	}
 
-	return p;
+	return converted;
 }
 
 const char *chipToString(int id)
