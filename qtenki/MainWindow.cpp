@@ -18,6 +18,7 @@
 #include "About.h"
 #include "globals.h"
 #include "BigView.h"
+#include "GraphView.h"
 
 MainWindow::MainWindow()
 {
@@ -75,8 +76,11 @@ MainWindow::MainWindow()
 
 	// big view
 	bigView = new BigView();
-	
 	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), bigView, SLOT(refreshView()));
+
+	// graph view
+	graphView = new GraphView();
+	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), graphView, SLOT(refreshView()));
 
 	// messages
 	// configuration
@@ -98,7 +102,8 @@ MainWindow::MainWindow()
 	/* Tabs */
 	tw->addTab(scr_dash, QIcon(":sensors.png"), QObject::tr("Sources"));
 	tw->addTab(scr_logger, QIcon(":logger.png"), QObject::tr("Logging"));	
-	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));	
+	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));
+	tw->addTab(graphView, QIcon(":view.png"), QObject::tr("Graph View"));
 	tw->addTab(scr_cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
 	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 

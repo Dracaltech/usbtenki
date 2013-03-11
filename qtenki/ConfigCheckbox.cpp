@@ -18,5 +18,7 @@ void ConfigCheckbox::update(int state)
 	QSettings settings;
 
 	settings.setValue(config_key, isChecked());
+
+	emit changed();
 }
 

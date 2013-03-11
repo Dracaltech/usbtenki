@@ -14,7 +14,8 @@ Logger::Logger(TenkiSources *s)
 	tenkisources = s;
 
 	current_logger = NULL;
-
+	textview = NULL;
+	
 	main_layout = new QVBoxLayout();
 	setLayout(main_layout);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -110,19 +111,16 @@ Logger::Logger(TenkiSources *s)
 	
 	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
-	browseButton = new QPushButton(QIcon(":fileopen.png"), tr("Select"));
-	viewButton = new QPushButton(QIcon(":view.png"), tr("View"));
+	browseButton = new QPushButton(QIcon(":fileopen.png"), tr("Browse..."));
 	dbl->addWidget(path, y, 1, 1, 4);
 	y++;
 
-	dbl->addWidget(browseButton, y, 3, 1, 1);
-	dbl->addWidget(viewButton, y, 4, 1, 1);
+	dbl->addWidget(browseButton, y, 4, 1, 1);
 	y++;
 
 	connect(path, SIGNAL(editingFinished()), this, SLOT(filenameEdited()));
 
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
-	QObject::connect(viewButton, SIGNAL(clicked()), this, SLOT(openViewer()));
 
 	dbl->addWidget(new QLabel(tr("Logging interval:")), y, 0 );
 	log_interval = new QSpinBox();
@@ -152,8 +150,14 @@ Logger::Logger(TenkiSources *s)
 	stop_button->setEnabled(false);
 	status_label = new QLabel(tr("Not running."));
 	counter_label = new QLabel("0");
+
+	viewButton = new QPushButton(QIcon(":view.png"), tr("View file"));
+	QObject::connect(viewButton, SIGNAL(clicked()), this, SLOT(openViewer()));
+
 	control_layout->addWidget(start_button);
 	control_layout->addWidget(stop_button);
+	control_layout->addWidget(viewButton);
+	
 	control_layout->addWidget(status_label);
 	control_layout->addWidget(new QLabel(tr("Lines written: ")));
 	control_layout->addWidget(counter_label);
@@ -324,6 +328,9 @@ void Logger::startLogging()
 	QObject::connect(current_logger, SIGNAL(logMessage(QString)), this, SLOT(loggerMessage(QString)));
 	QObject::connect(current_logger, SIGNAL(logged(int)), this, SLOT(loggerActivity(int)));
 	current_logger->start();
+	logging_just_started = 1;
+
+
 }
 
 bool Logger::confirmMayExit()
@@ -354,10 +361,12 @@ void Logger::stopLogging()
 
 void Logger::openViewer()
 {
-	TextViewer *t;
-	
-	t = new TextViewer(path->text());
-	t->exec();
+	if (textview) {
+		delete textview;
+	}
+	textview = new TextViewer(path->text());
+	//t->exec();
+	textview->show();
 }
 
 void Logger::browse_clicked()
@@ -392,6 +401,17 @@ void Logger::loggerActivity(int count)
 	QString str;
 	str.setNum(count);
 	counter_label->setText(str);
+
+	// This is used to reload the file at a point where
+	// we know the logger has written to the file. This
+	// is necessary otherwier the text window is not
+	// cleared when the file was truncated.
+	if (logging_just_started) {
+		if (textview) {
+			textview->reloadFile();
+		}
+		logging_just_started = 0;
+	}
 }
 
 void Logger::loggerStopped()

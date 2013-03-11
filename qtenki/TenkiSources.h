@@ -50,6 +50,9 @@ class TenkiSources : public QThread
 		void setTemperatureUnit(int temperature_unit);
 		void setPressureUnit(int pressure_unit);
 		void setFrequencyUnit(int frequency_unit);
+		void setVoltageUnit(int volt_unit);
+		void setCurrentUnit(int current_unit);
+		void setPowerUnit(int power_unit);
 		void setInterval_ms(int interval);
 
 		void convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst);
@@ -77,6 +80,9 @@ class TenkiSources : public QThread
 		int pressure_unit;
 		int temperature_unit;
 		int frequency_unit;
+		int volt_unit;
+		int current_unit;
+		int power_unit;
 };
 
 #endif // _tenki_sources_h__

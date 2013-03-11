@@ -11,6 +11,9 @@ class ConfigCheckbox : public QCheckBox
 	public:
 		ConfigCheckbox(QString caption, QString config_key);
 
+	signals:
+		void changed(void);
+
 	private slots:
 		void update(int state);
 

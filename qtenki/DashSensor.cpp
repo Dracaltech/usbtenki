@@ -33,7 +33,9 @@ DashSensor::DashSensor(TenkiDevice *td)
 	layout->setColumnMinimumWidth(col, 4);
 	layout->addWidget(new QLabel("<b>Alias</b>"), 0, col++);
 	layout->setColumnStretch(col, 0);
-	layout->addWidget(new QLabel("<b>In Big View</b>"), 0, col++);
+	layout->addWidget(new QLabel("<b>Big View</b>"), 0, col++);
+	layout->setColumnStretch(col, 0);
+	layout->addWidget(new QLabel("<b>Graph</b>"), 0, col++);
 	layout->setColumnStretch(col, 0);
 
 	for (int i=0; i<tenki_device->getNumChannels(); i++)
@@ -44,6 +46,8 @@ DashSensor::DashSensor(TenkiDevice *td)
 
 		addChannel(i, i+1);			
 	}
+
+	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 }
 
 void DashSensor::addChannel(int chn, int row)
@@ -92,6 +96,11 @@ void DashSensor::addChannel(int chn, int row)
 	// In bigview
 	ConfigCheckbox *ccb = new ConfigCheckbox("", "bigviewChecked/" + f);
 	layout->addWidget(ccb, row, col++);
+
+	// In graph
+	ConfigCheckbox *ccb_gr = new ConfigCheckbox("", "graphChecked/" + f);
+	layout->addWidget(ccb_gr, row, col++);
+
 
 	channel_id.append(chn);
 }

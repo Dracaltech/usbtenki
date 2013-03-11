@@ -9,6 +9,7 @@
 #include "Logger.h"
 #include "ConfigPanel.h"
 #include "BigView.h"
+#include "GraphView.h"
 
 class MainWindow : public QWidget
 {
@@ -32,6 +33,7 @@ class MainWindow : public QWidget
 		Logger *logger;
 		ConfigPanel *cfgPanel;
 		BigView *bigView;
+		GraphView *graphView;
 		QSystemTrayIcon *trayicon;
 		QTabWidget *tw;
 };

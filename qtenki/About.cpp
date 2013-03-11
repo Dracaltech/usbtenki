@@ -23,7 +23,7 @@ About::About()
 "USBTenki version "USBTENKI_VERSION"<br>"
 USBTENKI_COPYRIGHTS_HTML "<br><br>"
 "Visit the project homepge at <a href=\""HOMEPAGE"\">"HOMEPAGE"</a> for the latest releases."
-"<br><br><b>NOTE:</b> QTenki is still in beta. Please don't hesitate to contact me if there are any issues."
+"<br><br>"
 "<hr>"
 "<h1>License</h1>"
 "USBTenki is released under the terms of the GPL license as below.<hr>"

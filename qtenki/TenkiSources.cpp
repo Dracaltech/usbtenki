@@ -41,6 +41,21 @@ void TenkiSources::setFrequencyUnit(int frequency_unit)
 	this->frequency_unit = frequency_unit;
 }
 
+void TenkiSources::setVoltageUnit(int volt_unit)
+{
+	this->volt_unit = volt_unit;
+}
+
+void TenkiSources::setCurrentUnit(int current_unit)
+{
+	this->current_unit = current_unit;
+}
+
+void TenkiSources::setPowerUnit(int power_unit)
+{
+	this->power_unit = power_unit;
+}
+
 int TenkiSources::init()
 {
 	usbtenki_init();
@@ -154,7 +169,7 @@ void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USB
 	struct USBTenki_channel tmp;
 
 	memcpy(&tmp, chn, sizeof(tmp));
-	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit);
+	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit, volt_unit, current_unit, power_unit);
 	memcpy(dst, &tmp, sizeof(tmp));
 }
 

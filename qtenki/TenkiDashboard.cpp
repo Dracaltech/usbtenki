@@ -28,7 +28,6 @@ TenkiDashboard::~TenkiDashboard()
 void TenkiDashboard::addDashSensor(DashSensor *ds)
 {
 	vbox->addWidget(ds);
-
 	vbox->removeWidget(nosensorsLabel);
 	nosensorsLabel->setVisible(false);
 }

@@ -16,6 +16,9 @@
 #include "TemperaturePreference.h"
 #include "FrequencyPreference.h"
 #include "PressurePreference.h"
+#include "VoltagePreference.h"
+#include "CurrentPreference.h"
+#include "PowerPreference.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -43,6 +46,9 @@ ConfigPanel::ConfigPanel()
 	TemperaturePreference *t_pref = new TemperaturePreference();
 	PressurePreference *p_pref = new PressurePreference();
 	FrequencyPreference *f_pref = new FrequencyPreference();
+	VoltagePreference *volt_pref = new VoltagePreference();
+	CurrentPreference *current_pref = new CurrentPreference();
+	PowerPreference *power_pref = new PowerPreference();
 
 	
 	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), 0, 0 );
@@ -54,6 +60,16 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
 	dataBox_layout->addWidget(f_pref, 2, 1);
 
+	dataBox_layout->addWidget(new QLabel(tr("Voltage unit: ")), 0, 2 );
+	dataBox_layout->addWidget(volt_pref, 0, 3);
+
+	dataBox_layout->addWidget(new QLabel(tr("Current unit: ")), 1, 2 );
+	dataBox_layout->addWidget(current_pref, 1, 3);
+
+	dataBox_layout->addWidget(new QLabel(tr("Power unit: ")), 2, 2 );
+	dataBox_layout->addWidget(power_pref, 2, 3);
+
+
 
 	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 3, 0, 1, -1);
 	dataBox_layout->addWidget(cb_disable_heat_index_validation, 4, 0, 1, -1);
@@ -62,7 +78,7 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Sample loop interval (s):")), 6, 0);
 	dataBox_layout->addWidget(sample_interval, 6, 1);
 
-	dataBox_layout->setColumnStretch(2, 100);
+//	dataBox_layout->setColumnStretch(2, 100);
 	
 	connect(cb_use_old_sht_coefficients, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));

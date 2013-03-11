@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QTimer>
+#include <QFile>
 
 class TextViewer : public QDialog
 {
@@ -14,13 +16,18 @@ class TextViewer : public QDialog
 	public:
 		TextViewer(QString filename);
 		~TextViewer();
+
+	public slots:
+		void followFile();
+		void reloadFile();
 	
 	private:
 		QPlainTextEdit *editor;
 		QVBoxLayout *layout;
 		QDialogButtonBox *btnbox;
 		QPushButton *closeBtn;
-			
+		QTimer *timer;	
+		QFile *file;
 };
 
 #endif // _TextViewer_h__

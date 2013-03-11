@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QWidget>
+#include "TextViewer.h"
 #include "TenkiSources.h"
 #include "DataSourceCheckBox.h"
 #include "SimpleLogger.h"
@@ -48,6 +49,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 
 	private:
 		TenkiSources *tenkisources;
+		TextViewer *textview;
 
 		QGroupBox *sourcebox;
 		QVBoxLayout *svb;
@@ -80,6 +82,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QVBoxLayout *main_layout;
 
 		SimpleLogger *current_logger;
+		char logging_just_started;
 };
 
 #endif // _logger_h__

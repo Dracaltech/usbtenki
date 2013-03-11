@@ -1,6 +1,8 @@
 #include "TextViewer.h"
 #include <QFile>
 #include <QString>
+#include <QLabel>
+#include <QTimer>
 
 TextViewer::TextViewer(QString filename)
 {
@@ -14,7 +16,11 @@ TextViewer::TextViewer(QString filename)
 	
 	QObject::connect(btnbox, SIGNAL(accepted()), this, SLOT(accept()));
 
-	QFile *file = new QFile(filename);
+	timer = new QTimer(this);
+	timer->setInterval(1000); // 1 second
+	connect(timer, SIGNAL(timeout()), this, SLOT(followFile()));
+
+	file = new QFile(filename);
 	if (!file->open(QIODevice::ReadOnly | QIODevice::Text)) {
 		editor->appendPlainText("Error: Could not open file");
 	}
@@ -23,8 +29,8 @@ TextViewer::TextViewer(QString filename)
 			QByteArray line = file->readLine();
 			editor->appendPlainText(line.trimmed());
 		}
-	
-		file->close();
+
+		timer->start();
 	}
 
 	editor->moveCursor(QTextCursor::Start);
@@ -34,12 +40,36 @@ TextViewer::TextViewer(QString filename)
 	layout = new QVBoxLayout();
 	setLayout(layout);
 
+	layout->addWidget(new QLabel(tr("File: ") + filename));
 	layout->addWidget(editor);
 	layout->addWidget(btnbox);
 }
 
+void TextViewer::reloadFile()
+{
+	timer->stop();
+	file->seek(0);
+	editor->clear();
+
+	while (!file->atEnd()) {
+		QByteArray line = file->readLine();
+		editor->appendPlainText(line.trimmed());
+	}
+
+	timer->start();
+}
+
+void TextViewer::followFile()
+{
+	if (!file->atEnd()) {
+		QByteArray line = file->readLine();
+		editor->appendPlainText(line.trimmed());
+	}
+}
+
 TextViewer::~TextViewer()
 {
-
+	file->close();
+	delete file;
 }
 
