@@ -18,7 +18,7 @@ GraphLegendPreference::GraphLegendPreference()
 	addItem(tr("Bottom left"));
 	addItem(tr("Left"));
 
-	setCurrentIndex(settings.value(config_key).toInt());
+	setCurrentIndex(settings.value(config_key, 0).toInt());
 
 
 	connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(idx_changed(int)));

@@ -30,7 +30,7 @@ class TenkiSourceAddRemove
 };
 
 
-class TenkiSources : public QThread
+class TenkiSources : public QObject
 {
 	Q_OBJECT
 
@@ -53,15 +53,15 @@ class TenkiSources : public QThread
 		void setVoltageUnit(int volt_unit);
 		void setCurrentUnit(int current_unit);
 		void setPowerUnit(int power_unit);
-		void setInterval_ms(int interval);
 
 		void convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst);
 	protected:
-		void run();
 
 	public slots:
 		void doCaptures();
 		void updateAlias(QString source_name, QString alias);
+		void run();
+		void setInterval_ms(int interval);
 	
 	signals:
 		void newDeviceFound(TenkiDevice *td);
@@ -71,6 +71,7 @@ class TenkiSources : public QThread
 		void changed();
 
 	private:
+		QThread *thread;
 		QTimer *timer;
 		QList<TenkiDevice*> device_list;
 		QList<struct sourceDescription*> sourceList;
@@ -83,6 +84,7 @@ class TenkiSources : public QThread
 		int volt_unit;
 		int current_unit;
 		int power_unit;
+		int timer_interval;
 };
 
 #endif // _tenki_sources_h__

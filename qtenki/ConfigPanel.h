@@ -21,6 +21,9 @@ class ConfigPanel : public QWidget
 	public slots:
 		void setEnabled(bool b);
 
+	signals:
+		void sig_intervalChanged(int i);
+
 	private slots:
 		void defaultColor(QString name);
 		void customColor(QString name, QColor col);

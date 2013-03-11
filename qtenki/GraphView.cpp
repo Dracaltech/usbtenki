@@ -28,6 +28,7 @@ GraphView::GraphView()
 	plt->legend->setVisible(true);
 	plt->legend->setFont(legendFont);
 	plt->legend->setPositionStyle(QCPLegend::psBottomRight);
+
 	plt->setAutoAddPlottableToLegend(true);
 	plt->setTitle(tr("Untitled graph"));
 
@@ -66,8 +67,8 @@ GraphView::GraphView()
 
 	plt->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	graph_opts->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
-	plt->legend->setPositionStyle(graph_legend_pref->getStyle());
+	
+	replot();
 }
 
 GraphView::~GraphView(void)
@@ -176,8 +177,8 @@ void GraphView::refreshView()
 		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 		QString d;
 		
-		d.sprintf("%.3f",  chndata.converted_data );
-		qDebug() << d;
+//		d.sprintf("%.3f",  chndata.converted_data );
+//		qDebug() << d;
 
 		// Ok, now we have our value.
 		// Find if there is a pre-existing graph
@@ -215,6 +216,11 @@ void GraphView::refreshView()
 
 void GraphView::replot(void)
 {
-	plt->legend->setPositionStyle(graph_legend_pref->getStyle());
+	if (graph_legend_pref->getStyle() == QCPLegend::psManual) {
+		plt->legend->setVisible(false);
+	} else {
+		plt->legend->setVisible(true);
+		plt->legend->setPositionStyle(graph_legend_pref->getStyle());
+	}
 	plt->replot();
 }

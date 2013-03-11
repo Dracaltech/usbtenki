@@ -13,6 +13,14 @@ TenkiSources::TenkiSources()
 	pressure_unit = TENKI_UNIT_KPA;
 	temperature_unit = TENKI_UNIT_CELCIUS;
 	frequency_unit = TENKI_UNIT_HZ;
+
+	timer_interval = 1000;
+
+	thread = new QThread();
+	moveToThread(thread);
+	connect(thread, SIGNAL(started()), this, SLOT(run()));
+	
+	thread->start();
 }
 
 TenkiSources::~TenkiSources()
@@ -23,7 +31,7 @@ TenkiSources::~TenkiSources()
 
 void TenkiSources::setInterval_ms(int interval)
 {
-	timer->setInterval(interval);
+	timer_interval = interval;
 }
 
 void TenkiSources::setTemperatureUnit(int tenki_temp_unit)
@@ -157,11 +165,10 @@ void TenkiSources::addSourcesTo(TenkiSourceAddRemove *tsar)
 void TenkiSources::run()
 {
 	timer = new QTimer();
-	timer->setInterval(1000);
-	connect(timer, SIGNAL(timeout()), this, SLOT(doCaptures()), Qt::DirectConnection);
+	timer->setInterval(timer_interval);
+	connect(timer, SIGNAL(timeout()), this, SLOT(doCaptures()));
 	doCaptures(); // Initial captures
 	timer->start();
-	exec();
 }
 
 void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst)
@@ -175,10 +182,14 @@ void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USB
 
 void TenkiSources::doCaptures()
 {
-//	qDebug() << "Capture time!";
+	//qDebug() << "Capture time!";
 
+	if (timer_interval != timer->interval()) {
+		timer->setInterval(timer_interval);
+	}
+	
 	for (int i=0; i<device_list.size(); i++) {
-//		printf("Updating %s\n", device_list.at(i)->getSerial());
+	//	printf("Updating %s\n", device_list.at(i)->getSerial());
 		device_list.at(i)->updateChannelData();
 	}
 

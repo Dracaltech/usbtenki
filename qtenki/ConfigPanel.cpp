@@ -38,10 +38,12 @@ ConfigPanel::ConfigPanel()
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
 	cb_disable_humidex_validation->setChecked(settings.value("data/disable_humidex_range").toBool());
 	sample_interval = new QSpinBox();
-	sample_interval->setMinimum(1);
-	sample_interval->setMaximum(60);
-	sample_interval->setValue(settings.value("data/global_sample_interval_s").toInt());
-	g_tenkisources->setInterval_ms(sample_interval->value() * 1000);
+	sample_interval->setMinimum(100);
+	sample_interval->setMaximum(60000);
+	sample_interval->setValue(settings.value("data/global_sample_interval_ms", 1000).toInt());
+	
+	connect(this, SIGNAL(sig_intervalChanged(int)), g_tenkisources, SLOT(setInterval_ms(int)));
+	intervalChanged(sample_interval->value());
 
 	TemperaturePreference *t_pref = new TemperaturePreference();
 	PressurePreference *p_pref = new PressurePreference();
@@ -75,7 +77,7 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(cb_disable_heat_index_validation, 4, 0, 1, -1);
 	dataBox_layout->addWidget(cb_disable_humidex_validation, 5, 0, 1, -1);	
 
-	dataBox_layout->addWidget(new QLabel(tr("Sample loop interval (s):")), 6, 0);
+	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), 6, 0);
 	dataBox_layout->addWidget(sample_interval, 6, 1);
 
 //	dataBox_layout->setColumnStretch(2, 100);
@@ -84,6 +86,7 @@ ConfigPanel::ConfigPanel()
 	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_humidex_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(sample_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
+	
 
 	///////////////////////////
 	default_palette = QApplication::palette();
@@ -182,8 +185,9 @@ void ConfigPanel::updateFlagsFromCheckboxes(int ignored)
 void ConfigPanel::intervalChanged(int i)
 {
 	QSettings settings;
-	settings.setValue("data/global_sample_interval_s", i);
-	g_tenkisources->setInterval_ms(i*1000);
+	settings.setValue("data/global_sample_interval_ms", i);
+
+	emit sig_intervalChanged(i);
 }
 
 void ConfigPanel::updateMinimizeToTray(int ig)
@@ -265,8 +269,6 @@ void ConfigPanel::customColor(QString name, QColor col)
 
 		qApp->setPalette(myPalette);
 	}
-
-
 }
 
 ConfigPanel::~ConfigPanel()

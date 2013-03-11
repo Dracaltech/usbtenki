@@ -56,7 +56,6 @@ MainWindow::MainWindow()
 
 	g_tenkisources = new TenkiSources();
 	g_tenkisources->init();
-	g_tenkisources->start();
 
 	/* prepare tab elements */
 	td = new TenkiDashboard();
