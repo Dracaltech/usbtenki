@@ -32,7 +32,7 @@ void BigLabel::refresh()
 
 	QString d;
 
-	d.sprintf("%.3f",  chndata.converted_data );
+	g_tenkisources->formatValue(&d, chndata.converted_data);
 
 	QString final;
 

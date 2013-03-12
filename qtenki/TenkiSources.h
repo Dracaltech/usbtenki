@@ -44,6 +44,8 @@ class TenkiSources : public QObject
 		void syncDevicesTo(TenkiDeviceAddRemove *tdr);
 		void addSourcesTo(TenkiSourceAddRemove *tsar);
 
+		void formatValue(QString *str, float value);
+
 		struct sourceDescription *getSourceByName(QString src);
 		QString getSourceAliasByName(QString src);
 
@@ -53,6 +55,8 @@ class TenkiSources : public QObject
 		void setVoltageUnit(int volt_unit);
 		void setCurrentUnit(int current_unit);
 		void setPowerUnit(int power_unit);
+		void setDisplayDigits(int digits);
+		int displayDigits();
 
 		void convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst);
 	protected:
@@ -85,6 +89,7 @@ class TenkiSources : public QObject
 		int current_unit;
 		int power_unit;
 		int timer_interval;
+		int display_digits;
 };
 
 #endif // _tenki_sources_h__

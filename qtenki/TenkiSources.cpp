@@ -29,6 +29,20 @@ TenkiSources::~TenkiSources()
 	delete timer;
 }
 
+void TenkiSources::formatValue(QString *str, float value)
+{
+	char fmtbuf[16];
+	int n = display_digits;
+
+	if (n<0)
+		n = 0;
+	if (n>9)
+		n = 9;
+
+	sprintf(fmtbuf, "%%.%df", n);
+	str->sprintf(fmtbuf, value);
+}
+
 void TenkiSources::setInterval_ms(int interval)
 {
 	timer_interval = interval;
@@ -47,6 +61,16 @@ void TenkiSources::setPressureUnit(int pressure_unit)
 void TenkiSources::setFrequencyUnit(int frequency_unit)
 {
 	this->frequency_unit = frequency_unit;
+}
+
+void TenkiSources::setDisplayDigits(int digits)
+{
+	this->display_digits = digits;
+}
+
+int TenkiSources::displayDigits()
+{
+	return display_digits;
 }
 
 void TenkiSources::setVoltageUnit(int volt_unit)

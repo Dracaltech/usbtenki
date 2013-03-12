@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QWidget>
+#include <QTimer>
 
 #include "ConfigCheckbox.h"
 #include "TenkiSources.h"
@@ -29,14 +30,23 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		void replot(void);
 		void editTitle();
 	
+	private slots:
+		void intervalChanged(int i);
+		void pause_unpause(void);
+
 	private:
+		QTimer *sample_timer;
 		QVBoxLayout *lay;
+		QPushButton *btn_pause_continue;
 		QList<QString> sources;
 		QList<QCPGraph*> src_graphs;
-		ConfigCheckbox *graph_rescale;
+		ConfigCheckbox *graph_rescale_x;
+		ConfigCheckbox *graph_rescale_y;
 		QCustomPlot *plt;
 		GraphLegendPreference *graph_legend_pref;
 		int x_count;
+		int x_max;
+		int is_paused;
 };
 
 #endif 

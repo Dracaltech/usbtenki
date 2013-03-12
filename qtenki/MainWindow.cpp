@@ -79,7 +79,6 @@ MainWindow::MainWindow()
 
 	// graph view
 	graphView = new GraphView();
-	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), graphView, SLOT(refreshView()));
 
 	// messages
 	// configuration

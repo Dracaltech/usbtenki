@@ -31,6 +31,7 @@ class ConfigPanel : public QWidget
 		void updateFlagsFromCheckboxes(int);
 		void updateMinimizeToTray(int);
 		void intervalChanged(int i);
+		void displayDigitsChanged(int i);
 
 	private:
 		void displaySaved();
@@ -44,7 +45,7 @@ class ConfigPanel : public QWidget
 		QCheckBox *cb_minimize_to_system_tray;
 		QLabel *messageLabel;
 		QSpinBox *sample_interval;
-
+		QSpinBox *display_digits;
 };
 
 #endif // _ConfigPanel_h__

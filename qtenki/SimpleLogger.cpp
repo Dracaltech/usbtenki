@@ -1,6 +1,7 @@
 #include "SimpleLogger.h"
 #include "../common/usbtenki_version.h"
 #include <QtGui>
+#include "globals.h"
 //#include <QHostInfo>
 
 SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, enum SimpleLogger::OnError onerr)
@@ -174,7 +175,7 @@ void SimpleLogger::logValue(float v, int last)
 	// TODO : Potential options:
 	//   - scientific notation
 	//   - precision (now hardcoded to 2)
-	logItem(logLocale->toString(v, 'f', 2), last); 	
+	logItem(logLocale->toString(v, 'f', g_tenkisources->displayDigits()), last); 	
 //	logItem(QString::fromAscii(tmpbuf), last);
 
 }

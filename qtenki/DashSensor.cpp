@@ -78,7 +78,7 @@ void DashSensor::addChannel(int chn, int row)
 	c = QString::fromAscii(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);
 
-	d.sprintf("%.3f", ch.converted_data);	
+	g_tenkisources->formatValue(&d, ch.converted_data);
 	value_label = new QLabel(d);
 	values.append(value_label);
 	layout->addWidget(value_label, row, col++);
@@ -139,7 +139,7 @@ void DashSensor::refresh()
 		
 		g_tenkisources->convertToUnits(cdat, &ch);		
 
-		d.sprintf("%.3f", ch.converted_data);	
+		g_tenkisources->formatValue(&d, ch.converted_data);
 		values.at(i)->setText(d);
 
 		// those two QList are populated in the same

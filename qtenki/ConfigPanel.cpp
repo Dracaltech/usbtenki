@@ -37,6 +37,7 @@ ConfigPanel::ConfigPanel()
 	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
 	cb_disable_humidex_validation->setChecked(settings.value("data/disable_humidex_range").toBool());
+	
 	sample_interval = new QSpinBox();
 	sample_interval->setMinimum(100);
 	sample_interval->setMaximum(60000);
@@ -44,6 +45,16 @@ ConfigPanel::ConfigPanel()
 	
 	connect(this, SIGNAL(sig_intervalChanged(int)), g_tenkisources, SLOT(setInterval_ms(int)));
 	intervalChanged(sample_interval->value());
+
+
+	display_digits = new QSpinBox();
+	display_digits->setMinimum(0);
+	display_digits->setMaximum(6);
+	display_digits->setValue(settings.value("data/display_digits", 3).toInt());
+	connect(display_digits, SIGNAL(valueChanged(int)), this, SLOT(displayDigitsChanged(int)));
+	displayDigitsChanged(display_digits->value());
+
+
 
 	TemperaturePreference *t_pref = new TemperaturePreference();
 	PressurePreference *p_pref = new PressurePreference();
@@ -80,6 +91,8 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), 6, 0);
 	dataBox_layout->addWidget(sample_interval, 6, 1);
 
+	dataBox_layout->addWidget(new QLabel(tr("Number of digits after the decimal point:")), 7, 0);
+	dataBox_layout->addWidget(display_digits, 7, 1);
 //	dataBox_layout->setColumnStretch(2, 100);
 	
 	connect(cb_use_old_sht_coefficients, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
@@ -188,6 +201,14 @@ void ConfigPanel::intervalChanged(int i)
 	settings.setValue("data/global_sample_interval_ms", i);
 
 	emit sig_intervalChanged(i);
+}
+
+void ConfigPanel::displayDigitsChanged(int i)
+{
+	QSettings settings;
+	settings.setValue("data/display_digits", i);
+
+	g_tenkisources->setDisplayDigits(i);
 }
 
 void ConfigPanel::updateMinimizeToTray(int ig)
