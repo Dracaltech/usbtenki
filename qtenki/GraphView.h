@@ -44,6 +44,7 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		QList<QCPGraph*> src_graphs;
 		ConfigCheckbox *graph_rescale_x;
 		ConfigCheckbox *graph_rescale_y;
+		ConfigCheckbox *graph_log_y;
 		QCustomPlot *plt;
 		GraphLegendPreference *graph_legend_pref;
 		QLabel *lbl_window_time;

@@ -26,6 +26,7 @@ GraphView::GraphView()
 	plt->setRangeZoom(Qt::Horizontal);
 	plt->setInteractions(QCustomPlot::iRangeZoom | QCustomPlot::iRangeDrag);
 
+
 	connect(plt, SIGNAL(titleClick(QMouseEvent*)), this, SLOT(editTitle()));
 	
 	QFont legendFont = font();
@@ -79,9 +80,11 @@ GraphView::GraphView()
 
 	graph_rescale_x = new ConfigCheckbox(tr("Auto-scale X axis"), "graph/autoscale_x");
 	graph_rescale_y = new ConfigCheckbox(tr("Auto-scale Y axis"), "graph/autoscale_y");
+	graph_log_y = new ConfigCheckbox(tr("Logarithmic Y axis"), "graph/log_y");
 
 	connect(graph_rescale_x, SIGNAL(changed()), this, SLOT(replot()));
 	connect(graph_rescale_y, SIGNAL(changed()), this, SLOT(replot()));
+	connect(graph_log_y, SIGNAL(changed()), this, SLOT(replot()));
 
 	// Graph legend
 	graph_legend_pref = new GraphLegendPreference();
@@ -95,6 +98,7 @@ GraphView::GraphView()
 
 	graph_opts_lay2->addWidget(graph_rescale_x);
 	graph_opts_lay2->addWidget(graph_rescale_y);
+	graph_opts_lay2->addWidget(graph_log_y);
 
 	graph_opts_lay2->addWidget(new QLabel(tr("Sample interval (ms):")));
 	graph_opts_lay2->addWidget(sample_interval);
@@ -259,7 +263,12 @@ void GraphView::refreshView()
 			}
 		}
 		*/
-		gr->addData(x_count, chndata.converted_data);
+		if (chndata.data_valid) {
+			gr->addData(x_count, chndata.converted_data);
+		}
+		else {
+//			gr->setDataKeyError(x_count);
+		}
 		if (x_count >= x_max) {
 			gr->removeData(x_count - x_max);
 			//printf("Sliding window\n");
@@ -306,6 +315,16 @@ void GraphView::replot(void)
 		plt->legend->setVisible(true);
 		plt->legend->setPositionStyle(graph_legend_pref->getStyle());
 	}
+
+	if (graph_log_y->isChecked()) {
+		plt->yAxis->setScaleType(QCPAxis::stLogarithmic);
+		plt->yAxis->setScaleLogBase(10.0); // TODO configurabl
+	}
+	else {
+		plt->yAxis->setScaleType(QCPAxis::stLinear);
+	}
+
+
 	plt->replot();
 }
 
