@@ -1,8 +1,10 @@
-Version 2.0.0:
+Version 2.0.1:
    - [QTenki] Log file can now be viewed while logging. New records will
      appear in real time.
    - [QTenki] Added voltage, current and power unit preferences.
+   - [QTenki] Number of digits following the decimal now configurable.
    - [QTenki] Added a basic realtime graphing tab using QCustomPlot.
+   - Support for Dracal USB Vendor ID
 
 Version 1.9.7:
    - [QTenki] Scrollbars will now appear if there is not enough space.
