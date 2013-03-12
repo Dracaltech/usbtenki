@@ -61,7 +61,7 @@ GraphView::GraphView()
 	// Sample interval
 	QSpinBox *sample_interval = new QSpinBox();
 	sample_interval->setMinimum(settings.value("graph/minimum_sample_interval_ms", 100).toInt());
-	sample_interval->setMaximum(60000);
+	sample_interval->setMaximum(settings.value("graph/minimum_sample_interval_ms", 60 * 60 * 1000).toInt()); // 1 per hour
 	sample_interval->setValue(settings.value("graph/sample_interval_ms", 1000).toInt());
 	connect(sample_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
 
@@ -87,6 +87,9 @@ GraphView::GraphView()
 	graph_legend_pref = new GraphLegendPreference();
 	connect(graph_legend_pref, SIGNAL(changed()), this, SLOT(replot()));
 
+
+	lbl_window_time = new QLabel();
+
 	graph_opts_lay2->addWidget(new QLabel(tr("Graph legend:")));
 	graph_opts_lay2->addWidget(graph_legend_pref);
 
@@ -96,8 +99,8 @@ GraphView::GraphView()
 	graph_opts_lay2->addWidget(new QLabel(tr("Sample interval (ms):")));
 	graph_opts_lay2->addWidget(sample_interval);
 
-
-	
+	graph_opts_lay2->addWidget(lbl_window_time);
+				
 	
 	lay->addWidget(plt);
 	lay->addWidget(graph_opts2);
@@ -112,6 +115,8 @@ GraphView::GraphView()
 	sample_timer->setInterval(sample_interval->value());
 	connect(sample_timer, SIGNAL(timeout()), this, SLOT(refreshView()));
 	sample_timer->start();
+	
+	refreshWindowtime();
 }
 
 GraphView::~GraphView(void)
@@ -286,9 +291,6 @@ void GraphView::refreshView()
 
 //		d.sprintf("%.3f",  chndata.converted_data );
 //		qDebug() << d;
-	QString lbl;
-	lbl.sprintf("Samples (%d ms interval)", sample_timer->interval());
-	plt->xAxis->setLabel(lbl);
 
 	replot();
 	
@@ -312,6 +314,29 @@ void GraphView::intervalChanged(int i)
 	QSettings settings;
 	settings.setValue("graph/sample_interval_ms", i);
 	sample_timer->setInterval(i);
+	refreshWindowtime();
+
+	QString lbl;
+	lbl.sprintf("Samples at ");
+	
+	if (sample_timer->interval()>=1000) {
+		QString duration;
+		fancyTime(&duration, sample_timer->interval());
+		lbl += duration + " intervals (";
+		QString ms_interval;
+		ms_interval.sprintf("%d", sample_timer->interval());
+
+		lbl += ms_interval + "ms)";
+	}
+	else {
+		QString ms_interval;
+		ms_interval.sprintf("%d", sample_timer->interval());
+		lbl += ms_interval + "ms intervals";
+	}
+
+	plt->xAxis->setLabel(lbl);
+
+	replot();
 }
 
 void GraphView::pause_unpause(void)
@@ -325,5 +350,40 @@ void GraphView::pause_unpause(void)
 		sample_timer->start();
 		btn_pause_continue->setText(tr("Pause"));
 	}
-
 }
+
+void GraphView::fancyTime(QString *s, unsigned long long ms)
+{
+	if (ms < 1000) {
+		s->sprintf("%lld ms", ms);	
+	}
+	else if (ms < 60 * 1000) { // less than 1 minute
+		s->sprintf("%.1f s", ms / 1000.0);	
+	}
+	else if (ms < 60*60*1000) { // les than 1 hour
+		s->sprintf("%.1f m", ms / 1000.0 / 60.0);	
+	}
+	else if (ms < 60*60*1000*24) { // les than 1 day
+		s->sprintf("%.1f h", ms / 1000.0 / 60.0 / 60.0);
+	}
+	else {
+		s->sprintf("%.1f d", ms / 1000.0 / 60.0 / 60.0 / 30.4363);
+	}
+}
+
+void GraphView::refreshWindowtime(void)
+{
+	QString res;
+	QString duration;
+	unsigned long long cap_ms;
+
+	cap_ms = sample_timer->interval() * (unsigned long long)x_max;
+	
+	fancyTime(&duration, cap_ms);
+
+	res = "Buffer capacity: ";
+	res += duration;
+
+	lbl_window_time->setText(res);
+}
+

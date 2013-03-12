@@ -35,6 +35,8 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		void pause_unpause(void);
 
 	private:
+		void fancyTime(QString *s, unsigned long long ms);
+		void refreshWindowtime(void);
 		QTimer *sample_timer;
 		QVBoxLayout *lay;
 		QPushButton *btn_pause_continue;
@@ -44,6 +46,7 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		ConfigCheckbox *graph_rescale_y;
 		QCustomPlot *plt;
 		GraphLegendPreference *graph_legend_pref;
+		QLabel *lbl_window_time;
 		int x_count;
 		int x_max;
 		int is_paused;
