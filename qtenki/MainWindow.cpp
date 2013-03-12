@@ -101,7 +101,7 @@ MainWindow::MainWindow()
 	tw->addTab(scr_dash, QIcon(":sensors.png"), QObject::tr("Sources"));
 	tw->addTab(scr_logger, QIcon(":logger.png"), QObject::tr("Logging"));	
 	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));
-	tw->addTab(graphView, QIcon(":view.png"), QObject::tr("Graph View"));
+	tw->addTab(graphView, QIcon(":graph.png"), QObject::tr("Graph View"));
 	tw->addTab(scr_cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
 	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
 

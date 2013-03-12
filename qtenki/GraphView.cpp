@@ -14,7 +14,7 @@ GraphView::GraphView()
 	lay = new QVBoxLayout();
 	this->setLayout(lay);
 	
-
+	is_paused = 0;
 	x_count = 0;
 	x_max = settings.value("graph/xmax", 8000).toInt();
 
@@ -54,7 +54,7 @@ GraphView::GraphView()
 	QPushButton *btn_reset = new QPushButton(tr("Reset graph"));
 	connect(btn_reset, SIGNAL(clicked()), this, SLOT(resetGraph()));
 	
-	QPushButton *btn_save = new QPushButton(tr("Save graph to file..."));
+	QPushButton *btn_save = new QPushButton(QIcon(":fileopen.png"), tr("Save graph to file..."));
 	connect(btn_save, SIGNAL(clicked()), this, SLOT(saveGraph()));
 	
 
