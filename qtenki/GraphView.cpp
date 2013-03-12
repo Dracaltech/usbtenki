@@ -16,6 +16,8 @@ GraphView::GraphView()
 	
 
 	x_count = 0;
+	x_max = settings.value("graph/xmax", 8000).toInt();
+
 	plt = new QCustomPlot(this);
 	
 	plt->xAxis->setLabel("Samples");
@@ -58,7 +60,7 @@ GraphView::GraphView()
 
 	// Sample interval
 	QSpinBox *sample_interval = new QSpinBox();
-	sample_interval->setMinimum(100);
+	sample_interval->setMinimum(settings.value("graph/minimum_sample_interval_ms", 100).toInt());
 	sample_interval->setMaximum(60000);
 	sample_interval->setValue(settings.value("graph/sample_interval_ms", 1000).toInt());
 	connect(sample_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
@@ -236,7 +238,7 @@ void GraphView::refreshView()
 			gr->setName(alias);
 			
 			QPen p(colors[i%10]);
-//			p.setWidth(2);
+			p.setWidth(2);
 
 			gr->setPen(p);
 			src_graphs.replace(i, gr);
@@ -253,9 +255,9 @@ void GraphView::refreshView()
 		}
 		*/
 		gr->addData(x_count, chndata.converted_data);
-		if (x_count >= 100) {
-			gr->removeData(x_count - 100);
-			printf("Sliding window\n");
+		if (x_count >= x_max) {
+			gr->removeData(x_count - x_max);
+			//printf("Sliding window\n");
 		}
 
 	}
