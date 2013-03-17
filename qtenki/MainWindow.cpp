@@ -31,13 +31,11 @@ MainWindow::MainWindow()
 	bot_btns->setLayout(bot_lay);
 
 	QLabel *img_logo = new QLabel();
-	img_logo->setPixmap(QPixmap(":rnt_logo200.png"));
-	QLabel *txt_logo = new QLabel("raphnet technologies");
+	img_logo->setPixmap(QPixmap(":dracal.png"));
 
 	QPushButton *exit_button = new QPushButton(QIcon(":application-exit.png"), QObject::tr("Quit QTenki"));
 	
 	bot_lay->addWidget(img_logo);
-	bot_lay->addWidget(txt_logo);
 	bot_lay->addStretch();
 	bot_lay->addWidget(exit_button);
 	connect(exit_button, SIGNAL(clicked()), this, SLOT(close()));
@@ -49,8 +47,8 @@ MainWindow::MainWindow()
 	About *about;
 
 	// If the following changes, configuration will be lost.
-	QCoreApplication::setOrganizationName("raphnet technologies");
-	QCoreApplication::setOrganizationDomain("raphnet.net");
+	QCoreApplication::setOrganizationName("Dracal technologies inc.");
+	QCoreApplication::setOrganizationDomain("dracal.com");
 	QCoreApplication::setApplicationName("Qtenki");
 	
 
