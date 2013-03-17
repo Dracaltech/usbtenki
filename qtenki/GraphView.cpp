@@ -146,23 +146,46 @@ void GraphView::saveGraph(void)
 {
 	QString filename;
 	QString default_dir = QDir::homePath();
+	QString sel_filt;
 
 	filename = QFileDialog::getSaveFileName(this, tr("Save graph to file"), default_dir,
-		"PNG (*.png);; JPEG (*.jpg *.jpeg);; BMP (*.bmp);; PDF (*.pdf)");
+		"PNG (*.png);; JPEG (*.jpg *.jpeg);; BMP (*.bmp);; PDF (*.pdf)", &sel_filt);
+
+
+	qDebug() << "Selected filter: " + sel_filt;
 
 	if (filename.size()) {
 		qDebug() << filename;
 
-		if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
+		if (sel_filt.startsWith("JPEG")) {
+			QFileInfo inf(filename);
+			if (!inf.suffix().toLower().startsWith("jp")) {
+				filename = filename + ".jpeg";
+			}
 			plt->saveJpg(filename);
 		}
-		if (filename.endsWith(".png")) {
+		if (sel_filt.startsWith("PNG")) {
+			QFileInfo inf(filename);
+			if (inf.suffix().toLower().compare("png") == 0) {
+				filename = filename + ".png";
+			}
+
 			plt->savePng(filename);
 		}
-		if (filename.endsWith(".bmp")) {
+		if (sel_filt.startsWith("BMP")) {
+			QFileInfo inf(filename);
+			if (!inf.suffix().toLower().compare("bmp") == 0) {
+				filename = filename + ".bmp";
+			}
+
 			plt->saveBmp(filename);
 		}
-		if (filename.endsWith(".pdf")) {
+		if (sel_filt.startsWith("PDF")) {
+			QFileInfo inf(filename);
+			if (!inf.suffix().toLower().compare("pdf") == 0) {
+				filename = filename + ".pdf";
+			}
+
 			plt->savePdf(filename, true);
 		}
 	}
@@ -276,27 +299,6 @@ void GraphView::refreshView()
 
 	}
 
-	Qt::Orientations orient = 0;
-
-	if (graph_rescale_x->isChecked()) {
-		for (int i=0; i<plt->graphCount(); i++) {
-			plt->graph(i)->rescaleKeyAxis(i==0 ? false : true);
-		}
-	} else {
-		orient |= Qt::Horizontal;
-	}
-
-
-	if (graph_rescale_y->isChecked()) {
-		for (int i=0; i<plt->graphCount(); i++) {
-			plt->graph(i)->rescaleValueAxis(i==0? false : true);
-		}
-	} else {
-		orient |= Qt::Vertical;
-	}
-
-	plt->setRangeZoom(orient);
-	plt->setRangeDrag(orient);
 
 //		d.sprintf("%.3f",  chndata.converted_data );
 //		qDebug() << d;
@@ -323,6 +325,28 @@ void GraphView::replot(void)
 	else {
 		plt->yAxis->setScaleType(QCPAxis::stLinear);
 	}
+
+	Qt::Orientations orient = 0;
+
+	if (graph_rescale_x->isChecked()) {
+		for (int i=0; i<plt->graphCount(); i++) {
+			plt->graph(i)->rescaleKeyAxis(i==0 ? false : true);
+		}
+	} else {
+		orient |= Qt::Horizontal;
+	}
+
+
+	if (graph_rescale_y->isChecked()) {
+		for (int i=0; i<plt->graphCount(); i++) {
+			plt->graph(i)->rescaleValueAxis(i==0? false : true);
+		}
+	} else {
+		orient |= Qt::Vertical;
+	}
+
+	plt->setRangeZoom(orient);
+	plt->setRangeDrag(orient);
 
 
 	plt->replot();
