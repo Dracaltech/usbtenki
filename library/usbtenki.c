@@ -150,8 +150,10 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 									info->str_prodname, 256);
 				
 				// Check the name if we need to (for shared vid/pid)				
-				if (isHandled == VIDPID_HANDLED_STRING) {
-					if (!isNameHandled(info->str_prodname)) {
+				if (isHandled == VIDPID_HANDLED_STRING) 
+				{
+					if (!isNameHandled(info->str_prodname)) 
+					{
 						if (g_usbtenki_verbose) {
 							printf("Ignored: %s\n", info->str_prodname);
 						}
@@ -168,11 +170,11 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 				usb_close(hdl);
 				return ctx->dev;
 			}
-		}
 			
 jumpin:
 			// prevent 'error: label at end of compound statement' 
 			continue;
+		}
 	}
 
 	return NULL;
