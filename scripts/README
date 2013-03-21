@@ -1,0 +1,4 @@
+To access an USB Tenki device without being root, add the rules file to 
+/etc/udev/rules.d, restart udev and reconnect the USB tenki device.
+
+Make sure your user is in the plugdev group.
