@@ -11,7 +11,7 @@
 Name "QTenki"
 
 ; The file to write
-OutFile "qtenki-install-2.0.3.exe"
+OutFile "qtenki-install-${VERSION}.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\QTenki
@@ -26,6 +26,8 @@ LicenseData license.txt
 RequestExecutionLevel admin
 
 ;--------------------------------
+!include "LogicLib.nsh"
+!include "x64.nsh"
 
 ; Pages
 
@@ -76,7 +78,13 @@ Section "QTenki libusb based driver"
 
 	File /r "usb_driver\*"
 
-	ExecWait "cmd"
+	${If} ${RunningX64}
+		ExecWait '"$INSTDIR\usb_driver\dpinst_amd64.exe" /PATH "$INSTDIR\usb_driver"'
+	${Else}
+		; /lm is needed for winXP. Not sure about other 32 bit versions
+		ExecWait '"$INSTDIR\usb_driver\dpinst_x86.exe" /lm /PATH "$INSTDIR\usb_driver"'
+	${EndIf}
+
 SectionEnd
 
 Section "QTenki source code"
