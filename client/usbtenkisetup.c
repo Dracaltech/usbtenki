@@ -50,6 +50,7 @@ static void printUsage(void)
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
 	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
 	printf("    em1_config  max_current  calibration\n");
+	printf("    misc1_cal   value\n");
 
 }
 
@@ -209,8 +210,6 @@ int main(int argc, char **argv)
 
 		goto cleanAndExit;
 	}
-
-
 
 	/**************** Setadcchip ****************/
 	if (strcmp(eargv[0], "setadcchip")==0) {

@@ -1,6 +1,7 @@
 Version:
    - Linux: Added a sample udev rules files to script/ 
 		(To use the USB Tenki device without being root)
+   - [Core] Support for the MPXV7002 differential pressure sensors
 
 Version 2.0.3:
    - [Core] Fix a device enumeration problem

@@ -265,8 +265,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 		case USBTENKI_CHIP_MPXV7002:
 			{
-				float vout, vs;
-				unsigned short adc_out;
+				float vout, vs, vorigin;
+				unsigned int adc_out;
+				unsigned int adc_origin;
 			
 				/* "Datasheet figure 4, Output versus pressure differential"
 				 *
@@ -293,8 +294,18 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				
 				vs = 5.0;
 				adc_out = raw_data[0] << 8 | raw_data[1];
-				vout = (adc_out * vs) / (float)0xffff;				
-				printf("%.3f volts\n", vout);
+				adc_origin = raw_data[2] << 8 | raw_data[3];
+
+//				printf("ADC: 0x%04x, ADC_ORIG: 0x%04x\n", adc_out, adc_origin);
+				
+				vout = (adc_out * vs) / (float)0xffff;
+				vorigin = (adc_origin * vs) / (float)0xffff;
+				
+//				printf("Vout: %.3f, Vorigin: %.3f\n", vout, vorigin);
+
+				vout -= vorigin - 2.5;
+
+//				printf("Final: %.3f\n", vout);
 
 				temperature = (vout / vs - 0.5) / 0.2;
 				chip_fmt = TENKI_UNIT_KPA;
