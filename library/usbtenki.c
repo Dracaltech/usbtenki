@@ -60,6 +60,15 @@ char isNameHandled(const char *str)
 	return 0;
 }
 
+char matchSerialNumber(const char *str)
+{
+	char *m = getenv("USBTENKI_SHOW_ONLY");
+	if (!m) {
+		return 1;
+	}
+	return strcmp(m, str) == 0;
+}
+
 int usbtenki_init(void)
 {
 	usb_init();
@@ -164,6 +173,12 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 
 				usb_get_string_simple(hdl, ctx->dev->descriptor.iSerialNumber,
 									info->str_serial, 256);
+				
+				if (!matchSerialNumber(info->str_serial)) {
+					usb_close(hdl);
+					continue;
+				}
+
 				info->minor = ctx->dev->descriptor.bcdDevice & 0xff;
 				info->major = (ctx->dev->descriptor.bcdDevice & 0xff00) >> 8;
 
@@ -677,6 +692,9 @@ const char *chipToString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Microcontroller ADC channel 5";
 
+		case USBTENKI_CHIP_MPXV7002:
+			return "MPXV7002 Differential air pressure sensor";
+
 		case USBTENKI_CHIP_MPX4115:
 			return "MPX4115 Absolute air pressure sensor";
 
@@ -774,6 +792,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Raw ADC output";
 
+		case USBTENKI_CHIP_MPXV7002:
 		case USBTENKI_CHIP_MPX4115:
 		case USBTENKI_CHIP_MP3H6115A:
 			return "Pressure";

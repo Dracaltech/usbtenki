@@ -49,6 +49,7 @@ static void printUsage(void)
 	printf("    setserial   serial (8 characters)\n");
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
 	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
+	printf("    em1_config  max_current  calibration\n");
 
 }
 
@@ -295,6 +296,57 @@ int main(int argc, char **argv)
 		
 		goto cleanAndExit;
 	}
+
+	/*************** EM1 config ******************/
+	if (strcmp(eargv[0], "em1_config")==0) {
+		int max_current;
+		int calibration;
+		char *e;
+		
+		/* printf("    em1_config  max_current  calibration\n"); */
+
+		if (n_extra_args<3) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		max_current = strtol(eargv[1], &e, 0);
+		if (e==eargv[1]) {
+			fprintf(stderr, "Invalid max current\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		calibration = strtol(eargv[2], &e, 0);
+		if (e==eargv[1]) {
+			fprintf(stderr, "Invalid calibration\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		if (g_verbose) 
+			printf("Setting em1 config: Max current=%d,  calibration=0x%04x\n", max_current, calibration);
+
+		res = usbtenki_command(hdl, USBTENKI_SET_EM1_CALIBRATION, 
+								calibration, repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error setting calibration\n");
+			retval = 2;
+		}
+
+		res = usbtenki_command(hdl, USBTENKI_SET_EM1_MAX_CURRENT, 
+								max_current, repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error setting calibration\n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+
+
 	
 	fprintf(stderr, "Unknow command '%s'\n", eargv[0]);
 

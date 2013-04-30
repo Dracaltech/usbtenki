@@ -263,6 +263,44 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_MPXV7002:
+			{
+				float vout, vs;
+				unsigned short adc_out;
+			
+				/* "Datasheet figure 4, Output versus pressure differential"
+				 *
+				 * Transfer function: 
+				 *  
+				 * Vout = Vs * (0.2 * P(kPa) + 0.5) +- 6.25% Vfss
+				 *
+				 * Vs: Supply voltage (5 volt)
+				 * Vfss = Full Scale Span (max 4.5v)
+				 *
+				 * At nominal accuracy (0% Vfss):
+				 *
+				 * Vout = Vs * (0.2 * P + 0.5)
+				 *
+				 * Hence
+				 *
+				 * Vout / VS - 0.5 
+				 * ---------------   = P
+				 *         0.2
+				 *
+				 * 
+				 *
+				 */
+				
+				vs = 5.0;
+				adc_out = raw_data[0] << 8 | raw_data[1];
+				vout = (adc_out * vs) / (float)0xffff;				
+				printf("%.3f volts\n", vout);
+
+				temperature = (vout / vs - 0.5) / 0.2;
+				chip_fmt = TENKI_UNIT_KPA;
+			}
+			break;
+
 		case USBTENKI_CHIP_MP3H6115A:
 		case USBTENKI_CHIP_MPX4115:
 			{
@@ -507,7 +545,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 		case USBTENKI_CHIP_DRACAL_EM1_SHUNT_VOLTAGE:
 			// LSB = 2.5uV
-			//printf("Shunt voltage: %02x %02x \n", raw_data[0], raw_data[1]);
+			printf("Shunt voltage: %02x %02x \n", raw_data[0], raw_data[1]);
 			chip_fmt = TENKI_UNIT_VOLTS;
 			temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * 0.0000025;
 			break;
@@ -515,7 +553,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 		case USBTENKI_CHIP_DRACAL_EM1_POWER:
 			{
 				double current_lsb = (raw_data[4] / pow(2,15));
-				//printf("current reg: %02x %02x \n", raw_data[0], raw_data[1]);
+				printf("power reg: %02x %02x \n", raw_data[0], raw_data[1]);
 				temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * current_lsb * 25;
 				chip_fmt = TENKI_UNIT_WATTS;
 			}
@@ -524,7 +562,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 		case USBTENKI_CHIP_DRACAL_EM1_CURRENT:
 			{
 				double current_lsb = (raw_data[4] / pow(2,15));
-				//printf("current reg: %02x %02x \n", raw_data[0], raw_data[1]);
+				printf("current reg: %02x %02x \n", raw_data[0], raw_data[1]);
 				temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * current_lsb;
 				chip_fmt = TENKI_UNIT_AMPS;
 			}
