@@ -1,8 +1,10 @@
 CC=gcc
 LD=$(CC)
 
-CFLAGS=-Wall -g -O -I../common -I../library
-LDFLAGS=-lusb -lm
+# Note: The -I/opt/local/include and -L/opt/local/lib are there
+# for compiling under MacOS X with macports.
+CFLAGS=-Wall -g -O -I../common -I../library -I/opt/local/include
+LDFLAGS=-lusb -lm -L/opt/local/lib/
 
 PREFIX=/usr/local
 

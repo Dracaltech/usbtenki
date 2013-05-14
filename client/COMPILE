@@ -35,3 +35,26 @@ In client/, do make -f Makefile.mingw
 usbtenkiget.exe and usbtenkisetup.exe should have been generated.
 
 
+*******************************
+Under MAC OS X
+*******************************
+
+1) Command line client
+
+Install the required macports packages:
+ - libusb-compat 
+ - libusb 
+
+Compile using make
+
+2) QTenki GUI
+
+Packages required for qtenki:
+ - libusb-compat
+ - libusb
+ - qt4-mac
+
+Run qmake in the qtenki directory, then make.
+
+Enjoy!
+
