@@ -152,10 +152,10 @@ void GraphView::saveGraph(void)
 		"PNG (*.png);; JPEG (*.jpg *.jpeg);; BMP (*.bmp);; PDF (*.pdf)", &sel_filt);
 
 
-	qDebug() << "Selected filter: " + sel_filt;
+//	qDebug() << "Selected filter: " + sel_filt;
 
 	if (filename.size()) {
-		qDebug() << filename;
+//		qDebug() << "filename: " << filename;
 
 		if (sel_filt.startsWith("JPEG")) {
 			QFileInfo inf(filename);
@@ -166,7 +166,7 @@ void GraphView::saveGraph(void)
 		}
 		if (sel_filt.startsWith("PNG")) {
 			QFileInfo inf(filename);
-			if (inf.suffix().toLower().compare("png") == 0) {
+			if (!inf.suffix().toLower().compare("png") == 0) {
 				filename = filename + ".png";
 			}
 
