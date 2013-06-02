@@ -467,10 +467,17 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				float clk = 12000000 / 1024;
 				unsigned short count = raw_data[0]<<8 | raw_data[1];
 
+				chip_fmt = TENKI_UNIT_HZ;
+
+				if (count == 0) {
+					// Stopped
+					temperature = 0;
+					break;
+				}
+
 				temperature = 1 / ((1/clk) * count);
 
-				chip_fmt = TENKI_UNIT_HZ;
-				if (1)
+				if (0)
 				{
 					int i;
 					for (i=0; i<chn->raw_length; i++) {
