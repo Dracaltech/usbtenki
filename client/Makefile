@@ -4,7 +4,7 @@ LD=$(CC)
 # Note: The -I/opt/local/include and -L/opt/local/lib are there
 # for compiling under MacOS X with macports.
 CFLAGS=-Wall -g -O -I../common -I../library -I/opt/local/include
-LDFLAGS=-lusb -lm -L/opt/local/lib/
+LDFLAGS=-lusb -lm -L/opt/local/lib/ -L/usr/local/opt/libusb-compat/lib
 
 PREFIX=/usr/local
 
