@@ -556,7 +556,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 		case USBTENKI_CHIP_DRACAL_EM1_SHUNT_VOLTAGE:
 			// LSB = 2.5uV
-			printf("Shunt voltage: %02x %02x \n", raw_data[0], raw_data[1]);
+//			printf("Shunt voltage: %02x %02x \n", raw_data[0], raw_data[1]);
 			chip_fmt = TENKI_UNIT_VOLTS;
 			temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * 0.0000025;
 			break;
@@ -564,7 +564,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 		case USBTENKI_CHIP_DRACAL_EM1_POWER:
 			{
 				double current_lsb = (raw_data[4] / pow(2,15));
-				printf("power reg: %02x %02x \n", raw_data[0], raw_data[1]);
+//				printf("power reg: %02x %02x \n", raw_data[0], raw_data[1]);
 				temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * current_lsb * 25;
 				chip_fmt = TENKI_UNIT_WATTS;
 			}
@@ -573,7 +573,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 		case USBTENKI_CHIP_DRACAL_EM1_CURRENT:
 			{
 				double current_lsb = (raw_data[4] / pow(2,15));
-				printf("current reg: %02x %02x \n", raw_data[0], raw_data[1]);
+//				printf("current reg: %02x %02x \n", raw_data[0], raw_data[1]);
 				temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * current_lsb;
 				chip_fmt = TENKI_UNIT_AMPS;
 			}
