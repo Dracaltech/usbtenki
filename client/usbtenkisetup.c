@@ -51,6 +51,7 @@ static void printUsage(void)
 	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
 	printf("    em1_config  max_current  calibration\n");
 	printf("    misc1_cal   value\n");
+	printf("    do_zero     Device specific effect.\n");
 
 }
 
@@ -176,6 +177,22 @@ int main(int argc, char **argv)
 
 		goto cleanAndExit;
 	}
+
+	/**************** Do zero ****************/
+	if (strcmp(eargv[0], "do_zero")==0) {
+		int ref_id;
+		char *e;
+
+		res = usbtenki_command(hdl, USBTENKI_ZERO, 0, repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error doing zero.n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+
 
 	/**************** Setref ****************/
 	if (strcmp(eargv[0], "set_rtd_cal")==0) {

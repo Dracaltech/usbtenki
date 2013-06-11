@@ -91,6 +91,9 @@
 #define USBTENKI_SET_EM1_MAX_CURRENT	0xf5
 #define USBTENKI_SET_MISC1_CALIBRATION	0xf4
 
+// Sets Zero or point of origin depending on sensor.
+#define USBTENKI_ZERO					0xf6
+
 #define USBTENKI_CHIP_MCP9800	0x00
 #define USBTENKI_CHIP_LM75		0x01
 #define USBTENKI_CHIP_LM92		0x02
