@@ -725,6 +725,12 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_PT100_RTD:
 			return "PT100 Temperature sensor";
 
+		case USBTENKI_CHIP_MLX90614_TA:
+			return "MLX90615 Ambiant temperature";
+
+		case USBTENKI_CHIP_MLX90614_TOBJ:
+			return "MLX90614 Object temperature";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -761,6 +767,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 		case USBTENKI_CHIP_PT100_RTD:
+		case USBTENKI_CHIP_MLX90614_TOBJ:
+		case USBTENKI_CHIP_MLX90614_TA:
 			return "Temperature";
 	
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:

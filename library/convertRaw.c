@@ -586,6 +586,25 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;	
 
+		case USBTENKI_CHIP_MLX90614_TA:
+		case USBTENKI_CHIP_MLX90614_TOBJ:
+			{
+				unsigned short val;
+				val = raw_data[0] | raw_data[1] << 8;
+
+//				printf("len: %d\n", chn->raw_length);
+//				printf("Raw[] = %04x\n", val);
+
+				/* RAM address will sweep between 0x27AD to 0x7FFF as the
+				 * object temperature rises from -70.01 to +382.19 °C */
+				if (val < 0x27AD || val > 0x7FFF) {
+					goto wrongData; // MSB is error flag
+				}
+				temperature = -70.01 + (val - 0x27AD)* ((382.19+70.01)/(0x7FFF-0x27AD));
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
 		default:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;
