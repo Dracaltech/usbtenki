@@ -14,23 +14,13 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdio.h>
+#include <string.h>
 #include <avr/io.h>
+#include <util/delay.h>
 #include "sser.h"
 
-void dly() __attribute__ ((noinline));
-
-void dly()
-{
-	// 1 us
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	asm volatile ("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-}
+#define dly() _delay_us(8);
 
 void sser_init(void)
 {
@@ -67,10 +57,11 @@ static void clockLow()
 	SSER_SCK_PORT &= ~SSER_SCK_BIT;
 }
 
-int sser_cmd(unsigned char cmd)
+char sser_cmd(unsigned char cmd)
 {
 	char i;
 	char ack;
+	unsigned char tout;
 
 	/* Transmission Start */
 	clockHigh(); 
@@ -114,9 +105,14 @@ int sser_cmd(unsigned char cmd)
 		return -1; // no ack!
 	}
 
-	// let the slave relase data
+	// Continue once the slave releases DATA
+	tout = 255;
 	while (!(SSER_DATA_PIN & SSER_DATA_BIT)) 
-		{ /* empty */	}
+	{ /* empty */	
+		dly();
+		if (!--tout)
+			return -1;
+	}
 
 	// clk low
 	// data floating
@@ -127,9 +123,10 @@ int sser_cmd(unsigned char cmd)
 /**
  * NOT FINISHED NOR TESTED
  */
-int sser_writeByte(unsigned char dat)
+char sser_writeByte(unsigned char dat)
 {
 	char ack, i;
+	unsigned char tout;
 
 	dly();
 	/* 3 address bits + 5 command bits */
@@ -161,9 +158,14 @@ int sser_writeByte(unsigned char dat)
 		return -1; // no ack!
 	}
 
-	// let the slave relase data
+	// Continue once the slave releases DATA
+	tout = 255;
 	while (!(SSER_DATA_PIN & SSER_DATA_BIT)) 
-		{ /* empty */	}
+	{ /* empty */	
+		dly();
+		if (!--tout)
+			return -1;
+	}
 
 	return 0;
 }
@@ -174,10 +176,10 @@ int sser_writeByte(unsigned char dat)
  * start, address and commands are sent and after the slave
  * has pulled data low again indicating that the conversion
  * is completed. */
-int sser_readByte(unsigned char *dst, char skip_ack)
+char sser_readByte(unsigned char *dst, unsigned char flags)
 {
 	unsigned char tmp;
-	int i;
+	char i;
 
 	for (tmp=0,i=0; i<8; i++) {
 		dly();
@@ -194,8 +196,9 @@ int sser_readByte(unsigned char *dst, char skip_ack)
 	*dst = tmp;
 	
 	/* Ack the byte by pulling data low during a 9th clock cycle */
-	if (!skip_ack)
+	if (!(flags & SSER_READ_FLAGS_SKIP_ACK))
 		pullData();
+
 	dly();
 	clockHigh();
 	dly();
@@ -206,18 +209,89 @@ int sser_readByte(unsigned char *dst, char skip_ack)
 	return 0;
 }
 
-int sser_getWord(unsigned char cmd, unsigned char dst[2])
+static unsigned char invert_bits(unsigned char input)
 {
+	char i;
+	unsigned char output;
+
+	for (i=0; i<8; i++) {
+		output >>= 1;
+		output |= input & 0x80;
+		input <<= 1;
+	}
+	
+	return output;
+}
+
+
+unsigned char sht_crc(unsigned char crc, unsigned char val)
+{
+	char i;
+
+	for (i=0; i<8; i++)
+	{
+		if (!((val^crc)&0x80)) {
+			crc = crc << 1;
+		} else {
+			crc = (crc << 1) ^ 0x31;
+		}
+		val <<= 1;
+	}
+
+	return crc;
+}
+
+static char calcCrc(unsigned char cmd, unsigned char data[2])
+{
+	unsigned char crc = 0; // This depends on the status register
+
+	crc = sht_crc(crc, cmd);
+	crc = sht_crc(crc, data[0]);
+	crc = sht_crc(crc, data[1]);
+
+	return invert_bits(crc);
+}
+
+
+char sser_getWord(unsigned char cmd, unsigned char dst[2])
+{
+	unsigned char tmp_data[2];
+	unsigned char crc, ccrc;
+	unsigned char t_out;
+	char res;
+
 	if (sser_cmd(cmd))
 		return -1;
 	
 	/* The slave pulls data low when conversion is done */
-	while ((SSER_DATA_PIN & SSER_DATA_BIT)) 
-		{ /* empty */	}
+	t_out = 100;
+	while ((SSER_DATA_PIN & SSER_DATA_BIT)) {
+		// 100 * 5 = 600ms. Well above the 320ms (+/- 30%) required for a 14 bit measurement. 
+		_delay_ms(6);
+		if (!--t_out) {
+			return -1;
+		}
+	}
 
-	sser_readByte(&dst[0], 0);
-	sser_readByte(&dst[1], 1);
-//	sser_readByte(&crc, 1);
+	res = sser_readByte(&tmp_data[0], SSER_READ_FLAGS_NONE);
+	if (res)
+		return -1;
+	res = sser_readByte(&tmp_data[1], SSER_READ_FLAGS_NONE);
+	if (res)
+		return -1;
+	res = sser_readByte(&crc, SSER_READ_FLAGS_SKIP_ACK);
+	if (res)
+		return -1;
+
+	ccrc = calcCrc(cmd, tmp_data);
+
+	if (crc != ccrc) {
+		//printf("%02x %02x %02x %02x (%02x!!)\r\n", cmd, tmp_data[0], tmp_data[1], crc, ccrc);
+		return -1;
+	}
+
+
+	memcpy(dst, tmp_data, 2);
 
 	return 0;
 }

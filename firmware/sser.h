@@ -42,10 +42,13 @@
 
 
 void sser_init(void);
-int sser_cmd(unsigned char cmd);
-int sser_readByte(unsigned char *dst, char skip_ack);
-int sser_getWord(unsigned char cmd, unsigned char dst[2]);
-int sser_writeByte(unsigned char dat);
+char sser_cmd(unsigned char cmd);
+
+#define SSER_READ_FLAGS_NONE		0
+#define SSER_READ_FLAGS_SKIP_ACK	1 /* Used to end transfer */
+char sser_readByte(unsigned char *dst, unsigned char flags);
+char sser_getWord(unsigned char cmd, unsigned char dst[2]);
+char sser_writeByte(unsigned char dat);
 
 
 #endif // _sensirion_serial_h__
