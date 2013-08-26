@@ -354,7 +354,15 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 
 int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
 {
-	return usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst);
+	int res;
+	res = usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst);
+	/*if (res > 0) {
+		int i;
+		for (i=0; i<res; i++) {
+			printf("[%02x] ", dst[i]);
+		}
+	}*/
+	return res;
 }
 
 int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst)
@@ -727,9 +735,13 @@ const char *chipToString(int id)
 
 		case USBTENKI_CHIP_MLX90614_TA:
 			return "MLX90615 Ambiant temperature";
-
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 			return "MLX90614 Object temperature";
+
+		case USBTENKI_CHIP_MS5611_P:
+			return "MS5611 Pressure";
+		case USBTENKI_CHIP_MS5611_T:
+			return "MS5611 Temperature";
 
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
@@ -745,7 +757,7 @@ const char *chipToString(int id)
 		case USBTENKI_VIRTUAL_TSL2561_LUX:
 			return "TSL2561 Lux";
 
-		 case USBTENKI_VIRTUAL_TSL2568_LUX:
+		case USBTENKI_VIRTUAL_TSL2568_LUX:
 		 	return "TSL2568 Lux";
 
 		case USBTENKI_CHIP_NONE:
@@ -769,6 +781,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_PT100_RTD:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 		case USBTENKI_CHIP_MLX90614_TA:
+		case USBTENKI_CHIP_MS5611_T:
 			return "Temperature";
 	
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -800,6 +813,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_MCU_ADC5:
 			return "Raw ADC output";
 
+		case USBTENKI_CHIP_MS5611_P:
 		case USBTENKI_CHIP_MPXV7002:
 		case USBTENKI_CHIP_MPX4115:
 		case USBTENKI_CHIP_MP3H6115A:
@@ -898,7 +912,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 {
 	int i, j, res;
 	int n;
-	unsigned char caldata[16];
+	unsigned char caldata[32];
 	int caldata_len = 0;
 
 	for (i=0; i<num; i++)
@@ -939,7 +953,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 		if (dst[j].chip_id == USBTENKI_CHIP_PT100_RTD) {
 //			printf("Fetching PT100 calibration data...\n");
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, dst[j].channel_id, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -952,7 +966,41 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 				return -1;
 			}
 		}
-		
+	
+		if (dst[j].chip_id == USBTENKI_CHIP_MS5611_P) {
+//			printf("Fetching MS5611 calibration data...\n");
+			for (n=0; n<num_attempts; n++) {
+				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
+				if (caldata_len<0) {
+					usleep(200);
+					continue;
+				}
+				break;
+			}
+			/* all attempts failed? */
+			if (n==num_attempts) {
+				return -1;
+			}
+
+			for (n=0; n<num_attempts; n++) {
+				int l;
+				l = usbtenki_getCalibration(hdl, 1, caldata + caldata_len);
+				if (l<0) {
+					usleep(200);
+					continue;
+				}
+				caldata_len += l;
+				break;
+			}
+			/* all attempts failed? */
+			if (n==num_attempts) {
+				return -1;
+			}
+			
+//			printf("Received %d bytes of calibration\n", caldata_len);
+		}
+	
+
 		
 		dst[j].data_valid = 1;
 		res = usbtenki_convertRaw(&dst[j], flags, caldata, caldata_len);

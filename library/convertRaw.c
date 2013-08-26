@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
@@ -605,11 +606,84 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_MS5611_P:
+			{
+				int i;
+				uint16_t c1,c2,c3,c4;
+				int32_t dT;
+				uint32_t D1;
+				int64_t OFF, SENS;
+				int32_t P;
+
+				c1 = caldata[0] | caldata[1]<<8;
+				c2 = caldata[2] | caldata[3]<<8;
+				c3 = caldata[4] | caldata[5]<<8;
+				c4 = caldata[6] | caldata[7]<<8;
+				dT = caldata[8] | caldata[9]<<8 | caldata[10]<<16 | caldata[11]<<24;
+				D1 = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
+/*
+				printf("C1 0x%04x (%d)\n", c1, c1);
+				printf("C2 0x%04x (%d)\n", c2, c2);
+				printf("C3 0x%04x (%d)\n", c3, c3);
+				printf("C4 0x%04x (%d)\n", c4, c4);
+				printf("dT 0x%08x (%d)\n", dT, dT);
+				printf("D1 0x%08x (%d)\n", D1, D1);
+*/
+				OFF = c2 * 65536ll + (c4 * dT) / 128ll;
+
+//				printf("OFF %lld\n", OFF);
+
+				SENS = c1 * 32768ll + (c3 * dT) / 256ll;
+//				printf("SENS %lld\n", SENS);
+
+				P = (D1 * SENS / 2097152 - OFF) / 32768;
+
+//				printf("P: %d\n", P);
+
+				temperature = P;
+				temperature /= 100000.0;
+				chip_fmt = TENKI_UNIT_BAR;
+			}
+			break;
+
+		case USBTENKI_CHIP_MS5611_T:
+			{
+				int i;
+				int32_t TEMP;
+				int32_t T2;
+				int32_t dT;
+
+				TEMP = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
+				dT = caldata[8] | caldata[9]<<8 | caldata[10]<<16 | caldata[11]<<24;
+
+				if (TEMP < 2000) {
+					T2 = ((int64_t)dT * (int64_t)dT) / 2147483648ll;
+				}
+				else {
+					T2 = 0;
+				}
+
+				TEMP = TEMP - T2;
+				
+				temperature = TEMP;
+				temperature /= 100.0;
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
 		default:
-			temperature = raw_data[1] << 8 | raw_data[0];
-			chip_fmt = TENKI_UNIT_RAW;
-			
-			printf("Unknown chip id 0x%02x\n", chn->chip_id);
+			{
+				int i;
+				temperature = raw_data[1] << 8 | raw_data[0];
+				chip_fmt = TENKI_UNIT_RAW;
+				
+				printf("Unknown chip id 0x%02x\n", chn->chip_id);
+				printf("HEX(%d) : ", chn->raw_length);
+				for (i=0; i<chn->raw_length; i++) {
+					printf("%02X ", raw_data[i]);
+				}
+				printf("\n");
+			}
 
 			break;
 	}
