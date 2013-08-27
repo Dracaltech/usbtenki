@@ -968,7 +968,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 		}
 	
 		if (dst[j].chip_id == USBTENKI_CHIP_MS5611_P) {
-//			printf("Fetching MS5611 calibration data...\n");
+			//printf("Fetching MS5611 calibration data...\n");
 			for (n=0; n<num_attempts; n++) {
 				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
 				if (caldata_len<0) {
@@ -996,8 +996,8 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 			if (n==num_attempts) {
 				return -1;
 			}
-			
-//			printf("Received %d bytes of calibration\n", caldata_len);
+	
+			//printf("Received %d bytes of calibration\n", caldata_len);
 		}
 	
 

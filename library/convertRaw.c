@@ -609,34 +609,39 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 		case USBTENKI_CHIP_MS5611_P:
 			{
 				int i;
-				uint16_t c1,c2,c3,c4;
-				int32_t dT;
-				uint32_t D1;
+				uint16_t c1,c2,c3,c4,c5;
+				int32_t dT, local_dT;
+				uint32_t D1,D2;
 				int64_t OFF, SENS;
-				int32_t P;
+				int32_t P, TEMP;
+				
+				D1 = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
+				TEMP = raw_data[3] | raw_data[4] << 16; // -4000 to 8500
 
 				c1 = caldata[0] | caldata[1]<<8;
 				c2 = caldata[2] | caldata[3]<<8;
 				c3 = caldata[4] | caldata[5]<<8;
 				c4 = caldata[6] | caldata[7]<<8;
 				dT = caldata[8] | caldata[9]<<8 | caldata[10]<<16 | caldata[11]<<24;
-				D1 = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
+				c5 = caldata[12] | caldata[13]<<8;
+
 /*
 				printf("C1 0x%04x (%d)\n", c1, c1);
 				printf("C2 0x%04x (%d)\n", c2, c2);
 				printf("C3 0x%04x (%d)\n", c3, c3);
 				printf("C4 0x%04x (%d)\n", c4, c4);
+				printf("C5 0x%04x (%d)\n", c5, c5);
 				printf("dT 0x%08x (%d)\n", dT, dT);
 				printf("D1 0x%08x (%d)\n", D1, D1);
 */
-				OFF = c2 * 65536ll + (c4 * dT) / 128ll;
+				OFF = (int64_t)c2 * 65536ll + ((int64_t)c4 * (int64_t)dT) / 128ll;
 
 //				printf("OFF %lld\n", OFF);
 
-				SENS = c1 * 32768ll + (c3 * dT) / 256ll;
+				SENS = (int64_t)c1 * 32768ll + ((int64_t)c3 * (int64_t)dT) / 256ll;
 //				printf("SENS %lld\n", SENS);
 
-				P = (D1 * SENS / 2097152 - OFF) / 32768;
+				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
 
 //				printf("P: %d\n", P);
 
