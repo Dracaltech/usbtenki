@@ -997,7 +997,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 				return -1;
 			}
 	
-			//printf("Received %d bytes of calibration\n", caldata_len);
+//			printf("Received %d bytes of calibration\n", caldata_len);
 		}
 	
 
