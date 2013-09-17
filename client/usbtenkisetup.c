@@ -218,7 +218,7 @@ int main(int argc, char **argv)
 			printf("Setting rtd calibration to %d\n", ref_id);
 
 		res = usbtenki_command(hdl, USBTENKI_SET_RTD_CORR, 
-								(ref_id & 0xff), repBuf);
+								(ref_id & 0xffff), repBuf);
 		if (res!=0) {
 			fprintf(stderr, "Error setting adc calibration to %d\n",
 								ref_id);
