@@ -5,7 +5,7 @@
 # Tabsize: 4
 # Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
 # License: Proprietary, free under certain conditions. See Documentation.
-# This Revision: $Id: Makefile,v 1.26 2013-07-27 21:13:37 cvs Exp $
+# This Revision: $Id: Makefile,v 1.27 2013-09-17 03:17:21 cvs Exp $
 
 SERIAL = /dev/avr
 UISP = uisp -dprog=stk500 -dserial=$(SERIAL) -dpart=ATmega8
@@ -54,49 +54,49 @@ flash_mcp9800:	mcp9800.hex
 	$(UISP) --erase --upload $(VERIFY) if=mcp9800.hex
 
 flash_mcp9800_usb: mcp9800.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_mcp9800_00: mcp9800_00.hex
 	$(UISP) --erase --upload $(VERIFY) if=mcp9800_00.hex
 
 flash_mcp9800_00_usb: mcp9800_00.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_se95:	se95.hex
 	$(UISP) --erase --upload $(VERIFY) if=$<
 
 flash_se95_usb: se95.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_adt7410: adt7410.hex
 	$(UISP) --erase --upload $(VERIFY) if=$<
 
 flash_adt7410_usb: adt7410.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_lm75: lm75.hex
 	$(UISP) --erase --upload $(VERIFY) if=lm75.hex
 
 flash_lm75_usb: lm75.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_adc: adc.hex
 	$(UISP) --erase --upload $(VERIFY) if=adc.hex
 
 flash_adc_usb: adc.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_tsl2561: tsl2561.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2561.hex
 
 flash_tsl2561_usb: tsl2561.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_tsl2568: tsl2568.hex
 	$(UISP) --erase --upload $(VERIFY) if=tsl2568.hex
 
 flash_tsl2568_usb: tsl2568.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_bs02: bs02.hex
 	$(UISP) --erase --upload $(VERIFY) if=bs02.hex
@@ -108,13 +108,13 @@ flash_tachometer: tachometer.hex
 	$(UISP) --erase --upload $(VERIFY) if=tachometer.hex
 
 flash_tachometer_usb: tachometer.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_pt100_rtd_usb: pt100_rtd.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 
 flash_mlx90614: mlx90614.hex
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
+	avrdude -p m8 -P usb -c avrispmkII -Uflash:w:$< -B 1.0
 #
 # Fuse high byte = 0xC1
 #  | RSTDISBL | WDTON | SPIEN | CKOPT | EESAVE | BOOTSZ1-0 | BOOTRST |
@@ -132,7 +132,7 @@ fuse:
 	$(UISP) --wr_fuse_h=$(FUSE_H) --wr_fuse_l=$(FUSE_L)
 
 fuse_usb:
-	sudo avrdude -p m8 -P usb -c avrispmkII -Uhfuse:w:$(FUSE_H):m -Ulfuse:w:$(FUSE_L):m -B 10.0
+	avrdude -p m8 -P usb -c avrispmkII -Uhfuse:w:$(FUSE_H):m -Ulfuse:w:$(FUSE_L):m -B 10.0
 
 clean:
 	rm -f *.hex *.elf *.lst *.o usbdrv/*.o usbdrv/oddebug.s usbdrv/usbdrv.s

@@ -28,7 +28,7 @@ void eeprom_commit(void)
 
 void eeprom_init(void)
 {
-	char *magic = "TenkiCf2";
+	char *magic = "TenkiCf3";
 	eeprom_read_block(&g_eeprom_data, (void*)0x00, sizeof(struct eeprom_data_struct));
 
 	/* Check for magic number */

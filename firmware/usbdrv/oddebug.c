@@ -4,18 +4,14 @@
  * Creation Date: 2005-01-16
  * Tabsize: 4
  * Copyright: (c) 2005 by OBJECTIVE DEVELOPMENT Software GmbH
- * License: Proprietary, free under certain conditions. See Documentation.
- * This Revision: $Id: oddebug.c,v 1.2 2007-04-28 20:36:21 raph Exp $
+ * License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
  */
 
 #include "oddebug.h"
 
 #if DEBUG_LEVEL > 0
 
-static uchar Warning__Never_compile_production_devices_with_debugging;
-/* The "#warning" preprocessor directive is non-standard. The unused static
- * variable above should give a compiler warning on all compilers.
- */
+#warning "Never compile production devices with debugging enabled"
 
 static void uartPutc(char c)
 {

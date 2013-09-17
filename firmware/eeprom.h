@@ -26,7 +26,7 @@ struct eeprom_data_struct {
 	unsigned char serial[EEPROM_SERIAL_SIZE];
 	unsigned char adc_chips[EEPROM_ADC_CHIPS_SIZE];
 	char use_aref;
-	char rtd_corr; // percent * 100
+	short rtd_corr;
 };
 
 extern struct eeprom_data_struct g_eeprom_data;

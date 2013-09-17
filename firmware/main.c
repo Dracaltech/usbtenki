@@ -189,7 +189,7 @@ uchar   usbFunctionSetup(uchar data[8])
 			break;
 
 		case USBTENKI_SET_RTD_CORR:
-			g_eeprom_data.rtd_corr = data[2];
+			g_eeprom_data.rtd_corr = data[2] | (data[3] << 8);
 			eeprom_commit();
 
 			replyBuf[0] = USBTENKI_SET_RTD_CORR;

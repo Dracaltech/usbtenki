@@ -60,8 +60,9 @@ int sensors_getRaw(unsigned char id, unsigned char *dst)
 // overwire weak funtion in main.c
 int sensors_getCalibration(unsigned char id, unsigned char *dst)
 {
-	((char*)dst)[0] = g_eeprom_data.rtd_corr;
+	dst[0] = g_eeprom_data.rtd_corr;
+	dst[1] = g_eeprom_data.rtd_corr >> 8;
 
-	return 1;
+	return 2;
 }
 

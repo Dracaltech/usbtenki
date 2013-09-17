@@ -47,7 +47,7 @@ unsigned short adc_sample(char id, int n_samples, int interval_ms)
 {
 	unsigned short cur_val = 0;
 	unsigned long total = 0;
-	int i;
+	int i,j;
 
 	if (id<0 || id > 15)
 		return 0xffff;
@@ -65,7 +65,9 @@ unsigned short adc_sample(char id, int n_samples, int interval_ms)
 		cur_val |= (ADCH << 8);
 		total += cur_val << 6; // convert to 16 bit
 
-		_delay_ms((double)interval_ms);
+		for (j=0; j<interval_ms; j++)  {
+			_delay_ms(1);
+		}
 	}
 
 	if (n_samples == 1) {
