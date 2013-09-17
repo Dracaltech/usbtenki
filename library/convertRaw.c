@@ -525,10 +525,11 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				//
 				if (caldata_len > 0) {
 					double current_error = 0;
-
-					current_error = (double)((signed char)caldata[0]) / 100.0; // +/- 1.27% 
-					i_src += i_src * current_error / 100.0;
-//					printf("Current source error: %.2f%%\n", current_error);
+					signed short cal_value = caldata[0] | (caldata[1]<<8);
+					current_error = (double)(cal_value) / 10000000.0;
+//					printf("Caldata: %02X %02X\n", caldata[0], caldata[1]);
+//					printf("Current source error: %.8f\n", current_error);
+					i_src += current_error;
 				}
 
 				volts_ch0 = raw_ch0 * lsb / chn0_gain;
@@ -546,7 +547,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 //				printf("Total resistance: %.8f ohm\n", rt);
 
 				r_pt100 = rt - r_wire * 2  - ferrite_r;
-//				printf("PT100 resistance: %.8f ohm\n", r_pt100);
+				//printf("PT100 resistance: %.8f ohm\n", r_pt100);
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
 				
