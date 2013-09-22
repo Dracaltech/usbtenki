@@ -11,7 +11,7 @@
 Name "QTenki"
 
 ; The file to write
-OutFile "qtenki-install-${VERSION}.exe"
+OutFile "qtenki-install-2.1.0.exe"
 
 ; The default installation directory
 InstallDir $PROGRAMFILES\QTenki
@@ -26,8 +26,6 @@ LicenseData license.txt
 RequestExecutionLevel admin
 
 ;--------------------------------
-!include "LogicLib.nsh"
-!include "x64.nsh"
 
 ; Pages
 
@@ -58,6 +56,8 @@ Section "QTenki (required)"
   File "QtCore4.dll"
   File "qtenki.exe"
   File "QtGui4.dll"
+  File "usbtenkiget.exe"
+  File "usbtenkisetup.exe"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\QTenki "Install_Dir" "$INSTDIR"
@@ -78,19 +78,13 @@ Section "QTenki libusb based driver"
 
 	File /r "usb_driver\*"
 
-	${If} ${RunningX64}
-		ExecWait '"$INSTDIR\usb_driver\dpinst_amd64.exe" /PATH "$INSTDIR\usb_driver"'
-	${Else}
-		; /lm is needed for winXP. Not sure about other 32 bit versions
-		ExecWait '"$INSTDIR\usb_driver\dpinst_x86.exe" /lm /PATH "$INSTDIR\usb_driver"'
-	${EndIf}
-
+	ExecWait "cmd"
 SectionEnd
 
 Section "QTenki source code"
   CreateDirectory $INSTDIR\sources
   SetOutPath $INSTDIR\sources
-  File "sources\usbtenki-2.0.3.tar.gz"
+  File "sources\usbtenki-2.1.0.tar.gz"
 SectionEnd
 
 ; Optional section (can be disabled by the user)
