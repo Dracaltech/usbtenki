@@ -201,11 +201,21 @@ USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
 	int res;
 
 	hdl = usb_open(tdev);
-	if (!hdl)
+	if (!hdl) {
+		printf("Failed to open device. Error '%s'\n", usb_strerror());
 		return NULL;
+	}
+
+	res = usb_set_configuration(hdl, USBTENKI_DEV_TO_USB_DEVICE(tdev)->config->bConfigurationValue);
+	if (res < 0) {
+		printf("USB Error (usb_set_configuration: %s)\n", usb_strerror());
+		usb_close(hdl);
+		return NULL;
+	}
 
 	res = usb_claim_interface(hdl, 0);
 	if (res<0) {
+		printf("Failed to claim interface. Error '%s'\n", usb_strerror());
 		usb_close(hdl);
 		return NULL;
 	}

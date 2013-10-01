@@ -55,6 +55,8 @@ struct USBTenki_channel {
 typedef void* USBTenki_dev_handle; // Cast from usb_dev_handle
 typedef void* USBTenki_device; // Cast from usb_device
 
+#define USBTENKI_DEV_TO_USB_DEVICE(d) ((struct usb_device*)(d))
+
 int usbtenki_init(void);
 void unsbtenki_shutdown(void);
 
