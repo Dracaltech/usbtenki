@@ -1,3 +1,7 @@
+Version 2.1.1:
+   - [Command-line] Fixed a bug which prevented usbtenkiget.exe from working
+     in some environments.
+
 Version 2.1.0:
    - [Firmwares] Updated V-USB to newer verison.
    - Add support for high precision MS5611 pressure sensor.
