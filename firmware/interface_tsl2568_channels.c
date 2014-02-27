@@ -1,5 +1,5 @@
-/*   USBTenki - Interfacing sensors to USB 
- *   Copyright (C) 2007-2011  Raphaël Assénat <raph@raphnet.net>
+/*   USBTenki - Interfacing sensors to USB
+ *   Copyright (C) 2007-2014  Raphaël Assénat <raph@raphnet.net>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by

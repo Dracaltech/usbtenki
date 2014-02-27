@@ -1,5 +1,5 @@
-/*   USBTenki - Interfacing sensors to USB 
- *   Copyright (C) 2007-2011  Raphaël Assénat <raph@raphnet.net>
+/*   USBTenki - Interfacing sensors to USB
+ *   Copyright (C) 2007-2014  Raphaël Assénat <raph@raphnet.net>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -42,10 +42,8 @@ void usbtenki_delay_ms(int ms)
 
 	for (i=0; i<(ms/10); i++) {
         wdt_reset();
-        usbPoll();
 		_delay_ms(10);
 	}
-	usbPoll();
 }
 
 static unsigned char xor_buf(unsigned char *buf, int len)
@@ -75,17 +73,17 @@ uchar   usbFunctionSetup(uchar data[8])
 	g_auto_mode = 0;
 	sensors_channels = sensors_getNumChannels();
 	total_channels = sensors_channels + num_adc_channels;
-	
+
     usbMsgPtr = replyBuf;
 
 	switch (data[1])
 	{
 		case USBTENKI_GET_CALIBRATION:
-			if (data[2] >= sensors_channels) 
+			if (data[2] >= sensors_channels)
 				break;
 
 			res = sensors_getCalibration(data[2], &replyBuf[1]);
-				
+
 			if (res<0) {
 				replyBuf[0] = USBTENKI_ERROR;
 				replen = 1;
@@ -93,12 +91,12 @@ uchar   usbFunctionSetup(uchar data[8])
 			}
 
 			replyBuf[0] = USBTENKI_GET_CALIBRATION;
-			replyBuf[res+1] = xor_buf(replyBuf, res+1);	
+			replyBuf[res+1] = xor_buf(replyBuf, res+1);
 			replen = res + 2;
 			break;
 
 		case USBTENKI_GET_RAW:
-			if (data[2] >= total_channels) 
+			if (data[2] >= total_channels)
 				break;
 
 			replyBuf[0] = USBTENKI_GET_RAW;
@@ -107,7 +105,7 @@ uchar   usbFunctionSetup(uchar data[8])
 			{
 				unsigned short val;
 //				ADCSRA |= (1<<ADSC); /* start conversion */
-//				while (!(ADCSRA & (1<<ADIF))) 
+//				while (!(ADCSRA & (1<<ADIF)))
 //					{ /* do nothing... */ };
 //				replyBuf[2] = ADCL;
 //				replyBuf[1] = ADCH;
@@ -131,12 +129,12 @@ uchar   usbFunctionSetup(uchar data[8])
 				}
 			}
 
-			replyBuf[res+1] = xor_buf(replyBuf, res+1);	
+			replyBuf[res+1] = xor_buf(replyBuf, res+1);
 			replen = res + 2;
 			break;
 
 		case USBTENKI_GET_CHIP_ID:
-			if (data[2] >= total_channels) 
+			if (data[2] >= total_channels)
 				break;
 
 			replyBuf[0] = USBTENKI_GET_CHIP_ID;
@@ -198,7 +196,7 @@ uchar   usbFunctionSetup(uchar data[8])
 			break;
 
     }
-	
+
 	return replen;
 }
 
@@ -225,7 +223,7 @@ int main(void)
 
 	PORTB = 0xff;
 	DDRB = 0xff;
-	
+
 	// all input by default
 	PORTC= 0xff;
 	DDRC = 0x00;
@@ -260,7 +258,6 @@ int main(void)
         wdt_reset();
         usbPoll();
     }
-
 
     return 0;
 }
