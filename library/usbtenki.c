@@ -918,8 +918,10 @@ int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn, 
  * \param dst_total The total number of channels in 'dst'
  *
  * dst must have been setup by usbtenki_listChannels() first!
+ *
+ * This function only reads real channels (no virtuals)
  */
-int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num, struct USBTenki_channel *dst, int dst_total, int num_attempts, unsigned long flags)
+int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], int num, struct USBTenki_channel *dst, int dst_total, int num_attempts, unsigned long flags)
 {
 	int i, j, res;
 	int n;

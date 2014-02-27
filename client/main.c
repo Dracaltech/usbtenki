@@ -544,6 +544,9 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	 * list of requested channels using all available real and
 	 * virtual channels */
 	if (!num_req_chns) {
+		if (g_verbose)
+			printf("All channels requested\n");
+
 		for (i=0; i<num_channels; i++) {
 
 			if (!g_full_display_mode &&
@@ -570,6 +573,9 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 		 }
 	}
 
+	if (g_verbose)
+		printf("Reading real channels...\n");
+
 	/* Read all requested, real channels */
 	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns,
 													channels, num_channels, g_num_attempts, g_flags);
@@ -583,6 +589,8 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 
 	/* Compute virtual channels. The may read additional non-user requeted
 	 * data from the device. */
+	if (g_verbose)
+		printf("Computing virtual channels, possibly reading more...\n");
 	processVirtualChannels(hdl, channels, num_channels, requested_channels, num_req_chns);
 
 
