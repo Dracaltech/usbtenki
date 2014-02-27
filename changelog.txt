@@ -2,6 +2,7 @@ Version 2.1.2:
    - [Command-line] Performance fix (unrequested channels were being read)
    - [Command-line] Introduce pressure-based altitude computing
    - [Command-line] Increased verbosity when -v is used
+   - [QTenki] Fixed a minimize-to-tray bug
    - Various small bug fixes
 
 Version 2.1.1:
