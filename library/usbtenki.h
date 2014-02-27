@@ -92,7 +92,8 @@ void usbtenki_set_seaLevelStandardPressure(double slp_P); // in Pascals (default
  * \param arr_size The maximum number of channels that can be held by the array.
  */
 int usbtenki_addVirtualChannels(struct USBTenki_channel *chnArray, int *num_channels, int arr_size);
-int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, unsigned long flags);
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel channels[], int num_channels, unsigned long flags);
+int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel channels[], int num_channels, const int requested_channels[], int num_req_chns, unsigned long flags);
 
 int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], int num, struct USBTenki_channel *dst, int dst_total, int num_attempts, unsigned long flags);
 int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn, unsigned long flags);

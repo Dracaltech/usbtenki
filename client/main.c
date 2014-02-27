@@ -514,10 +514,10 @@ reopen:
 	return res;
 }
 
-int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, 
-							int num_channels, int *reqst_chns, int num_req_chns)
+int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels,
+							int num_channels, const int reqst_chns[], int num_req_chns)
 {
-	return usbtenki_processVirtualChannels(hdl, channels, num_channels, g_flags);
+	return usbtenki_processSomeVirtualChannels(hdl, channels, num_channels, reqst_chns, num_req_chns, g_flags);
 }
 
 int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_req_chns)

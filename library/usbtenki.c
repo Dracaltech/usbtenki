@@ -1174,9 +1174,16 @@ void usbtenki_set_seaLevelStandardPressure(double slp_P)
 	standard_sea_level_pressure = slp_P;
 }
 
-int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, unsigned long flags)
+/* \brief Compute virtual channels based on real channels (already read), possiblity reading dependant channels.
+ */
+int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel channels[], int num_channels, unsigned long flags)
 {
-	int i;
+	return usbtenki_processSomeVirtualChannels(hdl, channels, num_channels, NULL, -1, flags);
+}
+
+int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel channels[], int num_channels, const int requested_channels[], int num_req_chns, unsigned long flags)
+{
+	int i, j;
 	struct USBTenki_channel *chn;
 
 	for (i=0; i<num_channels; i++)
@@ -1185,6 +1192,17 @@ int usbtenki_processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_cha
 
 		if (chn->channel_id < USBTENKI_VIRTUAL_START)
 			continue;
+
+		for (j=0; j<num_req_chns; j++) {
+			if (chn->channel_id == requested_channels[j])
+				break;
+		}
+		if (j==num_req_chns) {
+			if (flags & USBTENKI_FLAG_VERBOSE) {
+				printf("Skipping unrequested channel %d\n", chn->channel_id);
+			}
+			continue;
+		}
 
 		switch(chn->channel_id)
 			{
