@@ -1,16 +1,16 @@
 /* usbtenkiget: A command-line tool for reading USBTenki sensors.
- * Copyright (C) 2007-2013  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2014  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -63,7 +63,7 @@ void unsbtenki_shutdown(void);
 struct USBTenki_list_ctx *usbtenki_allocListCtx(void);
 void usbtenki_freeListCtx(struct USBTenki_list_ctx *ctx);
 
-USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, 
+USBTenki_device usbtenki_listDevices(struct USBTenki_info *info,
 										struct USBTenki_list_ctx *ctx);
 
 USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev);
@@ -72,7 +72,7 @@ USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_in
 void usbtenki_closeDevice(USBTenki_dev_handle hdl);
 
 
-int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd, 
+int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 										int id, unsigned char *dst);
 int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
 int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst);
@@ -83,6 +83,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstArray, int arr_size);
 
+void usbtenki_set_seaLevelStandardPressure(double slp_P); // in Pascals (default: 101325)
 /**
  * \brief Add virtual channels based on previously listed ones (see usbtenki_listChannels)
  * \param chnArray array to hold the channels
@@ -109,7 +110,6 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 
 #ifdef __cplusplus
 }
-#endif 
+#endif
 
-#endif // _rgbleds_h__
-
+#endif // _usbtenki_h__

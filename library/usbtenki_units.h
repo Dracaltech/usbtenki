@@ -37,5 +37,8 @@
 
 #define TENKI_UNIT_RPM			0x55
 
+#define TENKI_UNIT_METERS		0x60
+#define TENKI_UNIT_CENTIMETERS	0x62
+
 #endif
 

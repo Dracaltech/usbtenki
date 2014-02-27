@@ -614,7 +614,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				uint32_t D1,D2;
 				int64_t OFF, SENS;
 				int32_t P;
-				
+
 				D1 = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
 				D2 = raw_data[3] | raw_data[4]<<8 | raw_data[5]<<16;
 
