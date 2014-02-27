@@ -1,3 +1,9 @@
+Version 2.1.2:
+   - [Command-line] Performance fix (unrequested channels were being read)
+   - [Command-line] Introduce pressure-based altitude computing
+   - [Command-line] Increased verbosity when -v is used
+   - Various small bug fixes
+
 Version 2.1.1:
    - [Command-line] Fixed a bug which prevented usbtenkiget.exe from working
      in some environments.
