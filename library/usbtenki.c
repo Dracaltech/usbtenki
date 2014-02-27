@@ -947,6 +947,10 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, int *channel_ids, int num,
 			continue; /* already done */
 
 		for (n=0; n<num_attempts; n++) {
+			if (flags & USBTENKI_FLAG_VERBOSE) {
+				printf("usbtenki_getRaw %d/%d chn %d attempt %d\n", i+1, num, dst[j].channel_id, n+1);
+				usleep(100000);
+			}
 			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data);
 			if (dst[j].raw_length<0) {
 				usleep(200);

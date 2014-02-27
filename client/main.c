@@ -145,6 +145,7 @@ int main(int argc, char **argv)
 				return 0;
 			case 'v':
 				g_verbose = 1;
+				g_flags |= USBTENKI_FLAG_VERBOSE;
 				break;
 			case 'h':
 				printUsage();

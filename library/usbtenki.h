@@ -51,6 +51,7 @@ struct USBTenki_channel {
 #define USBTENKI_FLAG_NO_HUMIDEX_RANGE				1
 #define USBTENKI_FLAG_NO_HEAT_INDEX_RANGE			2
 #define USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION	4
+#define USBTENKI_FLAG_VERBOSE						8
 
 typedef void* USBTenki_dev_handle; // Cast from usb_dev_handle
 typedef void* USBTenki_device; // Cast from usb_device
