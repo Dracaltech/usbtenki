@@ -87,6 +87,7 @@ static void printUsage(void)
 	printf("    -I interval  Log interval. In milliseconds. Default: %d\n", DEFAULT_LOG_INTERVAL);
 	printf("    -x num       Set number of digits to display after the decimal separator. Default: %d\n", DEFAULT_DECIMAL_DIGITS);
 	printf("    -o option    Enable specified option. (you may use multiple -o)\n");
+	printf("    -S value     Set standard sea level pressure (Pascals) used to compute altitude. Default: 101325\n");
 
 	printf("\nValid temperature units:\n");
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
@@ -102,7 +103,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007-2013, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2014, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -127,7 +128,7 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:")))
 	{
 		switch (res)
 		{
@@ -319,6 +320,20 @@ int main(int argc, char **argv)
 						fprintf(stderr, "Invalid log interval\n");
 						return -1;
 					}
+				}
+				break;
+
+			case 'S':
+				{
+					char *e;
+					double slp;
+
+					slp = strtod(optarg, &e);
+					if (e==optarg) {
+						fprintf(stderr, "Invalid pressure\n");
+						return -1;
+					}
+					usbtenki_set_seaLevelStandardPressure(slp);
 				}
 				break;
 
@@ -525,13 +540,13 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	 * only be calculated with temperature and humidity readings. */
 	usbtenki_addVirtualChannels(channels, &num_channels, MAX_CHANNELS);
 
-	/* When user request all channels, num_req_chns is 0. Generate a 
+	/* When user request all channels, num_req_chns is 0. Generate a
 	 * list of requested channels using all available real and
 	 * virtual channels */
 	if (!num_req_chns) {
 		for (i=0; i<num_channels; i++) {
 
-			if (!g_full_display_mode && 
+			if (!g_full_display_mode &&
 					channels[i].chip_id == USBTENKI_CHIP_NONE)
 				continue; // skip unused channels unless in full list
 
@@ -549,14 +564,14 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 				break;
 		 }
 		 if (j==num_channels) {
-		 	fprintf(stderr, "Requested channel %d does not exist.\n", 
+		 	fprintf(stderr, "Requested channel %d does not exist.\n",
 								requested_channels[i]);
 			return -1;
 		 }
 	}
 
 	/* Read all requested, real channels */
-	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns, 
+	res = usbtenki_readChannelList(hdl, requested_channels, num_req_chns,
 													channels, num_channels, g_num_attempts, g_flags);
 	if (res<0) {
 		return -1;
@@ -570,6 +585,8 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	 * data from the device. */
 	processVirtualChannels(hdl, channels, num_channels, requested_channels, num_req_chns);
 
+
+	/* Finally, display all the channels in the requested format */
 	for (i=0; i<num_req_chns; i++) {
 		int j;
 		struct USBTenki_channel *chn;
@@ -579,7 +596,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 		chn = NULL;
 		for (j=0; j<num_channels; j++) {
 			chn = &channels[j];
-			if (chn->channel_id == requested_channels[i]) 
+			if (chn->channel_id == requested_channels[i])
 				break;
 		}
 
@@ -592,7 +609,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format);
 
 		sprintf(fmt, "%%.%df", g_decimal_digits);
-	
+
 		if (g_pretty) {
 			printf("%s: ", chipToShortString(chn->chip_id));
 			if (chn->saturated) {
@@ -622,7 +639,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 	}
 	if (!g_pretty)
 		printf("\n");
-	
+
 	return 0;
 }
 
