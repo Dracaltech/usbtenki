@@ -177,7 +177,7 @@ void MainWindow::changeEvent(QEvent *ev)
 					ev->ignore();
 					show();
 				}
-			}	
+			}
 		}
 		break;
 

@@ -114,7 +114,7 @@ ConfigPanel::ConfigPanel()
 	appBox_layout->addWidget(cb_bv_units);
 
 	cb_minimize_to_system_tray = new QCheckBox(tr("Minimize window to system tray"));
-	cb_minimize_to_system_tray->setChecked(settings.value("ui/minimize_to_tray").toBool());
+	cb_minimize_to_system_tray->setChecked(settings.value("ui/minimize_to_tray", minimize_to_tray ? true : false).toBool());
 	appBox_layout->addWidget(cb_minimize_to_system_tray);
 	connect(cb_minimize_to_system_tray, SIGNAL(stateChanged(int)), this, SLOT(updateMinimizeToTray(int)));
 
