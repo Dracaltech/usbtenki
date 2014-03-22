@@ -1365,6 +1365,10 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						SOrh = rh_chn->raw_value;
 
 						RH_true = (T - 25)*(0.01 + 0.00008 * SOrh)+RH_linear;
+						if (RH_true < 0)
+							RH_true = 0;
+						if (RH_true > 100)
+							RH_true = 100;
 
 						chn->data_valid = 1;
 						chn->converted_data = RH_true;

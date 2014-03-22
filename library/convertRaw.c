@@ -53,8 +53,8 @@ static double _searchTempFromR(double r, double t_start, double step)
 
 double zk(double k, double p, double q)
 {
-	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((-q/2.0)*sqrt(27/-(p*p*p))) + 2*k*M_PI/3.0);   
-//	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((3*q/2*p)*sqrt(-3 / p)) - k*((2*M_PI)/3.0));   
+	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((-q/2.0)*sqrt(27/-(p*p*p))) + 2*k*M_PI/3.0);
+//	return 2 * sqrt(-p/3.0) * cos(1/3.0 * acos((3*q/2*p)*sqrt(-3 / p)) - k*((2*M_PI)/3.0));
 }
 
 /* Using a recursive algorithm, find the RTD temperature from its resistance. */
@@ -68,7 +68,7 @@ double searchTempFromR(double r)
 	if (r > 100) {
 //		printf("Using formula\n");
 		return (-a + sqrt(pow(a,2)-4*b*(1-(r/100.0))) ) / (2*b);
-	} 
+	}
 #if 0
 	else {
 		double p = (-(b*b / (3*c*c)) + (a/c) );
@@ -84,8 +84,6 @@ double searchTempFromR(double r)
 		printf("%f %f %f\n", z0,z1,z2);
 
 		return pow((-q * sqrt(delta) / 2.0)  , (1/3.0) ) + pow ((-q - sqrt(delta)) / 2.0 , (1/3.0));
-		
-
 	}
 #endif
 
@@ -121,7 +119,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (chn->raw_length!=2)
 					goto wrongData;
-				
+
 				/* The sensor will be initailized in 12 bits mode  */
 				t = ((raw_data[0] << 4) | (raw_data[1]>>4))<<4;
 				t >>= 4;
@@ -136,14 +134,14 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (chn->raw_length!=2)
 					goto wrongData;
-			
+
 				/* This sensor offers 16 bits of resolution.
 				 *
 				 * [0]                                 [1]
 				 *   7   6   5   4   3   2   1   0      7   6    5   4   3   2   1   0
 				 * D12 D11 D10  D9  D8  D7  D6  D5  |  D4  D3  D2   D1  D0   X   X   X
 				 */
-				
+
 				t = raw_data[0] << 8 | raw_data[1];
 				temperature = ((float)t) * pow(2.0,-7.0);
 				chip_fmt = TENKI_UNIT_CELCIUS;
@@ -157,14 +155,14 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (chn->raw_length!=2)
 					goto wrongData;
-			
+
 				/* This sensor offers 13 bits of resolution as follows:
 				 *
 				 * [0]                                 [1]
 				 *   7   6   5   4   3   2   1   0      7   6    5   4   3   2   1   0
 				 * D12 D11 D10  D9  D8  D7  D6  D5  |  D4  D3  D2   D1  D0   X   X   X
 				 */
-				
+
 				t = ((raw_data[0] << 5) | (raw_data[1]>>3))<<3;
 				t >>= 3;
 				temperature = ((float)t) * pow(2.0,-5.0);
@@ -178,7 +176,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (chn->raw_length!=2)
 					goto wrongData;
-				
+
 				/* The sensor only supports 9 bits */
 				t = (raw_data[0] << 1) | (raw_data[1]>>7);
 				temperature = ((float)t) * pow(2.0,-1.0);
@@ -195,7 +193,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 
 				t = (raw_data[0]<<8) | raw_data[1];
-			
+
 				temperature = -40.0 + 0.01  * (float)t;
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
@@ -221,12 +219,17 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 
 				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
-	
+
 				// Keep the raw value around for the temperature compensated
-				// humidity reading	
+				// humidity reading
 				chn->raw_value = sorh;
-			
+
 				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
+				if (temperature < 0)
+					temperature = 0;
+				if (temperature > 100)
+					temperature = 100;
+
 				chip_fmt = TENKI_UNIT_RH;
 			}
 			break;
@@ -240,7 +243,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 
 				t = (raw_data[0]<<8) | raw_data[1];
-			
+
 				temperature = -40.0 + 0.04  * (float)t;
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
@@ -258,8 +261,13 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 
 				sorh = (float)( (unsigned short)((raw_data[0]<<8) | raw_data[1]) );
-			
+
 				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
+				if (temperature < 0)
+					temperature = 0;
+				if (temperature > 100)
+					temperature = 100;
+
 				chip_fmt = TENKI_UNIT_RH;
 			}
 			break;
@@ -269,11 +277,11 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				float vout, vs, vorigin;
 				unsigned int adc_out;
 				unsigned int adc_origin;
-			
+
 				/* "Datasheet figure 4, Output versus pressure differential"
 				 *
-				 * Transfer function: 
-				 *  
+				 * Transfer function:
+				 *
 				 * Vout = Vs * (0.2 * P(kPa) + 0.5) +- 6.25% Vfss
 				 *
 				 * Vs: Supply voltage (5 volt)
@@ -285,23 +293,23 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				 *
 				 * Hence
 				 *
-				 * Vout / VS - 0.5 
+				 * Vout / VS - 0.5
 				 * ---------------   = P
 				 *         0.2
 				 *
-				 * 
+				 *
 				 *
 				 */
-				
+
 				vs = 5.0;
 				adc_out = raw_data[0] << 8 | raw_data[1];
 				adc_origin = raw_data[2] << 8 | raw_data[3];
 
 //				printf("ADC: 0x%04x, ADC_ORIG: 0x%04x\n", adc_out, adc_origin);
-				
+
 				vout = (adc_out * vs) / (float)0xffff;
 				vorigin = (adc_origin * vs) / (float)0xffff;
-				
+
 //				printf("Vout: %.3f, Vorigin: %.3f\n", vout, vorigin);
 
 				vout -= vorigin - 2.5;
@@ -330,8 +338,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				 *   LSB.
 				 *
 				 * The code in the Atmel averages multiple samples and
-				 * outputs a 16 bit value. 
-				 * 
+				 * outputs a 16 bit value.
+				 *
 				 * The ADC reference voltage is the same as the sensor's Vs,
 				 * So Vs does not really matter here.
 				 */
@@ -392,10 +400,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				float vs;
 				float voltage;
 				float flow;
-				
+
 				/*the code in the atmel averages multiple samples and
-				 * outputs a 16 bit value. 
-				 * 
+				 * outputs a 16 bit value.
+				 *
 				 * the adc reference voltage is the same as the sensor's vs,
 				 * so this is ok for ratiometric measurements.
 				 */
@@ -409,7 +417,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				// Voltage    :  0.50   0.70    1.11    1.58    2.00
 				//
 				// Note: All voltage +/- 0.15
-				
+
 				if (voltage < 0.70) {
 					flow = 0 + (voltage - 0.5) / (0.70 - 0.50) * 0.75;
 				} else if (voltage < 1.11) {
@@ -422,10 +430,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (flow<0)
 					flow = 0;
-				if (flow>3.0) 
+				if (flow>3.0)
 					flow = 3.0;
 
-				temperature = flow;				
+				temperature = flow;
 				chip_fmt = TENKI_UNIT_METER_SEC;
 			}
 			break;
@@ -435,10 +443,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			{
 				unsigned short adc_out;
 				float vs;
-				
+
 				/*the code in the atmel averages multiple samples and
-				 * outputs a 16 bit value. 
-				 * 
+				 * outputs a 16 bit value.
+				 *
 				 * the adc reference voltage is the same as the sensor's vs,
 				 * so this is ok for ratiometric measurements.
 				 */
@@ -504,20 +512,20 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				if (chn->raw_length != 6)
 					return -1;
-			
+
 				// Assign with most significant bits aligned (signed).
 				// Even though the negative inputs of the ADC are at GND,
 				// the conversion can still result venture below 0 (values of -1 or -2). This
 				// happens when using 2 wire RTDs because we short CH1 to GND.
 				raw_ch0 = ( ((raw_data[0] & 0x03) << 30) | (raw_data[1] << 22) | (raw_data[2] << 14) );
-				raw_ch0 >>= 14;	
-				
+				raw_ch0 >>= 14;
+
 				raw_ch1 = ( ((raw_data[3] & 0x03) << 30) | (raw_data[4] << 22) | (raw_data[5] << 14) );
-				raw_ch1 >>= 14;	
+				raw_ch1 >>= 14;
 
 //				printf("ch0: %02X %02X %02X %08x\n", raw_data[0], raw_data[1], raw_data[2], raw_ch0);
 //				printf("ch1: %02X %02X %02X %08x\n", raw_data[3], raw_data[4], raw_data[5], raw_ch1);
-		
+
 				// CALIBRATION
 				//
 				// The most significant factor seems to be the current source precision
@@ -543,14 +551,14 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 //				printf("Lead resistance: %.8f ohm\n", r_wire);
 
-				rt = volts_ch0 / i_src;				
+				rt = volts_ch0 / i_src;
 //				printf("Total resistance: %.8f ohm\n", rt);
 
 				r_pt100 = rt - r_wire * 2  - ferrite_r;
 				//printf("PT100 resistance: %.8f ohm\n", r_pt100);
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
-				
+
 				//r_pt100 = 90; // fake ~-20
 				temperature = searchTempFromR(r_pt100);
 			}
@@ -586,7 +594,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				temperature = ((short)(raw_data[0] << 8 | raw_data[1])) * current_lsb;
 				chip_fmt = TENKI_UNIT_AMPS;
 			}
-			break;	
+			break;
 
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
@@ -672,7 +680,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				int i;
 				temperature = raw_data[1] << 8 | raw_data[0];
 				chip_fmt = TENKI_UNIT_RAW;
-				
+
 				printf("Unknown chip id 0x%02x\n", chn->chip_id);
 				printf("HEX(%d) : ", chn->raw_length);
 				for (i=0; i<chn->raw_length; i++) {
