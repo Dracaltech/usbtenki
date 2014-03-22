@@ -157,19 +157,33 @@ Logger::Logger(TenkiSources *s)
 	control_layout->addWidget(start_button);
 	control_layout->addWidget(stop_button);
 	control_layout->addWidget(viewButton);
-	
+
 	control_layout->addWidget(status_label);
 	control_layout->addWidget(new QLabel(tr("Lines written: ")));
 	control_layout->addWidget(counter_label);
 	control_layout->addStretch();
-	
+
 	messages = new QGroupBox("Messages");
-	msg_layout = new QHBoxLayout();
+	QVBoxLayout *msg_layout;
+	msg_layout = new QVBoxLayout();
 	messages->setLayout(msg_layout);
 	msgtxt = new QTextEdit();
 	msgtxt->setReadOnly(true);
-	
+
+	QHBoxLayout *msg_control_layout = new QHBoxLayout();
+	QFrame *msg_control_frm = new QFrame();
+	msg_control_frm->setLayout(msg_control_layout);
+
+	clr_messages_button = new QPushButton(QIcon(":document-close.png"), tr("Clear messages"));
+	save_messages_button = new QPushButton(QIcon(":fileopen.png"), tr("Save messages..."));
+	connect(clr_messages_button, SIGNAL(clicked()), this, SLOT(clearMessages()));
+	connect(save_messages_button, SIGNAL(clicked()), this, SLOT(saveMessages()));
+	msg_control_layout->addWidget(clr_messages_button);
+	msg_control_layout->addWidget(save_messages_button);
+	msg_control_layout->addStretch();
+
 	msg_layout->addWidget(msgtxt);
+	msg_layout->addWidget(msg_control_frm);
 
 	connect(start_button, SIGNAL(clicked()), this, SLOT(startLogging()));
 	connect(stop_button, SIGNAL(clicked()), this, SLOT(stopLogging()));
@@ -475,3 +489,30 @@ void Logger::commentsEdited()
 	QSettings settings;
 	settings.setValue("logger/file_comments", file_comments->text());
 }
+
+void Logger::clearMessages()
+{
+	msgtxt->clear();
+}
+
+void Logger::saveMessages()
+{
+	QString filename;
+	QString default_dir;
+
+	if (0 == path->text().size()) {
+		default_dir = QDir::homePath();
+	} else {
+		default_dir = path->text();
+	}
+	filename = QFileDialog::getSaveFileName(this, tr("Output file"), default_dir, "(*.txt)" );
+
+	if (filename.size()) {
+		QFile outfile;
+		outfile.setFileName(filename);
+		outfile.open(QIODevice::WriteOnly | QIODevice::Text);
+		outfile.write(msgtxt->toPlainText().toUtf8());
+		outfile.close();
+	}
+}
+

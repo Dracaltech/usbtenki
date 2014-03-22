@@ -25,6 +25,8 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void startLogging();
 		void stopLogging();
 		bool confirmMayExit();
+		void clearMessages();
+		void saveMessages();
 
 	signals:
 		void loggerStatusChanged(int running);
@@ -72,11 +74,10 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 
 		QGroupBox *control;
 		QHBoxLayout *control_layout;
-		QPushButton *start_button, *stop_button;
+		QPushButton *start_button, *stop_button, *clr_messages_button, *save_messages_button;
 		QLabel *status_label, *counter_label;
 	
 		QGroupBox *messages;
-		QHBoxLayout *msg_layout;
 		QTextEdit *msgtxt;
 			
 		QVBoxLayout *main_layout;
