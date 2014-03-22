@@ -225,6 +225,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				chn->raw_value = sorh;
 
 				temperature = c1 + c2*sorh + c3 * powf(sorh, 2.0);
+
 				if (temperature < 0)
 					temperature = 0;
 				if (temperature > 100)

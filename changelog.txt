@@ -3,6 +3,9 @@ Version 2.1.2:
    - [Command-line] Introduce pressure-based altitude computing
    - [Command-line] Increased verbosity when -v is used
    - [QTenki] Fixed a minimize-to-tray bug
+   - [QTenki] Added save messages and clear messages buttons
+   - [Qtenki] Errors will be shown in bigview
+   - Prevent RH values from exiting the 0 - 100% range
    - Various small bug fixes
 
 Version 2.1.1:
