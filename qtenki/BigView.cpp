@@ -6,7 +6,7 @@ BigView::BigView()
 {
 	lay = new QVBoxLayout();
 	this->setLayout(lay);
-	
+
 	g_tenkisources->addSourcesTo(this);
 }
 
@@ -26,7 +26,7 @@ void BigView::removeTenkiSource(struct sourceDescription *sd)
 void BigView::addSourceByName(QString sname)
 {
 	BigLabel *lbl = new BigLabel("...", sname);
-	lay->addWidget(lbl);	
+	lay->addWidget(lbl);
 	labels.append(lbl);
 }
 

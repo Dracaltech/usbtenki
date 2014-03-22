@@ -13,6 +13,9 @@ class BigLabel : public QLabel
 		void resizeEvent(QResizeEvent *event);
 		void refresh();
 		QString src_name;
+
+	private:
+		void fitFont(QRect rect);
 };
 
 #endif // _biglabel_h__

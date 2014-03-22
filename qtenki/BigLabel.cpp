@@ -17,9 +17,10 @@ BigLabel::BigLabel(const QString &text, QString source_name)
 void BigLabel::refresh()
 {
 	QSettings settings;
+	QString final_text;
 	struct USBTenki_channel chndata;
-
 	struct sourceDescription *sd = g_tenkisources->getSourceByName(src_name);
+
 	if (!sd) {
 		setText("err");
 		return;
@@ -34,37 +35,73 @@ void BigLabel::refresh()
 
 	g_tenkisources->formatValue(&d, chndata.converted_data);
 
-	QString final;
 
 	if (settings.value("bigview/show_aliases").toBool()) {
-		final += alias;
-		final += ": ";
+		final_text += alias;
+		final_text += ": ";
 	}
 
-	final += d;
-	
+	final_text += d;
+
 	if (settings.value("bigview/show_units").toBool()) {
-		final += " ";
-		final += units;
+		final_text += " ";
+		final_text += units;
 	}
 
-	setText(final);
+	if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
+		final_text += " (error)";
+	}
+
+	setText(final_text);
+	fitFont(rect()); // fix the font size
+}
+
+void BigLabel::fitFont(QRect rect)
+{
+	int flags = Qt::TextDontClip;
+	QFont f = font();
+
+	// Step 1: Try to set the requested height. If everything fits horizontally,
+	// all labels will have equal height.
+	f = font();
+	float orig = rect.size().height() * 0.8;
+	f.setPixelSize(orig);
+
+	// Step 2: Long strings may be cut. If this happens,
+	// reduce the font until it fits in the target width.
+	QRect fontBoundRect = QFontMetrics(f).boundingRect(rect,flags, text());
+
+//	qDebug() << "font width: " << fontBoundRect.width() << " space:" << resize.width() << " Text: " << text();
+
+	while (fontBoundRect.width() > rect.size().width() && orig > 0 ) {
+
+		f.setPixelSize(orig);
+		orig -= (orig*0.1); // 10% decrements. Every resize then requires approx. 10 iterations
+
+//		qDebug() << "Testing size: " << orig;
+
+		fontBoundRect = QFontMetrics(f).boundingRect(rect,flags, text());
+	}
+
+	setFont(f);
 }
 
 void BigLabel::resizeEvent(QResizeEvent *event)
 {
-	int flags = Qt::TextDontClip; 
+	QRect resize(0,0,event->size().width(), event->size().height());
+	fitFont(resize);
+#if 0
+
+	int flags = Qt::TextDontClip;
 	QRect resize(0,0,event->size().width(), event->size().height());
 	QFont f = font();
 
-	
-	// Step 1: Try to set the requested height. If everything fits horizontally, 
+	// Step 1: Try to set the requested height. If everything fits horizontally,
 	// all labels will have equal height.
 	f = font();
 	float orig = event->size().height() * 0.8;
 	f.setPixelSize(orig);
-	
-	
+
 	// Step 2: Long strings may be cut. If this happens,
 	// reduce the font until it fits in the target width.
 	QRect fontBoundRect = QFontMetrics(f).boundingRect(resize,flags, text());
@@ -74,16 +111,14 @@ void BigLabel::resizeEvent(QResizeEvent *event)
 	while (fontBoundRect.width() > resize.width() && orig > 0 ) {
 
 		f.setPixelSize(orig);
-		
 		orig -= (orig*0.1); // 10% decrements. Every resize then requires approx. 10 iterations
-		
+
 //		qDebug() << "Testing size: " << orig;
-	
+
 		fontBoundRect = QFontMetrics(f).boundingRect(resize,flags, text());
 	}
 
 	setFont(f);
-	
+#endif
 	QFrame::resizeEvent(event);
 }
-
