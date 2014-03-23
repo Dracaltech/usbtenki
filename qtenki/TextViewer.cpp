@@ -13,7 +13,7 @@ TextViewer::TextViewer(QString filename)
 	btnbox = new QDialogButtonBox();
 	closeBtn = new QPushButton(tr("Close"));
 	btnbox->addButton(closeBtn, QDialogButtonBox::AcceptRole);
-	
+
 	QObject::connect(btnbox, SIGNAL(accepted()), this, SLOT(accept()));
 
 	timer = new QTimer(this);
@@ -61,7 +61,7 @@ void TextViewer::reloadFile()
 
 void TextViewer::followFile()
 {
-	if (!file->atEnd()) {
+	while (!file->atEnd()) {
 		QByteArray line = file->readLine();
 		editor->appendPlainText(line.trimmed());
 	}

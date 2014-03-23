@@ -39,13 +39,13 @@ class SimpleLogger : public QThread
 			WriteError=4,
 		};
 
-		SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, SimpleLogger::OnError onerr);
+		SimpleLogger(TenkiSources *ts, QString output_file, int interval_ms, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, SimpleLogger::OnError onerr);
 		~SimpleLogger();
 		void addSource(QString src, QString alias);
 		void setUseUTC(bool use);
 		void setAppend(bool append);
 		void setComment(QString comment);
-	
+
 	protected:
 		void writeHeader();
 		void run();
@@ -67,10 +67,10 @@ class SimpleLogger : public QThread
 		TenkiSources *tenkisources;
 
 		QString output_file, comments;
-		int interval_s;
+		int interval_ms;
 		FileFormat fmt;
 		QList<QString> sources;
-		QList<QString> aliases; 
+		QList<QString> aliases;
 		QTimer *timer;
 		QFile *file;
 

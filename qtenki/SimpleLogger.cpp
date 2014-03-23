@@ -4,10 +4,10 @@
 #include "globals.h"
 //#include <QHostInfo>
 
-SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_s, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, enum SimpleLogger::OnError onerr)
+SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_ms, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, enum SimpleLogger::OnError onerr)
 {
 	this->output_file = output_file;
-	this->interval_s = interval_s;
+	this->interval_ms = interval_ms;
 	this->fmt = fmt;
 
 	tenkisources = ts;
@@ -63,13 +63,13 @@ void SimpleLogger::writeHeader()
 	file->write("# creation date: ");
 //	file->write("on machine ");
 //	file->write(hostname.toAscii());
-	file->write(creation_time.toString("yyyy-MM-dd hh:mm:ss").toAscii());	
+	file->write(creation_time.toString("yyyy-MM-dd hh:mm:ss").toAscii());
 	file->write("\n");
 
 	file->write("# logging interval: ");
-	file->write(logLocale->toString(interval_s).toAscii());
-	file->write(" second");
-	if (interval_s != 1) {
+	file->write(logLocale->toString(interval_ms).toAscii());
+	file->write(" millisecond");
+	if (interval_ms != 1) {
 		file->write("s");
 	}
 	file->write("\n");
@@ -84,7 +84,7 @@ void SimpleLogger::writeHeader()
 void SimpleLogger::run()
 {
 	timer = new QTimer();
-	timer->setInterval(interval_s * 1000);
+	timer->setInterval(interval_ms);
 	connect(timer, SIGNAL(timeout()), this, SLOT(doLog()), Qt::DirectConnection);
 
 	if (!sources.size()) {
@@ -121,7 +121,7 @@ void SimpleLogger::run()
 void SimpleLogger::logItem(QString str, int last)
 {
 	file->write(str.toAscii());
-	
+
 	if (last) {
 		logLineEnd();
 		return;
@@ -171,11 +171,11 @@ void SimpleLogger::logValue(float v, int last)
 	//char tmpbuf[32];
 
 //	sprintf(tmpbuf, "%0.02f", v);
-	
+
 	// TODO : Potential options:
 	//   - scientific notation
 	//   - precision (now hardcoded to 2)
-	logItem(logLocale->toString(v, 'f', g_tenkisources->displayDigits()), last); 	
+	logItem(logLocale->toString(v, 'f', g_tenkisources->displayDigits()), last);
 //	logItem(QString::fromAscii(tmpbuf), last);
 
 }

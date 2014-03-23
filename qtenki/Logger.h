@@ -43,7 +43,7 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		void logFormatChanged(int idx);
 		void decimalPointChanged(int idx);
 		void timestampChanged(int idx);
-		void intervalChanged(int i);
+		void intervalChanged(double i);
 		void filenameEdited();
 		void commentsEdited();
 		void errorStrategyChanged(int);
@@ -66,8 +66,8 @@ class Logger : public QWidget, public TenkiSourceAddRemove
 		QComboBox *comb_on_error;
 		QLineEdit *path, *file_comments;
 		QPushButton *browseButton, *viewButton;
-		
-		QSpinBox *log_interval;		
+
+		QDoubleSpinBox *log_interval;
 
 		QWidget *mid_layer; // source and dest
 		QHBoxLayout *mid_layout;

@@ -99,16 +99,13 @@ Logger::Logger(TenkiSources *s)
 	comb_file_exists->addItem(tr("Append to file without confirmation"));
 	comb_file_exists->addItem(tr("Overwrite file with confirmation"));
 	comb_file_exists->addItem(tr("Append to file with confirmation"));
-	
+
 	comb_file_exists->setCurrentIndex(settings.value("logger/if_file_exists").toInt());
 	connect(comb_file_exists, SIGNAL(currentIndexChanged(int)), this, SLOT(fileExistsStrategyChanged(int)));
 	dbl->addWidget(new QLabel(tr("If file exists:")));
 	dbl->addWidget(comb_file_exists, y, 1, 1, 4);
 	y++;
 
-
-
-	
 	dbl->addWidget(new QLabel(tr("Output file:")), y, 0 );
 	path = new QLineEdit(settings.value("logger/filename").toString());
 	browseButton = new QPushButton(QIcon(":fileopen.png"), tr("Browse..."));
@@ -123,15 +120,16 @@ Logger::Logger(TenkiSources *s)
 	QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(browse_clicked()));
 
 	dbl->addWidget(new QLabel(tr("Logging interval:")), y, 0 );
-	log_interval = new QSpinBox();
-	log_interval->setMinimum(1);
+	log_interval = new QDoubleSpinBox();
+	log_interval->setDecimals(1);
+	log_interval->setSingleStep(0.1);
+	log_interval->setMinimum(0.1);
 	log_interval->setMaximum(31536000); // one year
 	dbl->addWidget(log_interval, y, 1, 1, 1);
-	dbl->addWidget(new QLabel(tr("(seconds)")), y, 2 );
+	dbl->addWidget(new QLabel(tr("(milliseconds)")), y, 2 );
 
-
-	log_interval->setValue(settings.value("logger/interval").toInt());
-	connect(log_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
+	log_interval->setValue(settings.value("logger/interval").toDouble());
+	connect(log_interval, SIGNAL(valueChanged(double)), this, SLOT(intervalChanged(double)));
 	y++;
 
 
@@ -321,7 +319,7 @@ void Logger::startLogging()
 		case 4: onerr = SimpleLogger::WriteError; 		break;
 	}
 
-	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value(), fmt, dt, tfmt, onerr);
+	current_logger = new SimpleLogger(tenkisources, path->text(), log_interval->value()*1000, fmt, dt, tfmt, onerr);
 	current_logger->setAppend(ex & EXISTS_APPEND ? true : false);
 	current_logger->setComment(file_comments->text());
 
@@ -351,7 +349,7 @@ bool Logger::confirmMayExit()
 {
 	if (current_logger != NULL) {
 		QMessageBox msgBox;
-		
+
 		msgBox.setText(tr("Logger still running."));
 		msgBox.setInformativeText(tr("Exit anyway?"));
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
@@ -387,14 +385,14 @@ void Logger::browse_clicked()
 {
 	QString filename;
 	QString default_dir;
-	
+
 	if (0 == path->text().size()) {
 		default_dir = QDir::homePath();
 	} else {
 		default_dir = path->text();
 	}
 	filename = QFileDialog::getSaveFileName(this, tr("Output file"), default_dir, "(*.txt *.csv *.tsv)" );
-	
+
 	if (filename.size()) {
 		path->setText(filename);
 	}
@@ -472,7 +470,7 @@ void Logger::logFormatChanged(int idx)
 	settings.setValue("logger/format", idx);
 }
 
-void Logger::intervalChanged(int i)
+void Logger::intervalChanged(double i)
 {
 	QSettings settings;
 	settings.setValue("logger/interval", i);
