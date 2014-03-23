@@ -2,6 +2,7 @@ Version 2.1.2:
    - [Command-line] Performance fix (unrequested channels were being read)
    - [Command-line] Introduce pressure-based altitude computing
    - [Command-line] Increased verbosity when -v is used
+   - [QTenki] Minimum logging interval lowered from 1 second to 0.1 second
    - [QTenki] Fixed a minimize-to-tray bug
    - [QTenki] Added save messages and clear messages buttons
    - [Qtenki] Errors will be shown in bigview

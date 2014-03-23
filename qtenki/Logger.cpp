@@ -128,7 +128,8 @@ Logger::Logger(TenkiSources *s)
 	dbl->addWidget(log_interval, y, 1, 1, 1);
 	dbl->addWidget(new QLabel(tr("(milliseconds)")), y, 2 );
 
-	log_interval->setValue(settings.value("logger/interval").toDouble());
+	int compat_interval_s = settings.value("logger/interval", 1).toInt();
+	log_interval->setValue(settings.value("logger/interval_ms", compat_interval_s*1000).toDouble());
 	connect(log_interval, SIGNAL(valueChanged(double)), this, SLOT(intervalChanged(double)));
 	y++;
 
@@ -473,7 +474,7 @@ void Logger::logFormatChanged(int idx)
 void Logger::intervalChanged(double i)
 {
 	QSettings settings;
-	settings.setValue("logger/interval", i);
+	settings.setValue("logger/interval_ms", i);
 }
 
 void Logger::filenameEdited()
