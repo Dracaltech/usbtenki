@@ -126,10 +126,10 @@ Logger::Logger(TenkiSources *s)
 	log_interval->setMinimum(0.1);
 	log_interval->setMaximum(31536000); // one year
 	dbl->addWidget(log_interval, y, 1, 1, 1);
-	dbl->addWidget(new QLabel(tr("(milliseconds)")), y, 2 );
+	dbl->addWidget(new QLabel(tr("(seconds)")), y, 2 );
 
 	int compat_interval_s = settings.value("logger/interval", 1).toInt();
-	log_interval->setValue(settings.value("logger/interval_ms", compat_interval_s*1000).toDouble());
+	log_interval->setValue(settings.value("logger/interval_ms", compat_interval_s*1000).toDouble() / 1000);
 	connect(log_interval, SIGNAL(valueChanged(double)), this, SLOT(intervalChanged(double)));
 	y++;
 
@@ -474,7 +474,7 @@ void Logger::logFormatChanged(int idx)
 void Logger::intervalChanged(double i)
 {
 	QSettings settings;
-	settings.setValue("logger/interval_ms", i);
+	settings.setValue("logger/interval_ms", i*1000);
 }
 
 void Logger::filenameEdited()
