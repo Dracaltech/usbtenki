@@ -23,7 +23,7 @@
 MainWindow::MainWindow()
 {
 	QVBoxLayout *layout = new QVBoxLayout();
-	
+
 	tw = new QTabWidget();
 
 	QHBoxLayout *bot_lay = new QHBoxLayout();
@@ -34,7 +34,7 @@ MainWindow::MainWindow()
 	img_logo->setPixmap(QPixmap(":dracal.png"));
 
 	QPushButton *exit_button = new QPushButton(QIcon(":application-exit.png"), QObject::tr("Quit QTenki"));
-	
+
 	bot_lay->addWidget(img_logo);
 	bot_lay->addStretch();
 	bot_lay->addWidget(exit_button);
@@ -50,7 +50,6 @@ MainWindow::MainWindow()
 	QCoreApplication::setOrganizationName("Dracal technologies inc.");
 	QCoreApplication::setOrganizationDomain("dracal.com");
 	QCoreApplication::setApplicationName("Qtenki");
-	
 
 	g_tenkisources = new TenkiSources();
 	g_tenkisources->init();
@@ -87,38 +86,38 @@ MainWindow::MainWindow()
 	about = new About();
 
 	QScrollArea *scr_logger = new QScrollArea();
-	scr_logger->setWidget(logger);	
-	
+	scr_logger->setWidget(logger);
+
 	QScrollArea *scr_cfgPanel = new QScrollArea();
-	scr_cfgPanel->setWidget(cfgPanel);	
-	
+	scr_cfgPanel->setWidget(cfgPanel);
+
 	QScrollArea *scr_dash = new QScrollArea();
 	scr_dash->setWidget(dash_container);
 
 	/* Tabs */
 	tw->addTab(scr_dash, QIcon(":sensors.png"), QObject::tr("Sources"));
-	tw->addTab(scr_logger, QIcon(":logger.png"), QObject::tr("Logging"));	
+	tw->addTab(scr_logger, QIcon(":logger.png"), QObject::tr("Logging"));
 	tw->addTab(bigView, QIcon(":view.png"), QObject::tr("Big View"));
 	tw->addTab(graphView, QIcon(":graph.png"), QObject::tr("Graph View"));
 	tw->addTab(scr_cfgPanel, QIcon(":configure.png"), QObject::tr("Configuration"));
-	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));	
+	tw->addTab(about, QIcon(":about.png"), QObject::tr("About..."));
 
 	/* The main window */
 	setLayout(layout);
 
 	layout->addWidget(tw);
 	layout->addWidget(bot_btns);
-	QIcon ico(":qtenki.ico");
-	
-	setWindowIcon(ico);
+	windowIcon = new QIcon(":qtenki.ico");
+
+	setWindowIcon(*windowIcon);
 	setWindowTitle("QTenki "USBTENKI_VERSION);
 
 	// The tray icon stuff
 	trayicon = new QSystemTrayIcon(this);
-	trayicon->setIcon(ico);
+	trayicon->setIcon(*windowIcon);
 
 	connect(trayicon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_show_hide(QSystemTrayIcon::ActivationReason)));
-	
+
 	QAction *quit_action = new QAction( "Exit", trayicon);
 	connect(quit_action, SIGNAL(triggered()), this, SLOT(close()));
 

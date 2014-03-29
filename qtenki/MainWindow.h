@@ -36,6 +36,7 @@ class MainWindow : public QWidget
 		GraphView *graphView;
 		QSystemTrayIcon *trayicon;
 		QTabWidget *tw;
+		QIcon *windowIcon;
 };
 
 #endif // _MainWindow_h__
