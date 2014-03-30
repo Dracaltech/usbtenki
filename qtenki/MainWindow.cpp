@@ -51,8 +51,11 @@ MainWindow::MainWindow()
 	QCoreApplication::setOrganizationDomain("dracal.com");
 	QCoreApplication::setApplicationName("Qtenki");
 
+	printf("New tenki sources\n");
 	g_tenkisources = new TenkiSources();
 	g_tenkisources->init();
+	printf("Tenki sources init done\n");
+	g_tenkisources->start();
 
 	/* prepare tab elements */
 	td = new TenkiDashboard();
@@ -113,8 +116,9 @@ MainWindow::MainWindow()
 	setWindowTitle("QTenki "USBTENKI_VERSION);
 
 	// The tray icon stuff
+	trayQIcon = new QIcon(":icon16x16.png");
 	trayicon = new QSystemTrayIcon(this);
-	trayicon->setIcon(*windowIcon);
+	trayicon->setIcon(*trayQIcon);
 
 	connect(trayicon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_show_hide(QSystemTrayIcon::ActivationReason)));
 

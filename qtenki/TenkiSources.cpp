@@ -19,14 +19,18 @@ TenkiSources::TenkiSources()
 	thread = new QThread();
 	moveToThread(thread);
 	connect(thread, SIGNAL(started()), this, SLOT(run()));
-	
-	thread->start();
+
 }
 
 TenkiSources::~TenkiSources()
 {
 	// todo : delete all sourceDescriptions
 	delete timer;
+}
+
+void TenkiSources::start()
+{
+	thread->start();
 }
 
 void TenkiSources::formatValue(QString *str, float value)
@@ -113,7 +117,6 @@ int TenkiSources::scanForDevices()
 		device_list.append(td);
 
 		emit newDeviceFound(td);
-
 		addDeviceSources(td);
 	}
 

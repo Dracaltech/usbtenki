@@ -37,6 +37,7 @@ class MainWindow : public QWidget
 		QSystemTrayIcon *trayicon;
 		QTabWidget *tw;
 		QIcon *windowIcon;
+		QIcon *trayQIcon;
 };
 
 #endif // _MainWindow_h__

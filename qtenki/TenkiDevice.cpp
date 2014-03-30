@@ -8,7 +8,7 @@
 TenkiDevice::TenkiDevice(const char *serial)
 {
 	serno = strdup(serial);
-	
+
 	tenki_hdl = usbtenki_openBySerial(serial, &tenki_info);
 	if (tenki_hdl != NULL) {
 		status = TENKI_DEVICE_STATUS_OK;

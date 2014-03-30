@@ -38,8 +38,9 @@ class TenkiSources : public QObject
 		TenkiSources();
 		~TenkiSources();
 		int init();
+		void start();
 		int getNumDevices();
-		
+
 		// Add all known TenkiDevices to target
 		void syncDevicesTo(TenkiDeviceAddRemove *tdr);
 		void addSourcesTo(TenkiSourceAddRemove *tsar);
