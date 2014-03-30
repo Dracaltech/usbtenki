@@ -548,6 +548,83 @@ float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt)
 //	printf("%.2f\n", converted);
 }
 
+float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
+{
+	float converted = length;
+	float meters = 0;
+
+	// First convert to meters
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_METERS:
+			meters = length;
+			break;
+		case TENKI_UNIT_DECIMETERS:
+			meters = length / 10;
+			break;
+		case TENKI_UNIT_CENTIMETERS:
+			meters = length / 100;
+			break;
+		case TENKI_UNIT_MILLIMETERS:
+			meters = length / 1000;
+			break;
+
+		case TENKI_UNIT_INCHES:
+			// 1 inch = 25.4mm = 2.54cm = 0.254dm = 0.0254m
+			meters = length * 0.0254;
+			break;
+
+		case TENKI_UNIT_FEET:
+			meters = length * 12 * 0.0254;
+			break;
+
+		case TENKI_UNIT_YARDS:
+			meters = length * 3 * 12 * 0.0254;
+			break;
+
+		case TENKI_UNIT_MILS:
+			meters = (length / 1000) * 0.0254;
+			break;
+	}
+
+	// Now convert meters to target unit
+	switch (dst_fmt)
+	{
+		case TENKI_UNIT_METERS:
+			converted = meters;
+			break;
+
+		case TENKI_UNIT_DECIMETERS:
+			converted = meters * 10;
+			break;
+
+		case TENKI_UNIT_CENTIMETERS:
+			converted = meters * 100;
+			break;
+
+		case TENKI_UNIT_MILLIMETERS:
+			converted = meters * 1000;
+			break;
+
+		case TENKI_UNIT_INCHES:
+			converted = meters / 0.0254;
+			break;
+
+		case TENKI_UNIT_MILS:
+			converted = meters / 0.0254 * 1000;
+			break;
+
+		case TENKI_UNIT_FEET:
+			converted = meters / 0.0254 / 12;
+			break;
+
+		case TENKI_UNIT_YARDS:
+			converted = meters / 0.0254 / 12 / 3;
+			break;
+	}
+
+	return converted;
+}
 
 float usbtenki_convertVoltage(float v, int src_fmt, int dst_fmt)
 {
@@ -900,6 +977,14 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_KHZ: return "kHz";
 		case TENKI_UNIT_MHZ: return "MHz";
 		case TENKI_UNIT_RPM: return "rpm";
+		case TENKI_UNIT_METERS: return "m";
+		case TENKI_UNIT_DECIMETERS: return "dm";
+		case TENKI_UNIT_CENTIMETERS: return "cm";
+		case TENKI_UNIT_MILLIMETERS: return "mm";
+		case TENKI_UNIT_MILS: return "mil";
+		case TENKI_UNIT_INCHES: return "in";
+		case TENKI_UNIT_FEET: return "ft";
+		case TENKI_UNIT_YARDS: return "yd";
 	}
 
 	return "";
@@ -1684,11 +1769,25 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 	return 0;
 }
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int unit_voltage, int unit_current, int unit_power)
+void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int unit_voltage, int unit_current, int unit_power, int unit_length)
 {
 	/* Perform format conversion */
 	switch (chn->converted_unit)
 	{
+		case TENKI_UNIT_METERS:
+		case TENKI_UNIT_DECIMETERS:
+		case TENKI_UNIT_CENTIMETERS:
+		case TENKI_UNIT_MILLIMETERS:
+		case TENKI_UNIT_MILS:
+		case TENKI_UNIT_INCHES:
+		case TENKI_UNIT_FEET:
+		case TENKI_UNIT_YARDS:
+			chn->converted_data = usbtenki_convertLength(chn->converted_data,
+															chn->converted_unit,
+																		unit_length);
+			chn->converted_unit = unit_length;
+			break;
+
 		case TENKI_UNIT_FAHRENHEIT:
 		case TENKI_UNIT_CELCIUS:
 		case TENKI_UNIT_KELVIN:
