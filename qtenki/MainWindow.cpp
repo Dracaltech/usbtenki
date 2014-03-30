@@ -225,3 +225,16 @@ void MainWindow::loggerStatusChanged(int running)
 	// the whole configuration dialog.
 	cfgPanel->setEnabled(!running);
 }
+
+
+void MainWindow::receiveMessage(QString msg)
+{
+	// When a second instance of QTenki is started, it sends
+	// a message to the first instance and exits. The first instance
+	// must reappear if it was hidden.
+	show();
+	raise();
+	setFocus();
+	showNormal();
+}
+

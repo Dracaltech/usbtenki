@@ -1,12 +1,19 @@
 #include <QtGui>
-
-
+#include "single_application.h"
 #include "MainWindow.h"
 
 int main(int argc, char **argv)
 {
-	QApplication app(argc, argv);
+	SingleApplication app(argc, argv, "QTENKI-INSTANCE-06e23293-16e0-465d-842e-973269331243");
+
+	if (app.isRunning()) {
+		app.sendMessage("RAISE");
+		return 0;
+	}
+
 	MainWindow *window = new MainWindow();
+
+	QObject::connect(&app, SIGNAL(messageAvailable(QString)), window, SLOT(receiveMessage(QString)));
 
 	app.setStyle(new QCleanlooksStyle());
 	

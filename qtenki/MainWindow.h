@@ -28,6 +28,7 @@ class MainWindow : public QWidget
 		void on_show_hide(QSystemTrayIcon::ActivationReason reason);
 		void on_show_hide();
 		void loggerStatusChanged(int running);
+		void receiveMessage(QString msg);
 
 	private:
 		Logger *logger;

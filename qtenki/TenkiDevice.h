@@ -14,17 +14,17 @@ class TenkiDevice
 	public:
 		 TenkiDevice(const char *serial);
 		~TenkiDevice();
-		
-		const char *getSerial(void);		
+
+		const char *getSerial(void);
 		int getNumChannels(void);
 		USBTenki_channel *getChannelData(int id);
 		int isChannelHidden(int id);
-	
+
 		int status;
 
 		int updateChannelData();
 		struct USBTenki_channel channel_data[MAX_CHANNELS];
-		
+
 	private:
 		void initChannels();
 		USBTenki_dev_handle tenki_hdl;
