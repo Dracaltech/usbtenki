@@ -19,6 +19,7 @@
 #include "VoltagePreference.h"
 #include "CurrentPreference.h"
 #include "PowerPreference.h"
+#include "LengthPreference.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -37,12 +38,12 @@ ConfigPanel::ConfigPanel()
 	cb_disable_heat_index_validation->setChecked(settings.value("data/disable_heat_index_range").toBool());
 	cb_disable_humidex_validation = new QCheckBox(tr("Disable humidex input range check (may produce inaccurate values)"));
 	cb_disable_humidex_validation->setChecked(settings.value("data/disable_humidex_range").toBool());
-	
+
 	sample_interval = new QSpinBox();
 	sample_interval->setMinimum(100);
 	sample_interval->setMaximum(60000);
 	sample_interval->setValue(settings.value("data/global_sample_interval_ms", 1000).toInt());
-	
+
 	connect(this, SIGNAL(sig_intervalChanged(int)), g_tenkisources, SLOT(setInterval_ms(int)));
 	intervalChanged(sample_interval->value());
 
@@ -54,6 +55,14 @@ ConfigPanel::ConfigPanel()
 	connect(display_digits, SIGNAL(valueChanged(int)), this, SLOT(displayDigitsChanged(int)));
 	displayDigitsChanged(display_digits->value());
 
+	ref_slp = new QDoubleSpinBox();
+	ref_slp->setMinimum(85);
+	ref_slp->setMaximum(130);
+	ref_slp->setDecimals(6);
+	ref_slp->setSingleStep(0.001);
+	ref_slp->setValue(settings.value("data/ref_slp", 103.325).toDouble());
+	connect(ref_slp, SIGNAL(valueChanged(double)), this, SLOT(referencePressureChanged(double)));
+	displayDigitsChanged(ref_slp->value());
 
 
 	TemperaturePreference *t_pref = new TemperaturePreference();
@@ -62,14 +71,15 @@ ConfigPanel::ConfigPanel()
 	VoltagePreference *volt_pref = new VoltagePreference();
 	CurrentPreference *current_pref = new CurrentPreference();
 	PowerPreference *power_pref = new PowerPreference();
+	LengthPreference *length_pref = new LengthPreference();
 
-	
+
 	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), 0, 0 );
 	dataBox_layout->addWidget(t_pref, 0, 1);
-	
+
 	dataBox_layout->addWidget(new QLabel(tr("Pressure unit: ")), 1, 0 );
 	dataBox_layout->addWidget(p_pref, 1, 1);
-	
+
 	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
 	dataBox_layout->addWidget(f_pref, 2, 1);
 
@@ -82,24 +92,38 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Power unit: ")), 2, 2 );
 	dataBox_layout->addWidget(power_pref, 2, 3);
 
+	dataBox_layout->addWidget(new QLabel(tr("Length unit: ")), 3, 0);
+	dataBox_layout->addWidget(length_pref, 3, 1);
 
+	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 4, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_heat_index_validation, 5, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_humidex_validation, 6, 0, 1, -1);
 
-	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 3, 0, 1, -1);
-	dataBox_layout->addWidget(cb_disable_heat_index_validation, 4, 0, 1, -1);
-	dataBox_layout->addWidget(cb_disable_humidex_validation, 5, 0, 1, -1);	
+	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), 7, 0);
+	dataBox_layout->addWidget(sample_interval, 7, 1);
 
-	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), 6, 0);
-	dataBox_layout->addWidget(sample_interval, 6, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Number of digits after the decimal point:")), 8, 0);
+	dataBox_layout->addWidget(display_digits, 8, 1);
 
-	dataBox_layout->addWidget(new QLabel(tr("Number of digits after the decimal point:")), 7, 0);
-	dataBox_layout->addWidget(display_digits, 7, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Reference sea level pressure (kPa):")), 9, 0);
+	dataBox_layout->addWidget(ref_slp, 9, 1);
+
+	QPushButton *btn_setStandardSlp = new QPushButton(tr("Set to 101.325"));
+	connect(btn_setStandardSlp, SIGNAL(clicked()), this, SLOT(setStandardSLP()));
+
+	QPushButton *btn_setSlpToCurrent = new QPushButton(tr("Set to current pressure"));
+	connect(btn_setSlpToCurrent, SIGNAL(clicked()), this, SLOT(autoSetSLP()));
+
+	dataBox_layout->addWidget(btn_setStandardSlp, 9, 2);
+	dataBox_layout->addWidget(btn_setSlpToCurrent, 9, 3);
+
 //	dataBox_layout->setColumnStretch(2, 100);
-	
+
 	connect(cb_use_old_sht_coefficients, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_heat_index_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(cb_disable_humidex_validation, SIGNAL(stateChanged(int)), this, SLOT(updateFlagsFromCheckboxes(int)));
 	connect(sample_interval, SIGNAL(valueChanged(int)), this, SLOT(intervalChanged(int)));
-	
+
 
 	///////////////////////////
 	default_palette = QApplication::palette();
@@ -120,34 +144,34 @@ ConfigPanel::ConfigPanel()
 
 	QColor def_win_color = QApplication::palette().color(QPalette::Active,QPalette::Window);
 	sys_win_color = new SelectableColor("config/ovr_win_color", tr("Customize window color"), def_win_color);
-	appBox_layout->addWidget(sys_win_color);	
+	appBox_layout->addWidget(sys_win_color);
 
 	QColor def_btn_color = QApplication::palette().color(QPalette::Active,QPalette::Button);
 	sys_btn_color = new SelectableColor("config/ovr_btn_color", tr("Customize button color"), def_btn_color);
-	appBox_layout->addWidget(sys_btn_color);	
+	appBox_layout->addWidget(sys_btn_color);
 
 	QColor def_base_color = QApplication::palette().color(QPalette::Active,QPalette::Base);
 	sys_base_color = new SelectableColor("config/ovr_base_color", tr("Customize base color"), def_base_color);
-	appBox_layout->addWidget(sys_base_color);	
+	appBox_layout->addWidget(sys_base_color);
 
 	appBox_layout->addWidget(new QLabel(tr("Note: The application may need to be restarted for appearance changes to take full effect.<br>Depending on your OS and/or theme, it might not be possible to change all colors.")));
 
 
-	connect(sys_win_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
+	connect(sys_win_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 
 	connect(sys_win_color, SIGNAL(selectedChanged(QString,int,QColor)), this, SLOT(selectedChanged(QString,int,QColor)));
-	
-	connect(sys_btn_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
+
+	connect(sys_btn_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor)));
 	connect(sys_btn_color, SIGNAL(selectedChanged(QString,int,QColor)), this, SLOT(selectedChanged(QString,int,QColor)));
-	
-	connect(sys_base_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor))); 	
+
+	connect(sys_base_color, SIGNAL(colorChanged(QString,QColor)), this, SLOT(customColor(QString,QColor)));
 	connect(sys_base_color, SIGNAL(selectedChanged(QString,int,QColor)), this, SLOT(selectedChanged(QString,int,QColor)));
 
 	messageLabel = new QLabel("<img src=':/attention.png'><b>Configuration cannot be changed while logging.</b>");
 	lay->addWidget(messageLabel);
 	messageLabel->setVisible(false);
 
-	lay->addWidget(dataBox);	
-	lay->addWidget(appearanceBox);	
+	lay->addWidget(dataBox);
+	lay->addWidget(appearanceBox);
 	lay->addStretch();
 
 	lay->addWidget(new QLabel("Configuration changes are saved automatically and immediately effective."));
@@ -211,6 +235,24 @@ void ConfigPanel::displayDigitsChanged(int i)
 	g_tenkisources->setDisplayDigits(i);
 }
 
+void ConfigPanel::referencePressureChanged(double i)
+{
+	QSettings settings;
+	settings.setValue("data/ref_slp", i);
+
+	g_tenkisources->setReferenceSeaLevelPressure(i*1000); // Convert kPa to Pa
+}
+
+void ConfigPanel::setStandardSLP(void)
+{
+	ref_slp->setValue(101.325);
+}
+
+void ConfigPanel::autoSetSLP(void)
+{
+	ref_slp->setValue(g_tenkisources->getRecentPressure()/1000);
+}
+
 void ConfigPanel::updateMinimizeToTray(int ig)
 {
 	QSettings settings;
@@ -258,7 +300,7 @@ void ConfigPanel::defaultColor(QString name)
 
 void ConfigPanel::customColor(QString name, QColor col)
 {
-	if (name == "config/ovr_win_color" && sys_win_color->getSelected()) 
+	if (name == "config/ovr_win_color" && sys_win_color->getSelected())
 	{
 		QPalette myPalette;
 
@@ -269,7 +311,7 @@ void ConfigPanel::customColor(QString name, QColor col)
 		qApp->setPalette(myPalette);
 	}
 
-	if (name == "config/ovr_btn_color" && sys_btn_color->getSelected()) 
+	if (name == "config/ovr_btn_color" && sys_btn_color->getSelected())
 	{
 		QPalette myPalette;
 
@@ -280,7 +322,7 @@ void ConfigPanel::customColor(QString name, QColor col)
 		qApp->setPalette(myPalette);
 	}
 
-	if (name == "config/ovr_base_color" && sys_base_color->getSelected()) 
+	if (name == "config/ovr_base_color" && sys_base_color->getSelected())
 	{
 		QPalette myPalette;
 
@@ -295,5 +337,3 @@ void ConfigPanel::customColor(QString name, QColor col)
 ConfigPanel::~ConfigPanel()
 {
 }
-
-

@@ -56,7 +56,13 @@ class TenkiSources : public QObject
 		void setVoltageUnit(int volt_unit);
 		void setCurrentUnit(int current_unit);
 		void setPowerUnit(int power_unit);
+		void setLengthUnit(int length_unit);
 		void setDisplayDigits(int digits);
+		void setReferenceSeaLevelPressure(double value); // In Pascals
+
+		// Return a recent atmostpheric pressure value (used to set altitude reference)
+		double getRecentPressure(void); // in Pascals
+
 		int displayDigits();
 
 		void convertToUnits(const struct USBTenki_channel *chn, struct USBTenki_channel *dst);
@@ -67,7 +73,7 @@ class TenkiSources : public QObject
 		void updateAlias(QString source_name, QString alias);
 		void run();
 		void setInterval_ms(int interval);
-	
+
 	signals:
 		void newDeviceFound(TenkiDevice *td);
 		void deviceGone(TenkiDevice *td);
@@ -89,8 +95,10 @@ class TenkiSources : public QObject
 		int volt_unit;
 		int current_unit;
 		int power_unit;
+		int length_unit;
 		int timer_interval;
 		int display_digits;
+		double recent_pressure_P;
 };
 
 #endif // _tenki_sources_h__

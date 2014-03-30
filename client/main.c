@@ -50,6 +50,7 @@ int g_frequency_format = TENKI_UNIT_HZ;
 int g_voltage_format = TENKI_UNIT_VOLTS;
 int g_current_format = TENKI_UNIT_AMPS;
 int g_power_format = TENKI_UNIT_WATTS;
+int g_length_format = TENKI_UNIT_METERS;
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_decimal_digits = DEFAULT_DECIMAL_DIGITS;
@@ -81,6 +82,7 @@ static void printUsage(void)
 	printf("    -T unit      Select the temperature unit to use. Default: Celcius\n");
 	printf("    -P unit      Select the pressure unit to use. Default: kPa\n");
 	printf("    -F unit      Select the frequency unit to use. Default: Hz\n");
+	printf("    -M unit      Select the length unit to use. Default: m\n");
 	printf("    -p           Enable pretty output\n");
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
 	printf("    -L logfile   Log to specified file\n");
@@ -95,6 +97,8 @@ static void printUsage(void)
 	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi\n");
 	printf("\nValid frequency units:\n");
 	printf("    mHz, Hz, kHz, MHz, rpm\n");
+	printf("\nValid length units:\n");
+	printf("    mm, cm, dm, m, mil, in, ft, yd\n");
 	printf("\nOptions:\n");
 	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
 	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
@@ -124,11 +128,10 @@ int main(int argc, char **argv)
 	int requested_channels[MAX_CHANNELS];
 	int num_requested_channels= 1;
 	int use_all_channels = 0;
-	
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:M:")))
 	{
 		switch (res)
 		{
@@ -150,25 +153,25 @@ int main(int argc, char **argv)
 				break;
 			case 'h':
 				printUsage();
-				return 0;			
+				return 0;
 			case '7':
 				g_7bit_clean = 1;
 				break;
 			case 'l':
 				list_mode = 1;
-				break;			
+				break;
 			case 'f':
 				g_full_display_mode = 1;
-				break;			
+				break;
 			case 's':
-				use_serial = optarg;	
-				break;			
+				use_serial = optarg;
+				break;
 			case 'i':
 				{
 					char *p;
 					char *e;
-	
-					if (*optarg == 'a') 
+
+					if (*optarg == 'a')
 					{
 						num_requested_channels = 0;
 						use_all_channels = 1;
@@ -189,12 +192,12 @@ int main(int argc, char **argv)
 							fprintf(stderr, "Error in channel list\n");
 							return -1;
 						}
-						
+
 						num_requested_channels++;
-						
+
 						if (*e==0)
 							break;
-					
+
 						if (*e==',') {
 							e++;
 						}
@@ -207,7 +210,7 @@ int main(int argc, char **argv)
 					}
 				}
 				break;
-			
+
 			case 'T':
 				if (strcasecmp(optarg, "Celcius")==0 || 
 						strcasecmp(optarg, "C")==0)
@@ -222,7 +225,7 @@ int main(int argc, char **argv)
 					fprintf(stderr, "Unknown temperature format: '%s'\n",
 										optarg);
 					return -1;
-				}					
+				}
 				break;
 
 			case 'F':
@@ -230,14 +233,14 @@ int main(int argc, char **argv)
 					struct {
 						const char *name;
 						int fmt;
-					} tbl[] = { 
+					} tbl[] = {
 						{ "mHz", TENKI_UNIT_MILLIHZ },
 						{ "Hz", TENKI_UNIT_HZ },
 						{ "kHz", TENKI_UNIT_KHZ },
 						{ "MHz", TENKI_UNIT_MHZ },
 						{ "rpm", TENKI_UNIT_RPM },
 					};
-					
+
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
 							g_frequency_format = tbl[i].fmt;
@@ -245,18 +248,18 @@ int main(int argc, char **argv)
 						}
 					}
 					if (i==ARRAY_SIZE(tbl)) {
-						fprintf(stderr, 
+						fprintf(stderr,
 							"Unknown frequency unit: '%s'\n", optarg);
 					}
 				}
 				break;
-		
+
 			case 'P':
 				{
 					struct {
 						const char *name;
 						int fmt;
-					} tbl[] = { 
+					} tbl[] = {
 						{ "kpa", TENKI_UNIT_KPA },
 						{ "hpa", TENKI_UNIT_HPA },
 						{ "bar", TENKI_UNIT_BAR },
@@ -265,7 +268,7 @@ int main(int argc, char **argv)
 						{ "torr", TENKI_UNIT_TORR },
 						{ "psi", TENKI_UNIT_PSI },
 					};
-					
+
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
 							g_pressure_format = tbl[i].fmt;
@@ -273,8 +276,38 @@ int main(int argc, char **argv)
 						}
 					}
 					if (i==ARRAY_SIZE(tbl)) {
-						fprintf(stderr, 
+						fprintf(stderr,
 							"Unknown pressure format: '%s'\n", optarg);
+					}
+				}
+				break;
+
+			case 'M':
+				{
+					struct {
+						const char *name;
+						int fmt;
+					} tbl[] = {
+						{ "m", TENKI_UNIT_METERS },
+						{ "dm", TENKI_UNIT_DECIMETERS },
+						{ "cm", TENKI_UNIT_CENTIMETERS },
+						{ "mm", TENKI_UNIT_MILLIMETERS },
+						{ "mil", TENKI_UNIT_MILS },
+						{ "mils", TENKI_UNIT_MILS },
+						{ "in", TENKI_UNIT_INCHES },
+						{ "ft", TENKI_UNIT_FEET },
+						{ "yd", TENKI_UNIT_YARDS },
+					};
+
+					for (i=0; i<ARRAY_SIZE(tbl); i++) {
+						if (strcasecmp(tbl[i].name, optarg)==0) {
+							g_length_format = tbl[i].fmt;
+							break;
+						}
+					}
+					if (i==ARRAY_SIZE(tbl)) {
+						fprintf(stderr,
+							"Unknown length unit: '%s'\n", optarg);
 					}
 				}
 				break;
@@ -284,12 +317,12 @@ int main(int argc, char **argv)
 					struct {
 						const char *name;
 						long flag;
-					} tbl[] = { 
+					} tbl[] = {
 						{ "no_heat_index_range", USBTENKI_FLAG_NO_HEAT_INDEX_RANGE },
 						{ "no_humidex_range", USBTENKI_FLAG_NO_HUMIDEX_RANGE },
 						{ "old_sht75", USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION },
 					};
-					
+
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
 							g_flags |= tbl[i].flag;
@@ -297,7 +330,7 @@ int main(int argc, char **argv)
 						}
 					}
 					if (i==ARRAY_SIZE(tbl)) {
-						fprintf(stderr, 
+						fprintf(stderr,
 							"Unknown option: '%s'\n", optarg);
 					}
 				}
@@ -614,7 +647,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 			return -2;
 		}
 
-		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format);
+		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format, g_length_format);
 
 		sprintf(fmt, "%%.%df", g_decimal_digits);
 

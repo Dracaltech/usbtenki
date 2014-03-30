@@ -13,6 +13,10 @@ TenkiSources::TenkiSources()
 	pressure_unit = TENKI_UNIT_KPA;
 	temperature_unit = TENKI_UNIT_CELCIUS;
 	frequency_unit = TENKI_UNIT_HZ;
+	length_unit = TENKI_UNIT_METERS;
+	volt_unit = TENKI_UNIT_VOLTS;
+	power_unit = TENKI_UNIT_WATTS;
+	recent_pressure_P = 101325;
 
 	timer_interval = 1000;
 
@@ -45,6 +49,11 @@ void TenkiSources::formatValue(QString *str, float value)
 
 	sprintf(fmtbuf, "%%.%df", n);
 	str->sprintf(fmtbuf, value);
+}
+
+double TenkiSources::getRecentPressure(void)
+{
+	return recent_pressure_P;
 }
 
 void TenkiSources::setInterval_ms(int interval)
@@ -90,6 +99,16 @@ void TenkiSources::setCurrentUnit(int current_unit)
 void TenkiSources::setPowerUnit(int power_unit)
 {
 	this->power_unit = power_unit;
+}
+
+void TenkiSources::setLengthUnit(int length_unit)
+{
+	this->length_unit = length_unit;
+}
+
+void TenkiSources::setReferenceSeaLevelPressure(double value)
+{
+	usbtenki_set_seaLevelStandardPressure(value);
 }
 
 int TenkiSources::init()
@@ -202,8 +221,12 @@ void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USB
 {
 	struct USBTenki_channel tmp;
 
+	if (TENKI_UNIT_IS_PRESSURE(chn->converted_unit)) {
+		recent_pressure_P = usbtenki_convertPressure(chn->converted_data, chn->converted_unit, TENKI_UNIT_KPA) * 1000;
+	}
+
 	memcpy(&tmp, chn, sizeof(tmp));
-	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit, volt_unit, current_unit, power_unit);
+	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit, volt_unit, current_unit, power_unit, length_unit);
 	memcpy(dst, &tmp, sizeof(tmp));
 }
 
@@ -214,7 +237,7 @@ void TenkiSources::doCaptures()
 	if (timer_interval != timer->interval()) {
 		timer->setInterval(timer_interval);
 	}
-	
+
 	for (int i=0; i<device_list.size(); i++) {
 	//	printf("Updating %s\n", device_list.at(i)->getSerial());
 		device_list.at(i)->updateChannelData();

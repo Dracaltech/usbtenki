@@ -9,6 +9,7 @@
 #define TENKI_UNIT_KELVIN		0x03
 #define TENKI_UNIT_RH			0x04
 
+#define TENKI_UNIT_IS_PRESSURE(p)	(((p)>=0x10) && ((p)<=0x16))
 #define TENKI_UNIT_KPA			0x10
 #define TENKI_UNIT_HPA			0x11
 #define TENKI_UNIT_BAR			0x12

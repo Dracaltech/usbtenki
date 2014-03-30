@@ -32,6 +32,9 @@ class ConfigPanel : public QWidget
 		void updateMinimizeToTray(int);
 		void intervalChanged(int i);
 		void displayDigitsChanged(int i);
+		void referencePressureChanged(double i);
+		void setStandardSLP(void);
+		void autoSetSLP(void);
 
 	private:
 		void displaySaved();
@@ -46,6 +49,7 @@ class ConfigPanel : public QWidget
 		QLabel *messageLabel;
 		QSpinBox *sample_interval;
 		QSpinBox *display_digits;
+		QDoubleSpinBox *ref_slp;
 };
 
 #endif // _ConfigPanel_h__
