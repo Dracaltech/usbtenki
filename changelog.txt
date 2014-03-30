@@ -1,13 +1,14 @@
 Version 2.1.2:
    - [Command-line] Performance fix (unrequested channels were being read)
-   - [Command-line] Introduce pressure-based altitude computing
    - [Command-line] Increased verbosity when -v is used
    - [QTenki] Minimum logging interval lowered from 1 second to 0.1 second
    - [QTenki] Fixed a minimize-to-tray bug
    - [QTenki] Added save messages and clear messages buttons
-   - [Qtenki] Errors will be shown in bigview
-   - Prevent RH values from exiting the 0 - 100% range
-   - Various small bug fixes
+   - [Qtenki] Errors now shown in bigview
+   - [General] Introduce pressure-based altitude computation
+   - [General] Prevent RH values from exiting the 0 - 100% range
+   - [General] Introduce configurable length units
+   - [General] Various small bug fixes
 
 Version 2.1.1:
    - [Command-line] Fixed a bug which prevented usbtenkiget.exe from working
