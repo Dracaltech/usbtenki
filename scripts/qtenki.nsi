@@ -92,7 +92,7 @@ SectionEnd
 Section "QTenki source code"
   CreateDirectory $INSTDIR\sources
   SetOutPath $INSTDIR\sources
-  File "sources\usbtenki-2.0.3.tar.gz"
+  File "sources\usbtenki-${VERSION}.tar.gz"
 SectionEnd
 
 ; Optional section (can be disabled by the user)
