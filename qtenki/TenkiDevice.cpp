@@ -8,6 +8,8 @@
 TenkiDevice::TenkiDevice(const char *serial)
 {
 	serno = strdup(serial);
+	num_channels = 0;
+	memset(&tenki_info, 0 ,sizeof(tenki_info));
 
 	tenki_hdl = usbtenki_openBySerial(serial, &tenki_info);
 	if (tenki_hdl != NULL) {
