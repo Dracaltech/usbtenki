@@ -5,8 +5,6 @@
  *
  * Base on original USB-Tenki code licensed to Dracal technolgies inc. by Raphaël Assénat.
  * Original work Copyright (C) 2007-2011  Raphaël Assénat <raph@raphnet.net>
- *
- *
  */
 #ifndef __usbconfig_h_included__
 #define __usbconfig_h_included__
@@ -39,7 +37,7 @@
 
 #define  USB_CFG_VENDOR_ID       0x81, 0x17 /* Mecanique */
 #define  USB_CFG_DEVICE_ID       0x98, 0x0a
-#define USB_CFG_DEVICE_VERSION  1, 1
+#define USB_CFG_DEVICE_VERSION  1, 2
 #define USB_CFG_VENDOR_NAME     'D','r','a','c','a','l',' ','T','e','c','h','n','o','l','o','g','i','e','s',' ','i','n','c','.'
 #define USB_CFG_VENDOR_NAME_LEN 24
 #define USB_CFG_DEVICE_NAME     'U','S','B','T','e','n','k','i'

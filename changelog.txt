@@ -1,3 +1,6 @@
+Version 2.1.3:
+   - Add support for ChipCap2 Relative Humidity and Temperature sensors
+
 Version 2.1.2:
    - [Command-line] Performance fix (unrequested channels were being read)
    - [Command-line] Increased verbosity when -v is used
