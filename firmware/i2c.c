@@ -1,5 +1,5 @@
-/*   USBTenki - Interfacing sensors to USB 
- *   Copyright (C) 2007-2011  Raphaël Assénat <raph@raphnet.net>
+/*   USBTenki - Interfacing sensors to USB
+ *   Copyright (C) 2007-2014  Raphaël Assénat <raph@raphnet.net>
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,19 @@ void i2c_init(int use_int_pullup, unsigned char twbr)
 	TWSR &= ~((1<<TWPS1)|(1<<TWPS0));
 }
 
-int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data, 
+// \brief Perform an I2C transaction
+//
+// \param addr I2C address (right-aligned)
+// \param wr_len Write length
+// \param wr_data Data to write
+// \param rd_len Length to read
+// \param rd_data Destination for read data
+//
+// Special case: If wr_data is NULL but wr_len is non-zero, no data is written. The
+// slave is only addressed.
+//
+// \return 0 On success
+int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 								int rd_len, unsigned char *rd_data)
 {
 	int ret =0;
@@ -48,15 +60,15 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 		// Send a start condition
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
 
-		while (!(TWCR & (1<<TWINT))) 
+		while (!(TWCR & (1<<TWINT)))
 			{ /* do nothing */ }
 		if ((TWSR & 0xF8) != TW_START)
 			return 1;	/* Failed */
 
 		TWDR = (addr<<1) | 0;	/* Address + write(0) */
 		TWCR = (1<<TWINT)|(1<<TWEN);
-		
-		while (!(TWCR & (1<<TWINT))) 
+
+		while (!(TWCR & (1<<TWINT)))
 			{ /* do nothing */ }
 
 		/* TWSR can be:
@@ -65,16 +77,18 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 			ret = 2;
 			goto err;
 		}
-		
-		while (wr_len--)
-		{
-			TWDR = *wr_data;
-			TWCR = (1<<TWINT)|(1<<TWEN);
 
-			while (!(TWCR & (1<<TWINT))) 
-				{ /* do nothing */ }
+		if (wr_data) {
+			while (wr_len--)
+			{
+				TWDR = *wr_data;
+				TWCR = (1<<TWINT)|(1<<TWEN);
 
-			wr_data++;
+				while (!(TWCR & (1<<TWINT)))
+					{ /* do nothing */ }
+
+				wr_data++;
+			}
 		}
 	} // if (wr_len != 0)
 
@@ -82,7 +96,7 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 	{
 		/* Do a (repeated) start condition */
 		TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
-		while (!(TWCR & (1<<TWINT))) 
+		while (!(TWCR & (1<<TWINT)))
 			{ /* do nothing */ }
 		twsr = TWSR;
 
@@ -93,8 +107,8 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 
 		TWDR = (addr<<1) | 1;	/* Address + read(1) */
 		TWCR = (1<<TWINT)|(1<<TWEN);
-		
-		while (!(TWCR & (1<<TWINT))) 
+
+		while (!(TWCR & (1<<TWINT)))
 			{ /* do nothing */ }
 
 		/* TWSR can be:
@@ -108,11 +122,11 @@ int i2c_transaction(unsigned char addr, int wr_len, unsigned char *wr_data,
 		{
 
 			if (rd_len)
-				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWEA);		
+				TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWEA);
 			else
-				TWCR = (1<<TWINT)|(1<<TWEN);		
-			
-			while (!(TWCR & (1<<TWINT))) 
+				TWCR = (1<<TWINT)|(1<<TWEN);
+
+			while (!(TWCR & (1<<TWINT)))
 					{ /* do nothing */ }
 
 			*rd_data = TWDR;
@@ -131,4 +145,3 @@ err:
 
 	return ret;
 }
-
