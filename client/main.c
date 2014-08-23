@@ -34,8 +34,6 @@
 #include "../library/usbtenki_units.h"
 #include "timestamp.h"
 
-#define ARRAY_SIZE(arr) ( sizeof(arr) / sizeof(*(arr)))
-
 #define DEFAULT_CHANNEL_ID		0
 #define DEFAULT_NUM_SAMPLES 	1
 #define DEFAULT_LOG_INTERVAL	1000
