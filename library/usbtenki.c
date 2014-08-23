@@ -750,6 +750,10 @@ const char *chipToString(int id)
 			return "BS02 Temperature";
 		case USBTENKI_CHIP_BS02_RH:
 			return "BS02 Relative Humidity";
+		case USBTENKI_CHIP_CC2_RH:
+			return "CC2 Relative Humidity";
+		case USBTENKI_CHIP_CC2_T:
+			return "CC2 Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
@@ -867,6 +871,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MS5611_T:
+		case USBTENKI_CHIP_CC2_T:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -888,6 +893,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH:
 		case USBTENKI_CHIP_SHT_RH:
 		case USBTENKI_CHIP_BS02_RH:
+		case USBTENKI_CHIP_CC2_RH:
 			return "Relative Humidity";
 
 		case USBTENKI_MCU_ADC0:
@@ -1220,7 +1226,6 @@ static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct 
 	return NULL;
 }
 
-
 static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_id, unsigned long flags)
 {
 	int channel_id;
@@ -1230,6 +1235,20 @@ static struct USBTenki_channel *getValidChannelFromChip(USBTenki_dev_handle hdl,
 		return NULL;
 	return getValidChannel(hdl, channels, num_channels, channel_id, flags);
 }
+
+static struct USBTenki_channel *getValidChannelFromChip_list(USBTenki_dev_handle hdl, struct USBTenki_channel *channels, int num_channels, int requested_chip_ids[], int num_requested_chip_ids, unsigned long flags)
+{
+	int i;
+	struct USBTenki_channel *chn;
+
+	for (i=0; i<num_requested_chip_ids; i++) {
+		chn = getValidChannelFromChip(hdl, channels, num_channels, requested_chip_ids[i], flags);
+		if (chn)
+			return chn;
+	}
+	return NULL;
+}
+
 
 static double HeightFromPressure(double P, double static_pressure_P)
 {
@@ -1270,6 +1289,8 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 {
 	int i, j;
 	struct USBTenki_channel *chn;
+	int temp_sources[3] = { USBTENKI_CHIP_SHT_TEMP, USBTENKI_CHIP_BS02_TEMP, USBTENKI_CHIP_CC2_T };
+	int rh_sources[3] = { USBTENKI_CHIP_SHT_RH, USBTENKI_CHIP_BS02_RH, USBTENKI_CHIP_CC2_RH };
 
 	for (i=0; i<num_channels; i++)
 	{
@@ -1465,19 +1486,14 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 					{
 						struct USBTenki_channel *temp_chn, *rh_chn;
 						float H, Dp, T;
+						int temp_sources[3] = { USBTENKI_CHIP_SHT_TEMP, USBTENKI_CHIP_BS02_TEMP, USBTENKI_CHIP_CC2_T };
+						int rh_sources[3] = { USBTENKI_CHIP_SHT_RH, USBTENKI_CHIP_BS02_RH, USBTENKI_CHIP_CC2_RH };
 
 						if (g_usbtenki_verbose)
 							printf("Processing dew point virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP, flags);
-						if (!temp_chn) {
-							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP, flags);
-						}
-
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH, flags);
-						if (!rh_chn) {
-							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH, flags);
-						}
+						temp_chn = getValidChannelFromChip_list(hdl, channels, num_channels, temp_sources, ARRAY_SIZE(temp_sources), flags);
+						rh_chn = getValidChannelFromChip_list(hdl, channels, num_channels, rh_sources, ARRAY_SIZE(rh_sources), flags);
 
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
@@ -1504,15 +1520,8 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						if (g_usbtenki_verbose)
 							printf("Processing humidex virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP, flags);
-						if (!temp_chn) {
-							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP, flags);
-						}
-
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH, flags);
-						if (!rh_chn) {
-							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH, flags);
-						}
+						temp_chn = getValidChannelFromChip_list(hdl, channels, num_channels, temp_sources, ARRAY_SIZE(temp_sources), flags);
+						rh_chn = getValidChannelFromChip_list(hdl, channels, num_channels, rh_sources, ARRAY_SIZE(rh_sources), flags);
 
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
@@ -1564,15 +1573,8 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						if (g_usbtenki_verbose)
 							printf("Processing heat index virtual channel\n");
 
-						temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_TEMP, flags);
-						if (!temp_chn) {
-							temp_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_TEMP, flags);
-						}
-
-						rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_SHT_RH, flags);
-						if (!rh_chn) {
-							rh_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BS02_RH, flags);
-						}
+						temp_chn = getValidChannelFromChip_list(hdl, channels, num_channels, temp_sources, ARRAY_SIZE(temp_sources), flags);
+						rh_chn = getValidChannelFromChip_list(hdl, channels, num_channels, rh_sources, ARRAY_SIZE(rh_sources), flags);
 
 						if (temp_chn == NULL || rh_chn == NULL) {
 							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
@@ -1667,7 +1669,10 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 				tfound = channels[i].chip_id;
 			if (channels[i].chip_id == USBTENKI_CHIP_BS02_RH)
 				hfound = channels[i].chip_id;
-
+			if (channels[i].chip_id == USBTENKI_CHIP_CC2_T)
+				tfound = channels[i].chip_id;
+			if (channels[i].chip_id == USBTENKI_CHIP_CC2_RH)
+				hfound = channels[i].chip_id;
 		}
 
 		if (hfound && tfound) {

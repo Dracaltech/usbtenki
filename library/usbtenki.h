@@ -48,6 +48,10 @@ struct USBTenki_channel {
 	int converted_unit;
 };
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a)	(sizeof(a)/sizeof(a[0]))
+#endif
+
 #define USBTENKI_FLAG_NO_HUMIDEX_RANGE				1
 #define USBTENKI_FLAG_NO_HEAT_INDEX_RANGE			2
 #define USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION	4
