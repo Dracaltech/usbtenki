@@ -23,7 +23,6 @@
 #include <util/delay.h>
 
 #include "usbdrv.h"
-#include "oddebug.h"
 #include "usbconfig.h"
 #include "interface.h"
 
@@ -46,6 +45,21 @@ void usbtenki_delay_ms(int ms)
 	}
 }
 
+/* Delay with USBpoll. Do not use in functions
+ * called by usbFunctionSetup() or you may
+ * face interesting recursion problems... */
+void usbtenki_usbpoll_delay_ms(int ms)
+{
+	int i;
+
+	for (i=0; i<(ms/10); i++) {
+        wdt_reset();
+		usbPoll();
+		_delay_ms(10);
+	}
+
+}
+
 static unsigned char xor_buf(unsigned char *buf, int len)
 {
 	unsigned char x=0;
@@ -54,6 +68,11 @@ static unsigned char xor_buf(unsigned char *buf, int len)
 		buf++;
 	}
 	return x;
+}
+
+void sensors_doTasks(void) __attribute((weak));
+void sensors_doTasks(void)
+{
 }
 
 int sensors_getCalibration(unsigned char id, unsigned char *dst) __attribute__((weak));
@@ -74,7 +93,7 @@ uchar   usbFunctionSetup(uchar data[8])
 	sensors_channels = sensors_getNumChannels();
 	total_channels = sensors_channels + num_adc_channels;
 
-    usbMsgPtr = replyBuf;
+    usbMsgPtr = (usbMsgPtr_t)replyBuf;
 
 	switch (data[1])
 	{
@@ -216,10 +235,6 @@ static void usbReset()
 
 int main(void)
 {
-	uchar   i, j;
-
-    wdt_enable(WDTO_1S);
-    odDebugInit();
 
 	PORTB = 0xff;
 	DDRB = 0xff;
@@ -241,14 +256,16 @@ int main(void)
 	PORTD = 0xf8;
 	DDRD = 0x01 | 0x04;
 
+	wdt_enable(WDTO_1S);
+
 	eeprom_init();
 	adc_init();
 	serno_init();
 
 	usbReset();
-
     usbInit();
-    sei();
+
+	sei();
 
 	if (sensors_init()) {
 		while(1) { } /* watchdog will reset me! */
@@ -256,6 +273,7 @@ int main(void)
 
     for(;;){    /* main event loop */
         wdt_reset();
+		sensors_doTasks();
         usbPoll();
     }
 
