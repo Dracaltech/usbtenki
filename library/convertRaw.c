@@ -355,6 +355,31 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_MLH_A:
+			{
+				unsigned short adc_out;
+				float vs, v;
+
+				/*the code in the atmel averages multiple samples and
+				 * outputs a 16 bit value.
+				 *
+				 * the adc reference voltage is the same as the sensor's vs,
+				 * so this is ok for ratiometric measurements.
+				 */
+				vs = 5.0;
+				adc_out = raw_data[0] << 8 | raw_data[1];
+				v = (adc_out * vs) / (float)0xffff;
+
+				/* Output range: 0.5v to 4.5v (0 PSI to 150 PSI) */
+				v -= 0.5;
+				if (v<0)
+					v = 0;
+
+				temperature = v * 150 / 4;
+				chip_fmt = TENKI_UNIT_PSI;
+			}
+			break;
+
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE_16X:
 			temperature = raw_data[1] << 8 | raw_data[0];
 			chip_fmt = TENKI_UNIT_RAW;

@@ -1,5 +1,7 @@
 Version 2.1.3:
    - Add support for ChipCap2 Relative Humidity and Temperature sensors
+   - Add support for Honeywell MLH 150 PSI pressure sensor (Type A:
+   Ratiometric)
 
 Version 2.1.2:
    - [Command-line] Performance fix (unrequested channels were being read)

@@ -149,6 +149,9 @@
 #define USBTENKI_CHIP_MP3H6115A	0x93
 #define USBTENKI_CHIP_MPXV7002	0x94
 
+/* Honeywell MLH150 xxx x x x xx A pressure sensor. */
+#define USBTENKI_CHIP_MLH_A		0x95
+
 #define USBTENKI_CHIP_TACHOMETER	0xA0
 
 #define USBTENKI_CHIP_NONE		0xFF

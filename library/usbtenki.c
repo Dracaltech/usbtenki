@@ -789,6 +789,9 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_MPXV7002:
 			return "MPXV7002 Differential air pressure sensor";
 
+		case USBTENKI_CHIP_MLH_A:
+			return "MLH150-A Pressure sensor";
+
 		case USBTENKI_CHIP_MPX4115:
 			return "MPX4115 Absolute air pressure sensor";
 
@@ -908,6 +911,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_MPXV7002:
 		case USBTENKI_CHIP_MPX4115:
 		case USBTENKI_CHIP_MP3H6115A:
+		case USBTENKI_CHIP_MLH_A:
 			return "Pressure";
 
 		case USBTENKI_CHIP_DRACAL_EM1_BUS_VOLTAGE:
