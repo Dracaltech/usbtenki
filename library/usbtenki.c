@@ -856,7 +856,7 @@ const char *chipToString(int id)
 			return "Unused/unconfigured";
 
 	}
-	return "unkown";
+	return "unknown";
 }
 
 const char *chipToShortString(int id)
