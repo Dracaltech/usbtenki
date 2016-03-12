@@ -19,6 +19,7 @@
  */
 #define USBTENKI_GET_NUM_CHANNELS	0x02
 
+
 /* Get raw data from sensor.
  * 	request: USBTENKI_GET_RAW
  * 	value: Channel ID
@@ -94,6 +95,31 @@
 // Sets Zero or point of origin depending on sensor.
 #define USBTENKI_ZERO					0xf6
 
+/* Set poll rate for SHT31.
+ *   request: USBTENKI_GET_NUM_CHANNELS
+ *   value: Rate, where
+ *
+ * 0: 0.5 sample per second
+ * 1: 1 sample per second
+ * 2: 2 samples per second
+ * 3: 4 samples per second
+ * 4: 10 samples per second
+ *
+ * Returned data:
+ * [0xf6] [lrc]
+ */
+#define USBTENKI_SET_SHT31_RATE		0xf7
+
+
+/* Command the device to enter bootloader mode.
+ *
+ *   request: USBTENKI_BOOTLOADER
+ *   value: 0xB007
+ *
+ * No return (MCU enters bootloader and does not answer)
+ */
+#define USBTENKI_BOOTLOADER				0xFF
+
 #define USBTENKI_CHIP_MCP9800	0x00
 #define USBTENKI_CHIP_LM75		0x01
 #define USBTENKI_CHIP_LM92		0x02
@@ -125,6 +151,8 @@
 
 #define USBTENKI_CHIP_CC2_RH		0x17
 #define USBTENKI_CHIP_CC2_T			0x18
+#define USBTENKI_CHIP_SHT31_RH		0x19
+#define USBTENKI_CHIP_SHT31_T		0x20
 
 #define USBTENKI_CHIP_DRACAL_EM1_BUS_VOLTAGE    0x30
 #define USBTENKI_CHIP_DRACAL_EM1_SHUNT_VOLTAGE  0x31

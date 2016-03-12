@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for USBTenki sensors.
- * Copyright (C) 2007-2013  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2016  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +29,7 @@ int g_verbose = 0;
 
 static void printVersion(void)
 {
-	printf("Usbtenkisetup version %s, Copyright (C) 2007-2013, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("Usbtenkisetup version %s, Copyright (C) 2007-2016, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -52,6 +52,9 @@ static void printUsage(void)
 	printf("    em1_config  max_current  calibration\n");
 	printf("    misc1_cal   value\n");
 	printf("    do_zero     Device specific effect.\n");
+	printf("    sht31_rate	rate (0: 0.5 MPS, 1: 1 MPS, 2: 2 MPS, 3: 4 MPS, 4: 10 MPS)\n");
+	printf("                (MPS is measurements per second)\n");
+	printf("    bootloader  Enter bootloader mode (not supported by all devices)\n");
 
 }
 
@@ -163,11 +166,11 @@ int main(int argc, char **argv)
 			retval = 1;
 			goto cleanAndExit;
 		}
-		
-	if (g_verbose) 
+
+	if (g_verbose)
 			printf("Setting adc ref to %d\n", ref_id);
 
-		res = usbtenki_command(hdl, USBTENKI_SET_ADC_REF, 
+		res = usbtenki_command(hdl, USBTENKI_SET_ADC_REF,
 								(ref_id & 0xff), repBuf);
 		if (res!=0) {
 			fprintf(stderr, "Error setting adc ref to %d\n",
@@ -180,8 +183,6 @@ int main(int argc, char **argv)
 
 	/**************** Do zero ****************/
 	if (strcmp(eargv[0], "do_zero")==0) {
-		int ref_id;
-		char *e;
 
 		res = usbtenki_command(hdl, USBTENKI_ZERO, 0, repBuf);
 		if (res!=0) {
@@ -233,8 +234,6 @@ int main(int argc, char **argv)
 		int adc_id, chip_id;
 		char *e;
 
-		printf("hmm\n");
-	
 		/* printf("    setadcchip  adc_id chip\n"); */
 
 		if (n_extra_args<3) {
@@ -361,7 +360,44 @@ int main(int argc, char **argv)
 		goto cleanAndExit;
 	}
 
+	/**************** SHT31 rate *****************/
+	if (strcmp(eargv[0], "sht31_rate")==0) {
+		int rate_value;
+		char *e;
 
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		rate_value = strtol(eargv[1], &e, 0);
+		if (e==eargv[1] || rate_value < 0 || rate_value > 4) {
+			fprintf(stderr, "Bad rate value\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		if (g_verbose)
+			printf("Setting SHT31 poll rate to value %d\n", rate_value);
+
+		res = usbtenki_command(hdl, USBTENKI_SET_SHT31_RATE, rate_value, repBuf);
+		if (res!=0) {
+			fprintf(stderr, "Error setting SHT31 poll rate to value %d\n",
+								rate_value);
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+
+	/**************** Bootloader *****************/
+	if (strcmp(eargv[0], "bootloader")==0) {
+		usbtenki_command(hdl, USBTENKI_BOOTLOADER, 0xB007, repBuf);
+
+		goto cleanAndExit;
+	}
 
 	
 	fprintf(stderr, "Unknow command '%s'\n", eargv[0]);
