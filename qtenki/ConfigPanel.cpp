@@ -62,7 +62,7 @@ ConfigPanel::ConfigPanel()
 	ref_slp->setSingleStep(0.001);
 	ref_slp->setValue(settings.value("data/ref_slp", 103.325).toDouble());
 	connect(ref_slp, SIGNAL(valueChanged(double)), this, SLOT(referencePressureChanged(double)));
-	displayDigitsChanged(ref_slp->value());
+	referencePressureChanged(ref_slp->value());
 
 
 	TemperaturePreference *t_pref = new TemperaturePreference();

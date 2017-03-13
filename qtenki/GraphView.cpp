@@ -74,9 +74,26 @@ GraphView::GraphView()
 	////////////////////////// OPTIONS
 	QGroupBox *graph_opts2 = new QGroupBox(tr("Options"));
 	graph_opts2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+	QVBoxLayout *graph_opts_vbox = new QVBoxLayout();
+	graph_opts_vbox->setContentsMargins(0,0,0,0);
+	graph_opts2->setLayout(graph_opts_vbox);
+
 	QHBoxLayout *graph_opts_lay2 = new QHBoxLayout();
-	graph_opts2->setLayout(graph_opts_lay2);
-	
+	QHBoxLayout *graph_opts_lay3 = new QHBoxLayout();
+	graph_opts_lay2->setContentsMargins(0,0,0,0);
+	graph_opts_lay3->setContentsMargins(0,0,0,0);
+
+	QFrame *line1 = new QFrame();
+	line1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	line1->setLayout(graph_opts_lay2);
+	QFrame *line2 = new QFrame();
+	line2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	line2->setLayout(graph_opts_lay3);
+
+	graph_opts_vbox->addWidget(line1);
+	graph_opts_vbox->addWidget(line2);
+
 
 	graph_rescale_x = new ConfigCheckbox(tr("Auto-scale X axis"), "graph/autoscale_x");
 	graph_rescale_y = new ConfigCheckbox(tr("Auto-scale Y axis"), "graph/autoscale_y");
@@ -100,12 +117,11 @@ GraphView::GraphView()
 	graph_opts_lay2->addWidget(graph_rescale_y);
 	graph_opts_lay2->addWidget(graph_log_y);
 
-	graph_opts_lay2->addWidget(new QLabel(tr("Sample interval (ms):")));
-	graph_opts_lay2->addWidget(sample_interval);
+	graph_opts_lay3->addWidget(new QLabel(tr("Sample interval (ms):")));
+	graph_opts_lay3->addWidget(sample_interval);
+	graph_opts_lay3->addWidget(lbl_window_time);
 
-	graph_opts_lay2->addWidget(lbl_window_time);
-				
-	
+
 	lay->addWidget(plt);
 	lay->addWidget(graph_opts2);
 	lay->addWidget(graph_opts);

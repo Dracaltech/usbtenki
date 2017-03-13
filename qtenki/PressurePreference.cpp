@@ -15,6 +15,7 @@ PressurePreference::PressurePreference()
 	addItem(tr("atm (101.325 kPa)"));
 	addItem(tr("Torr"));
 	addItem(tr("psi"));
+	addItem(tr("inHg"));
 
 	setCurrentIndex(settings.value(config_key).toInt());
 
@@ -41,6 +42,8 @@ int PressurePreference::tenkiUnit(void)
 			return TENKI_UNIT_TORR;
 		case 6:
 			return TENKI_UNIT_PSI;
+		case 7:
+			return TENKI_UNIT_INHG;
 	}
 }
 
@@ -49,6 +52,6 @@ void PressurePreference::idx_changed(int idx)
 	QSettings settings;
 
 	settings.setValue(config_key, idx);
-	
+
 	g_tenkisources->setPressureUnit(tenkiUnit());
 }

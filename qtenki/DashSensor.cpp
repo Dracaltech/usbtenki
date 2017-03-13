@@ -18,7 +18,8 @@ DashSensor::DashSensor(TenkiDevice *td)
 	layout = new QGridLayout();
 	setLayout(layout);
 
-	layout->setSpacing(10);
+	layout->setVerticalSpacing(1);
+	layout->setHorizontalSpacing(10);
 
 //	layout->addWidget(new QLabel("<b>Channel</b>"), 0, col++);
 	layout->addWidget(new QLabel("<b>Source ID</b>"), 0, col++);
@@ -27,7 +28,11 @@ DashSensor::DashSensor(TenkiDevice *td)
 	layout->setColumnMinimumWidth(col, 4);
 	layout->addWidget(new QLabel("<b>Type</b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
-	layout->addWidget(new QLabel("<b>Value</b>"), 0, col++);
+	layout->addWidget(new QLabel("<b>Current</b>"), 0, col++);
+	layout->setColumnMinimumWidth(col, 4);
+	layout->addWidget(new QLabel("<b>Min.</b>"), 0, col++);
+	layout->setColumnMinimumWidth(col, 4);
+	layout->addWidget(new QLabel("<b>Max.</b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
 	layout->addWidget(new QLabel("<b>Unit</b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
@@ -37,6 +42,8 @@ DashSensor::DashSensor(TenkiDevice *td)
 	layout->setColumnStretch(col, 0);
 	layout->addWidget(new QLabel("<b>Graph</b>"), 0, col++);
 	layout->setColumnStretch(col, 0);
+	layout->addWidget(new QLabel("<b></b>"), 0, col++);
+	layout->setColumnMinimumWidth(col, 4);
 
 	for (int i=0; i<tenki_device->getNumChannels(); i++)
 	{
@@ -57,6 +64,8 @@ void DashSensor::addChannel(int chn, int row)
 	QString a, b, c, d, e, f, g;
 	QLabel *value_label, *unit_label;
 	QLabel *tmp_label;
+	MinMaxResettable *min, *max;
+	QPushButton *rst;
 	int col=0;
 
 	g_tenkisources->convertToUnits(tenki_device->getChannelData(chn), &ch);
@@ -78,10 +87,22 @@ void DashSensor::addChannel(int chn, int row)
 	c = QString::fromAscii(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);
 
+	// Current value
 	g_tenkisources->formatValue(&d, ch.converted_data);
 	value_label = new QLabel(d);
 	values.append(value_label);
 	layout->addWidget(value_label, row, col++);
+
+	// Minimum value
+	min = new MinMaxResettable(true); // Minimum tracking mode
+	minimums.append(min);
+	layout->addWidget(min, row, col++);
+
+	// Maximum value
+	max = new MinMaxResettable(false); // Maximum tracking mode
+	maximums.append(max);
+	layout->addWidget(max, row, col++);
+
 
 	e = QString::fromUtf8(unitToString(ch.converted_unit, 0));
 	unit_label = new QLabel(e);
@@ -100,6 +121,13 @@ void DashSensor::addChannel(int chn, int row)
 	// In graph
 	ConfigCheckbox *ccb_gr = new ConfigCheckbox("", "graphChecked/" + f);
 	layout->addWidget(ccb_gr, row, col++);
+
+	// Min/Max reset button
+	rst = new QPushButton("Reset min./max.");
+	rst->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	layout->addWidget(rst, row, col++);
+	QObject::connect(rst, SIGNAL(clicked()), min, SLOT(reset()));
+	QObject::connect(rst, SIGNAL(clicked()), max, SLOT(reset()));
 
 
 	channel_id.append(chn);
@@ -141,6 +169,8 @@ void DashSensor::refresh()
 
 		g_tenkisources->formatValue(&d, ch.converted_data);
 		values.at(i)->setText(d);
+		minimums.at(i)->submitValue(ch.converted_data);
+		maximums.at(i)->submitValue(ch.converted_data);
 
 		// those two QList are populated in the same
 		// order. So it will be the same index i.

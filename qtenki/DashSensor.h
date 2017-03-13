@@ -9,6 +9,7 @@
 #include <QMap>
 
 #include "TenkiDevice.h"
+#include "MinMaxResettable.h"
 
 class DashSensor : public QGroupBox
 {
@@ -27,6 +28,8 @@ class DashSensor : public QGroupBox
 		QGridLayout *layout;
 		QList<QLabel*> values;
 		QList<QLabel*> units;
+		QList<MinMaxResettable*> minimums;
+		QList<MinMaxResettable*> maximums;
 		QList<int> channel_id;
 };
 
