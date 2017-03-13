@@ -483,6 +483,10 @@ float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt)
 			pascals = pressure * 6894.76;
 			break;
 
+		case TENKI_UNIT_INHG:
+			pascals = pressure * 3386.389;
+			break;
+
 		default:
 			return pressure;
 	}
@@ -496,6 +500,7 @@ float usbtenki_convertPressure(float pressure, int src_fmt, int dst_fmt)
 		case TENKI_UNIT_ATM: return pascals / 101325.0;
 		case TENKI_UNIT_TORR: return pascals / 133.322;
 		case TENKI_UNIT_PSI: return pascals / 6894.76;
+		case TENKI_UNIT_INHG: return pascals / 3386.389;
 	}
 
 	return pressure;
@@ -759,6 +764,8 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_SHT31_RH:
 			return "SHT31 Relative Humidity";
 
+		case USBTENKI_CHIP_CO2_PPM:
+			return "CO2 GAS PPM";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
@@ -940,6 +947,9 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Frequency";
 
+		case USBTENKI_CHIP_CO2_PPM:
+			return "Gas PPM";
+
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -980,6 +990,8 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_ATM: return "atm";
 		case TENKI_UNIT_TORR: return "Torr";
 		case TENKI_UNIT_PSI: return "psi";
+		case TENKI_UNIT_INHG: return "inHg";
+		case TENKI_UNIT_PPM: return "ppm";
 		case TENKI_UNIT_VOLTS: return "V";
 		case TENKI_UNIT_MILLIVOLT: return "mV";
 		case TENKI_UNIT_MILLIWATTS: return "mW";
@@ -1029,6 +1041,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 	int n;
 	unsigned char caldata[32];
 	int caldata_len = 0;
+	int caldata_chip = -1;
 
 	for (i=0; i<num; i++)
 	{
@@ -1077,6 +1090,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 					usleep(200);
 					continue;
 				}
+				caldata_chip = USBTENKI_CHIP_PT100_RTD;
 				break;
 			}
 
@@ -1086,10 +1100,26 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 			}
 		}
 
-		if (dst[j].chip_id == USBTENKI_CHIP_MS5611_P) {
-			//printf("Fetching MS5611 calibration data...\n");
+		if (	(caldata_chip != USBTENKI_CHIP_MS5611_P) &&
+				(	(dst[j].chip_id == USBTENKI_CHIP_MS5611_P) ||
+					(dst[j].chip_id == USBTENKI_CHIP_MS5611_T)
+				)
+			)
+		{
+			int offset = 0;
+
+			// A PT100 RTD interface with a MS5611 pressure sensor has
+			// its MS5611 calibration after the PT100 calibration data...
+			if ((dst[j].chip_id == USBTENKI_CHIP_MS5611_P) && dst[j].channel_id == 1) {
+				offset = 1;
+			}
+			if ((dst[j].chip_id == USBTENKI_CHIP_MS5611_T) && dst[j].channel_id == 2) {
+				offset = 1;
+			}
+
+			//printf("Fetching MS5611 calibration data (offset: %d)...\n", offset);
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, offset + 0, caldata);
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -1103,7 +1133,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 
 			for (n=0; n<num_attempts; n++) {
 				int l;
-				l = usbtenki_getCalibration(hdl, 1, caldata + caldata_len);
+				l = usbtenki_getCalibration(hdl, offset + 1, caldata + caldata_len);
 				if (l<0) {
 					usleep(200);
 					continue;
@@ -1115,6 +1145,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 			if (n==num_attempts) {
 				return -1;
 			}
+			caldata_chip = USBTENKI_CHIP_MS5611_P;
 //			printf("Received %d bytes of calibration\n", caldata_len);
 		}
 
@@ -1826,6 +1857,7 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_ATM:
 		case TENKI_UNIT_TORR:
 		case TENKI_UNIT_PSI:
+		case TENKI_UNIT_INHG:
 			chn->converted_data = usbtenki_convertPressure(chn->converted_data,
 															chn->converted_unit,
 																unit_pressure);

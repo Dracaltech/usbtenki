@@ -752,6 +752,27 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_CO2_PPM:
+			{
+				unsigned short ppm_reg;
+				unsigned short status_reg;
+				unsigned char autocal_status;
+
+				status_reg = raw_data[0]<<8 | raw_data[1];
+				ppm_reg = raw_data[2]<<8 | raw_data[3];
+				autocal_status = raw_data[4];
+
+				if (status_reg & 0x7) {
+					fprintf(stderr, "Sensor error 0x%04x\n", status_reg);
+					break;
+				}
+//				printf("Status reg: 0x%04x\n", status_reg);
+
+				temperature = ppm_reg;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
 		default:
 			{
 				int i;

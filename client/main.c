@@ -92,7 +92,7 @@ static void printUsage(void)
 	printf("\nValid temperature units:\n");
 	printf("    Celcius, c, Fahrenheit, f, Kelvin, k\n");
 	printf("\nValid pressure units:\n");
-	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi\n");
+	printf("    kPa, hPa, bar, at (98.0665 kPa), atm (101.325 kPa), Torr, psi, inHg\n");
 	printf("\nValid frequency units:\n");
 	printf("    mHz, Hz, kHz, MHz, rpm\n");
 	printf("\nValid length units:\n");
@@ -265,6 +265,7 @@ int main(int argc, char **argv)
 						{ "atm", TENKI_UNIT_ATM },
 						{ "torr", TENKI_UNIT_TORR },
 						{ "psi", TENKI_UNIT_PSI },
+						{ "inhg", TENKI_UNIT_INHG },
 					};
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {

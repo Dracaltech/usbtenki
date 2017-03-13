@@ -17,6 +17,9 @@
 #define TENKI_UNIT_ATM			0x14
 #define TENKI_UNIT_TORR			0x15
 #define TENKI_UNIT_PSI			0x16
+#define TENKI_UNIT_INHG			0x17 // 3386.389 pascals
+
+#define TENKI_UNIT_PPM			0x1A
 
 #define TENKI_UNIT_VOLTS		0x20
 #define TENKI_UNIT_MILLIVOLT	0x23
