@@ -2,14 +2,14 @@
 #define _usbtenki_version_h__
 
 
-#define USBTENKI_VERSION	"2.1.4"
-#define USBTENKI_VERSION_STR0	"2.1.4\0"
+#define USBTENKI_VERSION	"2.1.5"
+#define USBTENKI_VERSION_STR0	"2.1.5\0"
 #define USBTENKI_VERSION_MAJOR	2
 #define USBTENKI_VERSION_MINOR	1
-#define USBTENKI_VERSION_NUM	2,1,4,0
+#define USBTENKI_VERSION_NUM	2,1,5,0
 
-#define USBTENKI_COPYRIGHT_QTENKI	"(C) Copyright 2013-2016 Raphaël Assénat"
-#define USBTENKI_COPYRIGHTS			"(C) Copyright 2007-2016 Raphaël Assénat <raph@raphnet.net>"
-#define USBTENKI_COPYRIGHTS_HTML	"(C) Copyright 2007-2016 Rapha&euml;l Ass&eacute;nat &lt;raph@raphnet.net&gt;"
+#define USBTENKI_COPYRIGHT_QTENKI	"(C) Copyright 2013-2017 Raphaël Assénat"
+#define USBTENKI_COPYRIGHTS			"(C) Copyright 2007-2017 Raphaël Assénat <raph@raphnet.net>"
+#define USBTENKI_COPYRIGHTS_HTML	"(C) Copyright 2007-2017 Rapha&euml;l Ass&eacute;nat &lt;raph@raphnet.net&gt;"
 
 #endif // _usbtenki_version_h__

@@ -1,3 +1,13 @@
+Version 2.1.5 - March 12, 2017
+   - [General] Add inHg pressure format
+   - [General] Add support for PT100 + MS5611 product
+   - [General] Add CO2 gas sensor support
+   - [General] Introduce PPM gas units
+   - [QTenki] Fix a bug where the number of digits after decimal point
+     preference was not preserved.
+   - [QTenki] More compact display
+   - [Command-line] Fix bug reading MS5611 temperature only
+
 Version 2.1.4
    - Add support for SHT31 temperature and humidity sensor
 
