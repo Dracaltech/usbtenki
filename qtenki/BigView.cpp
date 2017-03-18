@@ -1,6 +1,7 @@
 #include "BigView.h"
 #include "BigLabel.h"
 #include "globals.h"
+#include <QSettings>
 
 BigView::BigView()
 {

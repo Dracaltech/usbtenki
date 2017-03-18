@@ -1,7 +1,7 @@
 #ifndef _SourceAliasEdit_h__
 #define _SourceAliasEdit_h__
 
-#include <QtGui>
+#include <QLineEdit>
 
 class SourceAliasEdit : public QLineEdit
 {

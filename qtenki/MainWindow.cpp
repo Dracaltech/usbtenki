@@ -7,6 +7,8 @@
 #include <QImage>
 #include <QMenu>
 #include <QScrollArea>
+#include <QCoreApplication>
+#include <QSettings>
 
 #include "usbtenki.h"
 #include "usbtenki_version.h"
@@ -113,7 +115,7 @@ MainWindow::MainWindow()
 	windowIcon = new QIcon(":qtenki.ico");
 
 	setWindowIcon(*windowIcon);
-	setWindowTitle("QTenki "USBTENKI_VERSION);
+	setWindowTitle("QTenki " USBTENKI_VERSION);
 
 	// The tray icon stuff
 	trayQIcon = new QIcon(":icon16x16.png");

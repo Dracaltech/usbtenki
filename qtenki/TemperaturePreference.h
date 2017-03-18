@@ -1,7 +1,7 @@
 #ifndef _temperature_preference_h__
 #define _temperature_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class TemperaturePreference : public QComboBox
 {

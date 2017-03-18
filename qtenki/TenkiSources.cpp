@@ -173,14 +173,14 @@ int TenkiSources::addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_c
 		return -1;
 
 	sprintf(sd->name, "%s:%02X", serial, chn_id);
-	sd->q_name = QString::fromAscii(sd->name);
+	sd->q_name = QString::fromLocal8Bit(sd->name);
 	printf("TenkiSources: Registering source '%s'\n", sd->name);
 
 	sd->td = td;
 	sd->chn_id = chn_id;
 
-	sd->chipShortString = QString::fromAscii(chipToShortString(chndat->chip_id));
-	sd->chipString = QString::fromAscii(chipToString(chndat->chip_id));
+	sd->chipShortString = QString::fromLocal8Bit(chipToShortString(chndat->chip_id));
+	sd->chipString = QString::fromLocal8Bit(chipToString(chndat->chip_id));
 	sd->chn_data = chndat;
 
 	sd->q_alias = settings.value("sourcesAliases/"+sd->q_name).toString();

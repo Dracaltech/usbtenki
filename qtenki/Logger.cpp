@@ -1,6 +1,12 @@
 #include "Logger.h"
 #include "TextViewer.h"
 
+#include <QSettings>
+#include <QDir> 
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QDateTime>
+
 #define EXISTS_OVERWRITE	0
 #define EXISTS_APPEND		1
 #define EXISTS_CONFIRM		2

@@ -1,4 +1,3 @@
-#include <QtGui>
 #include "single_application.h"
 #include "MainWindow.h"
 
@@ -15,7 +14,7 @@ int main(int argc, char **argv)
 
 	QObject::connect(&app, SIGNAL(messageAvailable(QString)), window, SLOT(receiveMessage(QString)));
 
-	app.setStyle(new QCleanlooksStyle());
+	//app.setStyle(new QCleanlooksStyle());
 	
 	QFile file(":raphnet.qss");
 	file.open(QFile::ReadOnly);

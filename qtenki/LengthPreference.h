@@ -1,7 +1,7 @@
 #ifndef _length_preference_h__
 #define _length_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class LengthPreference : public QComboBox
 {

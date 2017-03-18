@@ -1,8 +1,11 @@
 #ifndef _logger_h__
 #define _logger_h__
 
-#include <QtGui>
 #include <QWidget>
+#include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QComboBox>
+#include <QGridLayout>
 #include "TextViewer.h"
 #include "TenkiSources.h"
 #include "DataSourceCheckBox.h"

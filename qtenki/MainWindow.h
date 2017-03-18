@@ -5,6 +5,7 @@
 #include <QCloseEvent>
 #include <QSystemTrayIcon>
 #include <QTabWidget>
+#include <QIcon>
 
 #include "Logger.h"
 #include "ConfigPanel.h"

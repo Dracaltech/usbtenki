@@ -1,7 +1,7 @@
 #ifndef _voltage_preference_h__
 #define _voltage_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class VoltagePreference : public QComboBox
 {

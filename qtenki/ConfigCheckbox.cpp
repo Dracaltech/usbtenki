@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "ConfigCheckbox.h"
 
 

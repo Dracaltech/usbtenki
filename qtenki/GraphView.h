@@ -1,9 +1,13 @@
 #ifndef _graphview_h__
 #define _graphview_h__
 
-#include <QtGui>
 #include <QWidget>
 #include <QTimer>
+#include <QPushButton>
+#include <QTimer>
+#include <QList>
+#include <QVBoxLayout>
+#include <QLabel>
 
 #include "ConfigCheckbox.h"
 #include "TenkiSources.h"

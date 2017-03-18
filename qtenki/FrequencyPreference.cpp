@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "FrequencyPreference.h"
 #include "usbtenki_units.h"
 #include "globals.h"

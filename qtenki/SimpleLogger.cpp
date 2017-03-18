@@ -57,17 +57,17 @@ void SimpleLogger::writeHeader()
 	file->write(" log file\n");
 
 	file->write("# original filename: ");
-	file->write(output_file.toAscii());
+	file->write(output_file.toLocal8Bit());
 	file->write("\n");
 
 	file->write("# creation date: ");
 //	file->write("on machine ");
-//	file->write(hostname.toAscii());
-	file->write(creation_time.toString("yyyy-MM-dd hh:mm:ss").toAscii());
+//	file->write(hostname.toLocal8Bit());
+	file->write(creation_time.toString("yyyy-MM-dd hh:mm:ss").toLocal8Bit());
 	file->write("\n");
 
 	file->write("# logging interval: ");
-	file->write(logLocale->toString(interval_ms).toAscii());
+	file->write(logLocale->toString(interval_ms).toLocal8Bit());
 	file->write(" millisecond");
 	if (interval_ms != 1) {
 		file->write("s");
@@ -75,7 +75,7 @@ void SimpleLogger::writeHeader()
 	file->write("\n");
 
 	file->write("# log comments: ");
-	file->write(comments.toAscii());
+	file->write(comments.toLocal8Bit());
 	file->write("\n");
 
 	file->write("#\n");
@@ -120,7 +120,7 @@ void SimpleLogger::run()
 
 void SimpleLogger::logItem(QString str, int last)
 {
-	file->write(str.toAscii());
+	file->write(str.toLocal8Bit());
 
 	if (last) {
 		logLineEnd();
@@ -176,7 +176,7 @@ void SimpleLogger::logValue(float v, int last)
 	//   - scientific notation
 	//   - precision (now hardcoded to 2)
 	logItem(logLocale->toString(v, 'f', g_tenkisources->displayDigits()), last);
-//	logItem(QString::fromAscii(tmpbuf), last);
+//	logItem(QString::fromLocal8Bit(tmpbuf), last);
 
 }
 
@@ -246,7 +246,7 @@ void SimpleLogger::colTitles()
 		tenkisources->convertToUnits(sd->chn_data, &tmp);
 
 		logItem(sd->chipShortString + " - " +
-		QString::fromAscii(unitToString(tmp.converted_unit,1))
+		QString::fromLocal8Bit(unitToString(tmp.converted_unit,1))
 		, i==(sources.size()-1));
 	}
 

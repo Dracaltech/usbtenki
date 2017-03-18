@@ -3,7 +3,7 @@
 ######################################################################
 CONFIG += release
 TEMPLATE = app
-TARGET = 
+TARGET = qtenki
 DEPENDPATH += .
 INCLUDEPATH += . ../common ../library
 RESOURCES	= qtenki.qrc
@@ -12,6 +12,8 @@ win32: INCLUDEPATH += ../../libusb/include
 win32: DEFINES += WINDOWS_VERSION
 win32: LIBS += -L../../libusb/lib/gcc
 win32:RC_FILE = qtenki.rc
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 # Input
 

@@ -2,6 +2,8 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QSettings>
 #include "GraphView.h"
 #include "ConfigCheckbox.h"
 #include "qcustomplot.h"

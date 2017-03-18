@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QPushButton>
 
 #include "SelectableColor.h"
 #include "ConfigPanel.h"

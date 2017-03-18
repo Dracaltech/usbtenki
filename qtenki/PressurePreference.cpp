@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "PressurePreference.h"
 #include "usbtenki_units.h"
 #include "globals.h"

@@ -1,7 +1,7 @@
 #ifndef _current_preference_h__
 #define _current_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class CurrentPreference : public QComboBox
 {

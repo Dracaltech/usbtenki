@@ -1,7 +1,7 @@
 #ifndef _graph_legend_preference_h__
 #define _graph_legend_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 #include "qcustomplot.h"
 
 class GraphLegendPreference : public QComboBox

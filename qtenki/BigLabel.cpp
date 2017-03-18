@@ -2,6 +2,7 @@
 #include "BigLabel.h"
 #include "globals.h"
 
+#include <QSettings>
 #include <QFont>
 #include <QLabel>
 #include <QWidget>

@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "TemperaturePreference.h"
 #include "usbtenki_units.h"
 

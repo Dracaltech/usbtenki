@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "SourceAliasEdit.h"
 #include "globals.h"
 

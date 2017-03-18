@@ -1,7 +1,7 @@
 #ifndef _frequency_preference_h__
 #define _frequency_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class FrequencyPreference : public QComboBox
 {

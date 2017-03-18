@@ -1,8 +1,10 @@
 #ifndef _bigview_h__
 #define _bigview_h__
 
-#include <QtGui>
 #include <QWidget>
+#include <QPushButton>
+#include <QList>
+#include <QVBoxLayout>
 
 #include "TenkiSources.h"
 #include "BigLabel.h"

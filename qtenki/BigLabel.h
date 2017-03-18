@@ -1,7 +1,8 @@
 #ifndef _biglabel_h__
 #define _biglabel_h__
 
-#include <QtGui>
+#include <QLabel>
+#include <QRect>
 
 class BigLabel : public QLabel
 {

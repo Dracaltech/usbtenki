@@ -1,8 +1,7 @@
 #ifndef _config_checkbox_h__
 #define _config_checkbox_h__
 
-
-#include <QtGui>
+#include <QCheckBox>
 
 class ConfigCheckbox : public QCheckBox
 {

@@ -1,7 +1,7 @@
 #ifndef _pressure_preference_h__
 #define _pressure_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class PressurePreference : public QComboBox
 {

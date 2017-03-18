@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "LengthPreference.h"
 #include "usbtenki_units.h"
 #include "globals.h"

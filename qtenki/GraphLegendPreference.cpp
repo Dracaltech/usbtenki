@@ -1,3 +1,4 @@
+#include <QSettings>
 #include "GraphLegendPreference.h"
 #include "usbtenki_units.h"
 #include "globals.h"

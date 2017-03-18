@@ -1,7 +1,7 @@
 #ifndef _power_preference_h__
 #define _power_preference_h__
 
-#include <QtGui>
+#include <QComboBox>
 
 class PowerPreference : public QComboBox
 {

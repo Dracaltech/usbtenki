@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QPushButton>
 #include <QSettings>
 #include <QLineEdit>
 #include "DashSensor.h"
@@ -10,7 +11,7 @@
 DashSensor::DashSensor(TenkiDevice *td)
 {
 	int col =0;
-	title = QString::fromAscii(td->getSerial());
+	title = QString::fromLocal8Bit(td->getSerial());
 	setTitle(title);
 	setObjectName("source"); // selector for stylesheet	
 	tenki_device = td;
@@ -78,13 +79,13 @@ void DashSensor::addChannel(int chn, int row)
 	layout->addWidget(new QLabel(f), row, col++);
 
 
-	b = QString::fromAscii(chipToString(ch.chip_id));
+	b = QString::fromLocal8Bit(chipToString(ch.chip_id));
 	tmp_label = new QLabel(b);
 //	tmp_label->setWordWrap(true);
 //	tmp_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	layout->addWidget(tmp_label, row, col++);
 	
-	c = QString::fromAscii(chipToShortString(ch.chip_id));
+	c = QString::fromLocal8Bit(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);
 
 	// Current value
@@ -148,10 +149,10 @@ void DashSensor::refresh()
 //	qDebug() << "DashSensor::refresh()";
 
 	if (tenki_device->status == TENKI_DEVICE_STATUS_UNABLE_TO_OPEN) {
-		title = QString::fromAscii(tenki_device->getSerial());
+		title = QString::fromLocal8Bit(tenki_device->getSerial());
 		title += " [ERROR]";
 	} else {
-		title = QString::fromAscii(tenki_device->getSerial());
+		title = QString::fromLocal8Bit(tenki_device->getSerial());
 	}
 	setTitle(title);
 
