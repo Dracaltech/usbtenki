@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QLabel>
 #include <QWidget>
+#include <QResizeEvent>
 
 BigLabel::BigLabel(const QString &text, QString source_name)
 {
