@@ -1,5 +1,5 @@
 /* usbtenkiget: A command-line tool for USBTenki sensors.
- * Copyright (C) 2007-2013  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2007-2017  Raphael Assenat <raph@raphnet.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,7 +105,7 @@ static void printUsage(void)
 
 static void printVersion(void)
 {
-	printf("USBTenkiget version %s, Copyright (C) 2007-2014, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("USBTenkiget version %s, Copyright (C) 2007-2017, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
