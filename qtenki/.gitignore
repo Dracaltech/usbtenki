@@ -1,0 +1,4 @@
+moc_*.cpp
+Makefile
+Makefile.release
+Makefile.debug
