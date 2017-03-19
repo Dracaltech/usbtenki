@@ -33,6 +33,6 @@ if [ -f $RELEASEDIR/$FILENAME ]; then
 	exit 1
 fi
 
-git tag $TAG -f -a
+git tag $TAG -f -a -m "Release $VERSION"
 git archive --format=tar --prefix=$DIRNAME/ HEAD | gzip > $RELEASEDIR/$FILENAME
 
