@@ -15,7 +15,7 @@ if [ $# -ne 1 ]; then
 	exit
 fi
 
-RELEASEDIR=$1
+RELEASEDIR=`readlink -f $1`
 DIRNAME=$PREFIX-$VERSION
 FILENAME=$PREFIX-$VERSION.tar.gz
 TAG=v$VERSION
@@ -33,6 +33,8 @@ if [ -f $RELEASEDIR/$FILENAME ]; then
 	exit 1
 fi
 
+cd ..
 git tag $TAG -f -a -m "Release $VERSION"
 git archive --format=tar --prefix=$DIRNAME/ HEAD | gzip > $RELEASEDIR/$FILENAME
+
 
