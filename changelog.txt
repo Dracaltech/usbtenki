@@ -1,3 +1,6 @@
+Version 2.1.6 - March 29, 2017
+   - [Command-line] Fix return value (for scripts)
+
 Version 2.1.5 - March 12, 2017
    - [General] Add inHg pressure format
    - [General] Add support for PT100 + MS5611 product
