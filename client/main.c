@@ -543,7 +543,7 @@ reopen:
 
 	usbtenki_closeDevice(hdl);
 
-	return res;
+	return 0;
 }
 
 int processVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *channels,
