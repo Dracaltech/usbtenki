@@ -129,7 +129,13 @@ int main(int argc, char **argv)
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
 
+#ifdef WIN32
+	/* Under windows, line buffering (_IOLBF) has fullly buffered behaviour.. No
+	 * choice but to completely disable buffering... */
+	setvbuf(stdout, NULL, _IONBF, 0);
+#else
 	setlinebuf(stdout);
+#endif
 
 	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:M:")))
 	{
@@ -513,7 +519,12 @@ reopen:
 					return -1;
 				}
 				printf("Opened file '%s' for logging. Append mode.\n", g_log_file);
+
+#ifdef WIN32
+				setvbuf(stdout, NULL, _IONBF, 0);
+#else
 				setlinebuf(g_log_fptr);
+#endif
 			}
 			else {
 				printf("Logging to stdout\n");
