@@ -1,3 +1,9 @@
+Version 2.1.7 - April 7, 2017
+   - [Command-line] Enable line buffered mode to support piping the output in log
+   mode. Under Windows, buffering is completely disabled to acheive this.
+   - [Command-line] Fix a 2.1.6 bug where the logging interval (-I argument)
+   was ignored on Windows.
+
 Version 2.1.6 - March 29, 2017
    - [Command-line] Fix return value (for scripts)
 
