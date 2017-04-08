@@ -83,7 +83,7 @@ static void printUsage(void)
 	printf("    -M unit      Select the length unit to use. Default: m\n");
 	printf("    -p           Enable pretty output\n");
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
-	printf("    -L logfile   Log to specified file\n");
+	printf("    -L logfile   Log to specified file (use - for none)\n");
 	printf("    -I interval  Log interval. In milliseconds. Default: %d\n", DEFAULT_LOG_INTERVAL);
 	printf("    -x num       Set number of digits to display after the decimal separator. Default: %d\n", DEFAULT_DECIMAL_DIGITS);
 	printf("    -o option    Enable specified option. (you may use multiple -o)\n");
@@ -128,6 +128,8 @@ int main(int argc, char **argv)
 	int use_all_channels = 0;
 
 	requested_channels[0] = DEFAULT_CHANNEL_ID;
+
+	setlinebuf(stdout);
 
 	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:M:")))
 	{
@@ -502,13 +504,20 @@ reopen:
 	{
 		printf("Log mode on.\n");
 		if (!g_log_fptr) {
-			g_log_fptr = fopen(g_log_file, "a");
-			if (!g_log_file) {
-				fprintf(stderr, "Failed to open log file\n");
-				usbtenki_closeDevice(hdl);
-				return -1;
+			if (strcmp(g_log_file, "-"))
+			{
+				g_log_fptr = fopen(g_log_file, "a");
+				if (!g_log_file) {
+					fprintf(stderr, "Failed to open log file\n");
+					usbtenki_closeDevice(hdl);
+					return -1;
+				}
+				printf("Opened file '%s' for logging. Append mode.\n", g_log_file);
+				setlinebuf(g_log_fptr);
 			}
-			printf("Opened file '%s' for logging. Append mode.\n", g_log_file);
+			else {
+				printf("Logging to stdout\n");
+			}
 		}
 
 		// yyyy-mm-dd hh:mm:ss.000
@@ -516,14 +525,18 @@ reopen:
 		{
 			int res;
 
-			printTimeStamp(g_log_fptr);
-			fprintf(g_log_fptr, ", ");
+			if (g_log_fptr) {
+				printTimeStamp(g_log_fptr);
+				fprintf(g_log_fptr, ", ");
+			}
 
 			res = processChannels(hdl, requested_channels, num_requested_channels);
 
-			fprintf(g_log_fptr, "\n");
-			fflush(g_log_fptr);
-			
+			if (g_log_fptr) {
+				fprintf(g_log_fptr, "\n");
+				fflush(g_log_fptr);
+			}
+
 			usleep(g_log_interval * 1000);
 
 			if (res<0) {
@@ -534,8 +547,10 @@ reopen:
 		}
 
 		printf("Closing log file.\n");
-		fflush(g_log_fptr);
-		fclose(g_log_fptr);
+		if (g_log_fptr) {
+			fflush(g_log_fptr);
+			fclose(g_log_fptr);
+		}
 	}
 	else {
 		processChannels(hdl, requested_channels, num_requested_channels);
