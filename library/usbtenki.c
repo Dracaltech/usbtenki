@@ -24,7 +24,7 @@
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
 
-#ifdef WINDOWS_VERSION
+#if defined(WINDOWS_VERSION) | defined(WIN32)
 #include <windows.h>
 #define usleep(t) Sleep(t/1000)
 #endif
