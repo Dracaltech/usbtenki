@@ -731,6 +731,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_SHT35_RH:
 		case USBTENKI_CHIP_SHT31_RH:
 			{
 				unsigned short rh_reg;
@@ -742,6 +743,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_SHT35_T:
 		case USBTENKI_CHIP_SHT31_T:
 			{
 				unsigned short t_reg;
