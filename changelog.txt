@@ -1,3 +1,6 @@
+Version 2.1.8 - June 26, 2017
+   - [General] Add channel definitions for SHT35 sensors
+
 Version 2.1.7 - April 7, 2017
    - [Command-line] Enable line buffered mode to support piping the output in log
    mode. Under Windows, buffering is completely disabled to acheive this.
