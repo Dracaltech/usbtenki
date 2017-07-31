@@ -20,6 +20,7 @@
 #define TENKI_UNIT_INHG			0x17 // 3386.389 pascals
 
 #define TENKI_UNIT_PPM			0x1A
+#define TENKI_UNIT_PPB			0x1B
 
 #define TENKI_UNIT_VOLTS		0x20
 #define TENKI_UNIT_MILLIVOLT	0x23
