@@ -754,6 +754,44 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_CCS811_TVOC:
+			{
+				uint16_t TVOC;
+				uint8_t data_valid;
+
+				data_valid = raw_data[0];
+				TVOC = raw_data[1]<<8 | raw_data[2];
+
+				if (!data_valid) {
+					fprintf(stderr, "Invalid data\n");
+					break;
+				}
+				//printf("Status: 0x%02x\n", raw_data[3]);
+
+				temperature = TVOC;
+				chip_fmt = TENKI_UNIT_PPB;
+
+			}
+			break;
+
+		case USBTENKI_CHIP_CCS811_eCO2:
+			{
+				uint16_t eCO2;
+				uint8_t data_valid;
+
+				data_valid = raw_data[0];
+				eCO2 = raw_data[1]<<8 | raw_data[2];
+
+				if (!data_valid) {
+					fprintf(stderr, "Invalid data\n");
+					break;
+				}
+
+				temperature = eCO2;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
 		case USBTENKI_CHIP_CO2_PPM:
 			{
 				unsigned short ppm_reg;

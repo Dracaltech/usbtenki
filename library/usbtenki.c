@@ -768,6 +768,12 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_SHT35_RH:
 			return "SHT35 Relative Humidity";
 
+		case USBTENKI_CHIP_CCS811_TVOC:
+			return "CCS811 TVOC PPB";
+
+		case USBTENKI_CHIP_CCS811_eCO2:
+			return "CCS811 eCO2 PPM";
+
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
 
@@ -953,6 +959,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Frequency";
 
+		case USBTENKI_CHIP_CCS811_eCO2:
+		case USBTENKI_CHIP_CCS811_TVOC:
 		case USBTENKI_CHIP_CO2_PPM:
 			return "Gas PPM";
 
@@ -998,6 +1006,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_PSI: return "psi";
 		case TENKI_UNIT_INHG: return "inHg";
 		case TENKI_UNIT_PPM: return "ppm";
+		case TENKI_UNIT_PPB: return "ppb";
 		case TENKI_UNIT_VOLTS: return "V";
 		case TENKI_UNIT_MILLIVOLT: return "mV";
 		case TENKI_UNIT_MILLIWATTS: return "mW";
