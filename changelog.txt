@@ -1,3 +1,7 @@
+Version 2.1.9 - August 7, 2017
+   - [General] Add support for VOC sensor
+   - [Windows] Fix driver installation
+
 Version 2.1.8 - June 26, 2017
    - [General] Add channel definitions for SHT35 sensors
 
