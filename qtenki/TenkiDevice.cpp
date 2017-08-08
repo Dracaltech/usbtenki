@@ -71,7 +71,7 @@ int TenkiDevice::updateChannelData()
 
 		// Everything ok. Try to read the channel(s).
 //		printf("%s updating...\n", serno);
-		for (error=0,i=0; i<num_channels; i++) {
+		for (need_retry=0,error=0,i=0; i<num_channels; i++) {
 			if (channel_data[i].chip_id == USBTENKI_CHIP_NONE)
 				continue;
 
@@ -83,7 +83,7 @@ int TenkiDevice::updateChannelData()
 				error = 1;
 				break;
 			}
-			
+
 			memcpy(&channel_data[i], &tmpdata, sizeof(struct USBTenki_channel));
 		}
 
@@ -91,7 +91,7 @@ int TenkiDevice::updateChannelData()
 //			printf("Error reading '%s', reopening...\n", serno);
 			usbtenki_closeDevice(tenki_hdl);
 			tenki_hdl = 0;
-			
+
 			// If we are here from a retry, don't retry again.
 			if (need_retry) {
 				break;
@@ -102,9 +102,11 @@ int TenkiDevice::updateChannelData()
 		}
 	}
 	while(need_retry);
-	
-	usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels, g_usbtenki_flags);	
-	
+
+	if (tenki_hdl) {
+		usbtenki_processVirtualChannels(tenki_hdl, channel_data, num_channels, g_usbtenki_flags);
+	}
+
 	return 0;
 }
 
