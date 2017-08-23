@@ -3,13 +3,17 @@
 PREFIX=usbtenki
 HEXFILE=$PREFIX.hex
 
-VERSION_H=../common/usbtenki_version.h
-VERSION=`grep USBTENKI_VERSION $VERSION_H | head -1 | cut -d \" -f 2`
+if [[ $# > 1 ]]; then
+	VERSION=$2
+else
+	VERSION_H=../common/usbtenki_version.h
+	VERSION=`grep USBTENKI_VERSION $VERSION_H | head -1 | cut -d \" -f 2`
+fi
 
 echo "Release script for $PREFIX"
 
-if [ $# -ne 1 ]; then
-	echo "Syntax: ./release.sh releasedir"
+if [[ $# < 1 ]]; then
+	echo "Syntax: ./release.sh releasedir [version]"
 	echo
 	echo "ex: './release releasedir' will produce $PREFIX-$VERSION.tar.gz in releasedir out of git HEAD."
 	exit
