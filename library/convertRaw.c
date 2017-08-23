@@ -813,6 +813,17 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_THC_HOT:
+		case USBTENKI_CHIP_THC_COLD:
+			{
+				int16_t t_reg;
+
+				t_reg = raw_data[0] << 8 | raw_data[1];
+				temperature = t_reg * 0.0625;
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
 		default:
 			{
 				int i;
