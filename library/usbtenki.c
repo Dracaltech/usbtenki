@@ -844,6 +844,11 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_PT100_RTD:
 			return "PT100 Temperature sensor";
 
+		case USBTENKI_CHIP_THC_COLD:
+			return "Thermocouple cold junction temperature";
+		case USBTENKI_CHIP_THC_HOT:
+			return "Thermocouple hot junction temperature";
+
 		case USBTENKI_CHIP_MLX90614_TA:
 			return "MLX90615 Ambiant temperature";
 		case USBTENKI_CHIP_MLX90614_TOBJ:
@@ -899,6 +904,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CC2_T:
 		case USBTENKI_CHIP_SHT31_T:
 		case USBTENKI_CHIP_SHT35_T:
+		case USBTENKI_CHIP_THC_HOT:
+		case USBTENKI_CHIP_THC_COLD:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
