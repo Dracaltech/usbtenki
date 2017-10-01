@@ -1041,6 +1041,45 @@ const char *unitToString(int unit, int no_fancy_chars)
 	return "";
 }
 
+const char *thermocoupleTypeToString(int type)
+{
+	switch (type)
+	{
+		case THERMOCOUPLE_TYPE_K: return "K";
+		case THERMOCOUPLE_TYPE_J: return "J";
+		case THERMOCOUPLE_TYPE_T: return "T";
+		case THERMOCOUPLE_TYPE_N: return "N";
+		case THERMOCOUPLE_TYPE_S: return "S";
+		case THERMOCOUPLE_TYPE_E: return "E";
+		case THERMOCOUPLE_TYPE_B: return "B";
+		case THERMOCOUPLE_TYPE_R: return "R";
+	}
+	return "?";
+}
+
+int thermocoupleStringToType(const char *type)
+{
+	if (!type) {
+		return -1;
+	}
+	if (strlen(type) != 1) {
+		return -1;
+	}
+
+	switch(tolower(type[0])) {
+		case 'k': return THERMOCOUPLE_TYPE_K;
+		case 'j': return THERMOCOUPLE_TYPE_J;
+		case 't': return THERMOCOUPLE_TYPE_T;
+		case 'n': return THERMOCOUPLE_TYPE_N;
+		case 's': return THERMOCOUPLE_TYPE_S;
+		case 'e': return THERMOCOUPLE_TYPE_E;
+		case 'b': return THERMOCOUPLE_TYPE_B;
+		case 'r': return THERMOCOUPLE_TYPE_R;
+	}
+
+	return -1;
+}
+
 int usbtenki_readChannel(USBTenki_dev_handle hdl, struct USBTenki_channel *chn, unsigned long flags)
 {
 	return usbtenki_readChannelList(hdl, &chn->channel_id, 1, chn, 1, 1, flags);

@@ -44,6 +44,37 @@
  */
 #define USBTENKI_GET_CALIBRATION	0x11
 
+/* Configure the type of thermocouple connected
+ * to a Dracal TMC100.
+ *
+ *  request: USBTENKI_SET_THERMOCOUPLE_TYPE
+ *  value:
+ *  	Low byte: channel index (0 for now, reserverd for future use)
+ *  	High byte: One of THERMOCOUPLE_TYPE_x values.
+ */
+#define USBTENKI_SET_THERMOCOUPLE_TYPE	0x12
+
+/* Gets the type of thermocouple a Dracal TMC100 device
+ * is configured for.
+ *
+ *  request: USBTENKI_GET_THERMOCOUPLE_TYPE
+ *
+ *  Returned data:
+ *  [0x13] [type byte] [lrc]
+ */
+#define USBTENKI_GET_THERMOCOUPLE_TYPE	0x13
+
+#define THERMOCOUPLE_TYPE_MIN	0
+#define THERMOCOUPLE_TYPE_K	0
+#define THERMOCOUPLE_TYPE_J	1
+#define THERMOCOUPLE_TYPE_T	2
+#define THERMOCOUPLE_TYPE_N 3
+#define THERMOCOUPLE_TYPE_S 4
+#define THERMOCOUPLE_TYPE_E 5
+#define THERMOCOUPLE_TYPE_B 6
+#define THERMOCOUPLE_TYPE_R 7
+#define THERMOCOUPLE_TYPE_MAX	7
+
 /* Set the serial number characters one by one.
  *   request: USBTENKI_SET_SERIAL
  *   value: Low byte is character index. 

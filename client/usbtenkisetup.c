@@ -29,7 +29,7 @@ int g_verbose = 0;
 
 static void printVersion(void)
 {
-	printf("Usbtenkisetup version %s, Copyright (C) 2007-2016, Raphael Assenat\n\n", USBTENKI_VERSION);
+	printf("Usbtenkisetup version %s, Copyright (C) 2007-2017, Raphael Assenat\n\n", USBTENKI_VERSION);
 	printf("This software comes with ABSOLUTELY NO WARRANTY;\n");
 	printf("You may redistribute copies of it under the terms of the GNU General Public License\n");
 	printf("http://www.gnu.org/licenses/gpl.html\n");
@@ -41,6 +41,7 @@ static void printUsage(void)
 	printf("Usage: ./usbtenkisetup [options] command value\n");
 	printf("\nValid options:\n");
 	printf("    -V          Display version information\n");
+	printf("    -v          Run in verbose mode\n");
 	printf("    -h          Displays help\n");
 	printf("    -s serno    Use USB sensor with matching serial number. Required.\n");
 	printf("    -f          Operates on the first device found.\n");
@@ -54,8 +55,11 @@ static void printUsage(void)
 	printf("    do_zero     Device specific effect.\n");
 	printf("    sht31_rate	rate (0: 0.5 MPS, 1: 1 MPS, 2: 2 MPS, 3: 4 MPS, 4: 10 MPS)\n");
 	printf("                (MPS is measurements per second)\n");
+	printf("    set_thermocouple_type channel type\n");
+	printf("       (where channel is the port number [counted from 0])\n");
+	printf("       (where type is the thermocouple type K, J, T, N, S, E, B, or R)\n");
+	printf("    get_thermocouple_type channel\n");
 	printf("    bootloader  Enter bootloader mode (not supported by all devices)\n");
-
 }
 
 #define MAX_EXTRA_ARGS	8
@@ -102,8 +106,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (g_verbose) 
+	if (g_verbose) {
 		printf("Extra args: %d\n", n_extra_args);
+	}
 
 	for (i=optind; i<argc; i++) {
 		eargv[i-optind] = argv[i];
@@ -391,6 +396,74 @@ int main(int argc, char **argv)
 		goto cleanAndExit;
 	}
 
+	/************ Configuring thermocouple type **************/
+	if (strcmp(eargv[0], "set_thermocouple_type")==0) {
+		int chn, type;
+		char *e;
+
+		if (n_extra_args<3) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		chn = strtol(eargv[1], &e, 0);
+		if (e == eargv[1] || chn < 0) {
+			fprintf(stderr, "Bad channel value\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		type = thermocoupleStringToType(eargv[2]);
+		if (type < THERMOCOUPLE_TYPE_MIN || type > THERMOCOUPLE_TYPE_MAX) {
+			fprintf(stderr, "Bad thermocouple type\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		if (g_verbose) {
+			printf("Setting thermocouple[%d] to type %d\n", chn, type);
+		}
+
+		res = usbtenki_command(hdl, USBTENKI_SET_THERMOCOUPLE_TYPE, chn | type << 8, repBuf);
+		if (res != 0) {
+			fprintf(stderr, "Error configuring thermocouple\n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+	/************ Reading back the configured thermocouple type ***************/
+	if (strcmp(eargv[0], "get_thermocouple_type")==0) {
+		int chn;
+		char *e;
+
+		if (n_extra_args < 2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		chn = strtol(eargv[1], &e, 0);
+		if (e == eargv[1] || chn < 0) {
+			fprintf(stderr, "Bad channel value\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		res = usbtenki_command(hdl, USBTENKI_GET_THERMOCOUPLE_TYPE, chn, repBuf);
+		if (res < 1) {
+			fprintf(stderr, "Error reading thermocouple configuration\n");
+			retval = 2;
+			goto cleanAndExit;
+		}
+
+		printf("Thermocouple type configured for channel %d: Type %s\n", chn,
+				thermocoupleTypeToString(repBuf[0]));
+
+		goto cleanAndExit;
+	}
 
 	/**************** Bootloader *****************/
 	if (strcmp(eargv[0], "bootloader")==0) {
@@ -399,7 +472,6 @@ int main(int argc, char **argv)
 		goto cleanAndExit;
 	}
 
-	
 	fprintf(stderr, "Unknow command '%s'\n", eargv[0]);
 
 	return 1;

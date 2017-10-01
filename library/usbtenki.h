@@ -111,6 +111,8 @@ float usbtenki_convertPower(float freq, int src_fmt, int dst_fmt);
 const char *chipToString(int id);
 const char *chipToShortString(int id);
 const char *unitToString(int unit, int no_fancy_chars);
+const char *thermocoupleTypeToString(int type);
+int thermocoupleStringToType(const char *type);
 
 void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int voltage_unit, int current_unit, int power_unit, int length_unit);
 
