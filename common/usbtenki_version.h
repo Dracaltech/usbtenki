@@ -1,12 +1,11 @@
 #ifndef _usbtenki_version_h__
 #define _usbtenki_version_h__
 
-
-#define USBTENKI_VERSION	"2.1.10"
-#define USBTENKI_VERSION_STR0	"2.1.10\0"
+#define USBTENKI_VERSION	"2.1.11"
+#define USBTENKI_VERSION_STR0	"2.1.11\0"
 #define USBTENKI_VERSION_MAJOR	2
 #define USBTENKI_VERSION_MINOR	1
-#define USBTENKI_VERSION_NUM	2,1,10,0
+#define USBTENKI_VERSION_NUM	2,1,11,0
 
 #define USBTENKI_COPYRIGHT_QTENKI	"(C) Copyright 2013-2017 Raphaël Assénat"
 #define USBTENKI_COPYRIGHTS			"(C) Copyright 2007-2017 Raphaël Assénat <raph@raphnet.net>"

@@ -1,3 +1,7 @@
+Version 2.1.11 - October 1, 2017
+   - [General] Add thermocouple support
+   - [Command-line] Thermocouple type configuration support
+
 Version 2.1.10 - August 8, 2017
    - [QTenki] Fix a possible hang and/or crash issue
 
