@@ -7,6 +7,7 @@
 #include "SourceAliasEdit.h"
 #include "ConfigCheckbox.h"
 #include "globals.h"
+#include "usbtenki_cmds.h"
 
 DashSensor::DashSensor(TenkiDevice *td)
 {
@@ -78,13 +79,17 @@ void DashSensor::addChannel(int chn, int row)
 	f.sprintf("%s:%02X", tenki_device->getSerial(), chn);
 	layout->addWidget(new QLabel(f), row, col++);
 
-
 	b = QString::fromLocal8Bit(chipToString(ch.chip_id));
+
 	tmp_label = new QLabel(b);
+	descriptions.append(tmp_label);
+
+	chip_ids.append(ch.chip_id);
+
 //	tmp_label->setWordWrap(true);
 //	tmp_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	layout->addWidget(tmp_label, row, col++);
-	
+
 	c = QString::fromLocal8Bit(chipToShortString(ch.chip_id));
 	layout->addWidget(new QLabel(c), row, col++);
 
@@ -132,6 +137,8 @@ void DashSensor::addChannel(int chn, int row)
 
 
 	channel_id.append(chn);
+
+	recolorizeThermocouple();
 }
 
 DashSensor::~DashSensor()
@@ -141,6 +148,49 @@ DashSensor::~DashSensor()
 		delete child;
 	}
 	delete layout;
+}
+
+void DashSensor::recolorizeThermocouple(void)
+{
+	QString b;
+	static int prev_iec = -1;
+	int use_iec;
+
+	use_iec = g_tenkisources->getUseIECthermocoupleColors();
+
+	if (use_iec == prev_iec) {
+		return; // nothing to do
+	}
+	prev_iec = use_iec;
+
+	for (int i=0; i<chip_ids.size(); i++)
+	{
+		b = QString::fromLocal8Bit(chipToString(chip_ids.at(i)));
+		if (b.startsWith("Type-")) {
+
+			if (use_iec) {
+				b.replace("Type-K", "<font style='background-color: #40ab45; color: white;'><b>&nbsp;Type-K&nbsp;</b></font>");
+				b.replace("Type-J", "<font style='background-color: #000000; color: white;'><b>&nbsp;Type-J&nbsp;</b></font>");
+				b.replace("Type-N", "<font style='background-color: #fac9e1; color: black;'><b>&nbsp;Type-N&nbsp;</b></font>");
+				b.replace("Type-E", "<font style='background-color: #6a3f92; color: white;'><b>&nbsp;Type-E&nbsp;</b></font>");
+				b.replace("Type-T", "<font style='background-color: #794205; color: white;'><b>&nbsp;Type-T&nbsp;</b></font>");
+				b.replace("Type-B", "<font style='background-color: #808080; color: white;'><b>&nbsp;Type-B&nbsp;</b></font>");
+				b.replace("Type-S", "<font style='background-color: #e38538; color: white;'><b>&nbsp;Type-S&nbsp;</b></font>");
+				b.replace("Type-R", "<font style='background-color: #e38538; color: white;'><b>&nbsp;Type-R&nbsp;</b></font>");
+			} else {
+				b.replace("Type-K", "<font style='background-color: #ffff00; color: black;'><b>&nbsp;Type-K&nbsp;</b></font>");
+				b.replace("Type-J", "<font style='background-color: #000000; color: white;'><b>&nbsp;Type-J&nbsp;</b></font>");
+				b.replace("Type-N", "<font style='background-color: #e2811f; color: white;'><b>&nbsp;Type-N&nbsp;</b></font>");
+				b.replace("Type-E", "<font style='background-color: #d9018b; color: white;'><b>&nbsp;Type-E&nbsp;</b></font>");
+				b.replace("Type-T", "<font style='background-color: #2350a0; color: white;'><b>&nbsp;Type-T&nbsp;</b></font>");
+				b.replace("Type-B", "<font style='background-color: #808080; color: white;'><b>&nbsp;Type-B&nbsp;</b></font>");
+				b.replace("Type-S", "<font style='background-color: #3f8d3e; color: white;'><b>&nbsp;Type-S&nbsp;</b></font>");
+				b.replace("Type-R", "<font style='background-color: #3f8d3e; color: white;'><b>&nbsp;Type-R&nbsp;</b></font>");
+			}
+		}
+
+		descriptions.at(i)->setText(b);
+	}
 }
 
 void DashSensor::refresh()
@@ -159,13 +209,15 @@ void DashSensor::refresh()
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;
 
+		// react to setting changes
+		recolorizeThermocouple();
 
 		cdat = tenki_device->getChannelData(channel_id.at(i));	
 		if (!cdat || !cdat->data_valid) {
 			values.at(i)->setText("Error");
 			continue;
 		}
-		
+
 		g_tenkisources->convertToUnits(cdat, &ch);		
 
 		g_tenkisources->formatValue(&d, ch.converted_data);

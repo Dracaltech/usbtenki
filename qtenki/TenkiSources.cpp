@@ -24,6 +24,10 @@ TenkiSources::TenkiSources()
 	moveToThread(thread);
 	connect(thread, SIGNAL(started()), this, SLOT(run()));
 
+	// Initialize from settings here. ThermocoupleColorPreference is instanciated
+	// after we first generate names in DashSensor(). It shows the wrong color for
+	// about on update cycle.
+	use_iec_thermocouple_colors = settings.value("data/thermocouple_color_system").toInt();
 }
 
 TenkiSources::~TenkiSources()
@@ -59,6 +63,16 @@ double TenkiSources::getRecentPressure(void)
 void TenkiSources::setInterval_ms(int interval)
 {
 	timer_interval = interval;
+}
+
+void TenkiSources::setUseIECthermocoupleColors(int use_iec)
+{
+	use_iec_thermocouple_colors = use_iec;
+}
+
+int TenkiSources::getUseIECthermocoupleColors(void)
+{
+	return use_iec_thermocouple_colors;
 }
 
 void TenkiSources::setTemperatureUnit(int tenki_temp_unit)

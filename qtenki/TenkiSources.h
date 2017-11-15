@@ -59,6 +59,8 @@ class TenkiSources : public QObject
 		void setLengthUnit(int length_unit);
 		void setDisplayDigits(int digits);
 		void setReferenceSeaLevelPressure(double value); // In Pascals
+		void setUseIECthermocoupleColors(int use_iec); // otherwise, use ANSI
+		int getUseIECthermocoupleColors(void);
 
 		// Return a recent atmostpheric pressure value (used to set altitude reference)
 		double getRecentPressure(void); // in Pascals
@@ -98,6 +100,7 @@ class TenkiSources : public QObject
 		int length_unit;
 		int timer_interval;
 		int display_digits;
+		int use_iec_thermocouple_colors;
 		double recent_pressure_P;
 };
 

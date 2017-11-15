@@ -26,11 +26,15 @@ class DashSensor : public QGroupBox
 		void addChannel(int channel, int row);
 		QString title;
 		QGridLayout *layout;
+		QList<QLabel*> descriptions;
 		QList<QLabel*> values;
 		QList<QLabel*> units;
 		QList<MinMaxResettable*> minimums;
 		QList<MinMaxResettable*> maximums;
 		QList<int> channel_id;
+		QList<int> chip_ids;
+
+		void recolorizeThermocouple(void);
 };
 
 #endif

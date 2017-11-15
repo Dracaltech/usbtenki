@@ -21,6 +21,7 @@
 #include "CurrentPreference.h"
 #include "PowerPreference.h"
 #include "LengthPreference.h"
+#include "ThermocoupleColorPreference.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -73,7 +74,7 @@ ConfigPanel::ConfigPanel()
 	CurrentPreference *current_pref = new CurrentPreference();
 	PowerPreference *power_pref = new PowerPreference();
 	LengthPreference *length_pref = new LengthPreference();
-
+	ThermocoupleColorPreference *thermocouple_pref = new ThermocoupleColorPreference();
 
 	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), 0, 0 );
 	dataBox_layout->addWidget(t_pref, 0, 1);
@@ -84,6 +85,9 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
 	dataBox_layout->addWidget(f_pref, 2, 1);
 
+	dataBox_layout->addWidget(new QLabel(tr("Length unit: ")), 3, 0);
+	dataBox_layout->addWidget(length_pref, 3, 1);
+
 	dataBox_layout->addWidget(new QLabel(tr("Voltage unit: ")), 0, 2 );
 	dataBox_layout->addWidget(volt_pref, 0, 3);
 
@@ -93,8 +97,8 @@ ConfigPanel::ConfigPanel()
 	dataBox_layout->addWidget(new QLabel(tr("Power unit: ")), 2, 2 );
 	dataBox_layout->addWidget(power_pref, 2, 3);
 
-	dataBox_layout->addWidget(new QLabel(tr("Length unit: ")), 3, 0);
-	dataBox_layout->addWidget(length_pref, 3, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Thermocouple color: ")), 3, 2 );
+	dataBox_layout->addWidget(thermocouple_pref, 3, 3);
 
 	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 4, 0, 1, -1);
 	dataBox_layout->addWidget(cb_disable_heat_index_validation, 5, 0, 1, -1);
