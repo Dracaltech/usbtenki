@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "usbtenki.h"
 #include "usbtenki_priv.h"
@@ -848,6 +849,22 @@ const char *chipToString(int id)
 			return "Thermocouple cold junction temperature";
 		case USBTENKI_CHIP_THC_HOT:
 			return "Thermocouple hot junction temperature";
+		case USBTENKI_CHIP_THC_TYPE_K:
+			return "Type-K Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_J:
+			return "Type-J Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_T:
+			return "Type-T Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_N:
+			return "Type-N Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_S:
+			return "Type-S Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_E:
+			return "Type-E Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_B:
+			return "Type-B Thermocouple";
+		case USBTENKI_CHIP_THC_TYPE_R:
+			return "Type-R Thermocouple";
 
 		case USBTENKI_CHIP_MLX90614_TA:
 			return "MLX90615 Ambiant temperature";
@@ -906,6 +923,14 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT35_T:
 		case USBTENKI_CHIP_THC_HOT:
 		case USBTENKI_CHIP_THC_COLD:
+		case USBTENKI_CHIP_THC_TYPE_K:
+		case USBTENKI_CHIP_THC_TYPE_J:
+		case USBTENKI_CHIP_THC_TYPE_T:
+		case USBTENKI_CHIP_THC_TYPE_N:
+		case USBTENKI_CHIP_THC_TYPE_S:
+		case USBTENKI_CHIP_THC_TYPE_E:
+		case USBTENKI_CHIP_THC_TYPE_B:
+		case USBTENKI_CHIP_THC_TYPE_R:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:

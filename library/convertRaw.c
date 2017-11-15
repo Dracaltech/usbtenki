@@ -813,6 +813,14 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_THC_TYPE_K:
+		case USBTENKI_CHIP_THC_TYPE_J:
+		case USBTENKI_CHIP_THC_TYPE_T:
+		case USBTENKI_CHIP_THC_TYPE_N:
+		case USBTENKI_CHIP_THC_TYPE_S:
+		case USBTENKI_CHIP_THC_TYPE_E:
+		case USBTENKI_CHIP_THC_TYPE_B:
+		case USBTENKI_CHIP_THC_TYPE_R:
 		case USBTENKI_CHIP_THC_HOT:
 		case USBTENKI_CHIP_THC_COLD:
 			{
