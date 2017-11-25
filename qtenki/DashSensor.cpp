@@ -138,6 +138,7 @@ void DashSensor::addChannel(int chn, int row)
 
 	channel_id.append(chn);
 
+	prev_iec = -1;
 	recolorizeThermocouple();
 }
 
@@ -153,7 +154,6 @@ DashSensor::~DashSensor()
 void DashSensor::recolorizeThermocouple(void)
 {
 	QString b;
-	static int prev_iec = -1;
 	int use_iec;
 
 	use_iec = g_tenkisources->getUseIECthermocoupleColors();

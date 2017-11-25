@@ -35,6 +35,7 @@ class DashSensor : public QGroupBox
 		QList<int> chip_ids;
 
 		void recolorizeThermocouple(void);
+		int prev_iec;
 };
 
 #endif
