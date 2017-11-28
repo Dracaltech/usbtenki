@@ -1,3 +1,6 @@
+Vresion 2.1.13 - November 27, 2017
+   - [QTenki] Fix thermocouple colorization when multiple units are connected
+
 Version 2.1.12 - November 15, 2017
    - [General] Support for specific thermocouple types
    - [QTenki] Add thermocouple type color display (ANSI and IEC)
