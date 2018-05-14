@@ -832,6 +832,19 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_RED:
+		case USBTENKI_CHIP_GREEN:
+		case USBTENKI_CHIP_BLUE:
+		case USBTENKI_CHIP_IR:
+			{
+				uint32_t value;
+
+				value = raw_data[0] | raw_data[1] << 8 | raw_data[2] << 16;
+				temperature = value;
+				chip_fmt = TENKI_UNIT_ARBITRARY;
+			}
+			break;
+
 		default:
 			{
 				int i;

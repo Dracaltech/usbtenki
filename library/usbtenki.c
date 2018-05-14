@@ -922,6 +922,16 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
 
+		case USBTENKI_CHIP_RED:
+			return "Red light intensity";
+		case USBTENKI_CHIP_GREEN:
+			return "Green light intensity";
+		case USBTENKI_CHIP_BLUE:
+			return "Blue light intensity";
+		case USBTENKI_CHIP_IR:
+			return "IR light intensity";
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Hexadecimal color";
 	}
 	return "unknown";
 }
@@ -1019,6 +1029,12 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CO2_PPM:
 			return "Gas PPM";
 
+		case USBTENKI_CHIP_RED:
+		case USBTENKI_CHIP_GREEN:
+		case USBTENKI_CHIP_BLUE:
+		case USBTENKI_CHIP_IR:
+			return chipToString(id);
+
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -1035,6 +1051,9 @@ const char *chipToShortString(int id)
 
 		case USBTENKI_CHIP_NONE:
 			return "N/A";
+
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Color";
 	}
 	return "unknown";
 }
@@ -1084,6 +1103,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_INCHES: return "in";
 		case TENKI_UNIT_FEET: return "ft";
 		case TENKI_UNIT_YARDS: return "yd";
+		case TENKI_UNIT_ARBITRARY: return "arb. unit";
 	}
 
 	return "";
@@ -1792,6 +1812,39 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						chn->converted_data = HeightFromPressure(P * 1000, standard_sea_level_pressure);
 					}
 					break;
+
+				case USBTENKI_CHIP_HEXCOLOR:
+					{
+						struct USBTenki_channel *red_chn;
+						struct USBTenki_channel *blue_chn;
+						struct USBTenki_channel *green_chn;
+						uint32_t color;
+						double max = 0.0;
+						uint8_t r,g,b;
+
+						red_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_RED, flags);
+						blue_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BLUE, flags);
+						green_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_GREEN, flags);
+						if (!red_chn || !blue_chn || !green_chn) {
+							return -1;
+						}
+
+						max = red_chn->converted_data;
+						if (green_chn->converted_data > max)
+							max = green_chn->converted_data;
+						if (blue_chn->converted_data > max)
+							max = blue_chn->converted_data;
+
+						r = red_chn->converted_data / max * 255.0;
+						g = green_chn->converted_data / max * 255.0;
+						b = blue_chn->converted_data / max * 255.0;
+
+						color = r<<16 | g<<8 | b;
+						chn->data_valid = 1;
+						chn->converted_unit = TENKI_UNIT_HEXCOLOR;
+						chn->converted_data = color;
+					}
+					break;
 			}
 
 	}
@@ -1909,6 +1962,33 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 			chn.chip_id = chn.channel_id;
 			chn.data_valid = 0;
 			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+		}
+	}
+
+	// Experiment: Arbitrary RGB intensity to Hex color. Does not work very well.
+	if (0)
+	{
+		unsigned char wanted[3] = { USBTENKI_CHIP_RED, USBTENKI_CHIP_GREEN, USBTENKI_CHIP_BLUE };
+		int j, found = 0;
+
+		for (i=0; i<real_channels; i++)
+		{
+			for (j=0; j<sizeof(wanted); j++) {
+				if (wanted[j] == channels[i].chip_id) {
+					wanted[j] = 0;
+					found++;
+				}
+			}
+		}
+
+		if (found == sizeof(wanted)) {
+			chn.channel_id = USBTENKI_CHIP_HEXCOLOR;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
 				return -1;

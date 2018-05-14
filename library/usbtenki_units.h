@@ -52,5 +52,9 @@
 #define TENKI_UNIT_FEET			0x6B
 #define TENKI_UNIT_YARDS		0x6C
 
+#define TENKI_UNIT_ARBITRARY	0x70
+
+#define TENKI_UNIT_HEXCOLOR		0x90
+
 #endif
 
