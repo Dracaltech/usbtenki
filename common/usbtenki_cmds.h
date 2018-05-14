@@ -208,6 +208,12 @@
 #define USBTENKI_CHIP_CCS811_TVOC	0x41
 #define USBTENKI_CHIP_CCS811_eCO2	0x42
 
+// Dimensionless light measurements
+#define USBTENKI_CHIP_RED		0x43
+#define USBTENKI_CHIP_GREEN		0x44
+#define USBTENKI_CHIP_BLUE		0x45
+#define USBTENKI_CHIP_IR		0x46
+
 #define USBTENKI_MCU_ADC0		0x80
 #define USBTENKI_MCU_ADC1		0x81
 #define USBTENKI_MCU_ADC2		0x82
@@ -230,6 +236,7 @@
 
 #define USBTENKI_CHIP_TACHOMETER	0xA0
 
+
 #define USBTENKI_CHIP_NONE		0xFF
 
 /* High channel numbers used in client. Not
@@ -242,6 +249,7 @@
 #define USBTENKI_VIRTUAL_TSL2568_LUX 0x104
 #define USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH	0x105
 #define USBTENKI_VIRTUAL_ALTITUDE	0x106
+#define USBTENKI_CHIP_HEXCOLOR	0x107
 
 #endif // _usbtenki_h__
 
