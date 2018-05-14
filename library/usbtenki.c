@@ -19,11 +19,14 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "usbtenki.h"
 #include "usbtenki_priv.h"
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
+
+#define MAX_USB_ATTEMPTS	3
 
 #if defined(WINDOWS_VERSION) | defined(WIN32)
 #include <windows.h>
@@ -300,6 +303,7 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	int n, i;
 	int datlen;
 	static int first = 1, trace = 0;
+	int attempts;
 
 	if (first) {
 		if (getenv("USBTENKI_TRACE")) {
@@ -308,22 +312,41 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 		first = 0;
 	}
 
-	n =	usb_control_msg(hdl,
-		USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, /* requesttype */
-		cmd, 	/* request*/
-		id, 				/* value */
-		0, 					/* index */
-		(char*)buffer, sizeof(buffer), 5000);
+	for (attempts = 0; attempts < MAX_USB_ATTEMPTS; attempts++)
+	{
+		n =	usb_control_msg(hdl,
+			USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, /* requesttype */
+			cmd, 	/* request*/
+			id, 				/* value */
+			0, 					/* index */
+			(char*)buffer, sizeof(buffer), 5000);
 
-	if (trace) {
-		printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
-			cmd, id, 0, n);
-		if (n>0) {
-			for (i=0; i<n; i++) {
-				printf("%02x ", buffer[i]);
+		if (trace) {
+			printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
+				cmd, id, 0, n);
+			if (n>0) {
+				for (i=0; i<n; i++) {
+					printf("%02x ", buffer[i]);
+				}
 			}
+			printf("\n");
 		}
-		printf("\n");
+
+		if (n == -ETIMEDOUT) {
+			printf("timeout\n");
+		}
+		if (n == -EPIPE) {
+			printf("broken pipe\n");
+		}
+
+		if (n > 0) {
+			break;
+		}
+	}
+
+	if (n<0) {
+		fprintf(stderr, "USB control message error: %s\n", usb_strerror());
+		return -1;
 	}
 
 	/* Validate size first */
