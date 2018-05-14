@@ -218,10 +218,20 @@ void DashSensor::refresh()
 			continue;
 		}
 
-		g_tenkisources->convertToUnits(cdat, &ch);		
+		g_tenkisources->convertToUnits(cdat, &ch);
 
 		g_tenkisources->formatValue(&d, ch.converted_data);
-		values.at(i)->setText(d);
+		if (chip_ids.at(i) == USBTENKI_CHIP_HEXCOLOR) {
+			char tmpbuf[128];
+			snprintf(tmpbuf, 128, "<font style='background-color: #%06x'; color: #%06x'><b>#%06x</b></font>",
+				(uint32_t)ch.converted_data,
+				0x000000,
+				(uint32_t)ch.converted_data
+				);
+			values.at(i)->setText(tmpbuf);
+		} else {
+			values.at(i)->setText(d);
+		}
 		minimums.at(i)->submitValue(ch.converted_data);
 		maximums.at(i)->submitValue(ch.converted_data);
 
