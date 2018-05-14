@@ -899,6 +899,16 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
 
+		case USBTENKI_CHIP_RED:
+			return "Red light intensity";
+		case USBTENKI_CHIP_GREEN:
+			return "Green light intensity";
+		case USBTENKI_CHIP_BLUE:
+			return "Blue light intensity";
+		case USBTENKI_CHIP_IR:
+			return "IR light intensity";
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Hexadecimal color";
 	}
 	return "unknown";
 }
@@ -996,6 +1006,12 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CO2_PPM:
 			return "Gas PPM";
 
+		case USBTENKI_CHIP_RED:
+		case USBTENKI_CHIP_GREEN:
+		case USBTENKI_CHIP_BLUE:
+		case USBTENKI_CHIP_IR:
+			return chipToString(id);
+
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -1012,6 +1028,9 @@ const char *chipToShortString(int id)
 
 		case USBTENKI_CHIP_NONE:
 			return "N/A";
+
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Color";
 	}
 	return "unknown";
 }
@@ -1061,6 +1080,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_INCHES: return "in";
 		case TENKI_UNIT_FEET: return "ft";
 		case TENKI_UNIT_YARDS: return "yd";
+		case TENKI_UNIT_ARBITRARY: return "arb. unit";
 	}
 
 	return "";
