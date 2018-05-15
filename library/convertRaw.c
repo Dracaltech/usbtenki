@@ -845,6 +845,77 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_VEML6030_ALS:
+			{
+				uint16_t value;
+				double minstep = 0.0036;
+				double gain; // gain
+				double it;
+
+				if (chn->raw_length != 4) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+
+				/*
+				value = 1480;
+				raw_data[2] = 3;
+				raw_data[3] = 0;
+				*/
+
+				// Appnote: The resolution is most sensitive with gain = 2 and an integration
+				// time of 800ms, specified to 0.0036 lx/step.
+
+
+				// For each shorter integration time by half, the resolution value is doubled.
+				//
+				switch(raw_data[3])
+				{
+					case 3: it = 1.0; break; // 800 MS
+					case 2: it = 2.0; break; // 400 MS
+					case 1: it = 4.0; break; // 200 MS
+					case 0: it = 8.0; break; // 100 MS
+					case 8: it = 16.0; break; // 50 MS
+					case 0xc: it = 32.0; break; // 25 MS
+					default:
+						goto wrongData;
+				}
+
+				// .. The same principle is valid for the gain. For gain = 1 it is
+				// again doubled, and for gain = 1/4 it is four times higher, and
+				// for gain = 1/8 it is again doubled.
+				switch(raw_data[2])
+				{
+					case 0: gain = 2.0; break; // Gain 1
+					case 1: gain = 1.0; break; // Gain 2
+					case 3: gain = 4.0; break; // Gain 1/4
+					case 2: gain = 8.0; break; // Gain 1/8
+					default:
+						goto wrongData;
+				}
+
+				//printf("Raw: %d, gain: %.3f, it: %.3f\n", value, gain, it);
+
+				temperature = value  * (minstep * gain * it);
+				chip_fmt = TENKI_UNIT_LUX;
+			}
+			break;
+
+		case USBTENKI_CHIP_VEML6030_WHITE:
+			{
+				uint16_t value;
+
+				if (chn->raw_length < 2) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+				temperature = value;
+				chip_fmt = TENKI_UNIT_ARBITRARY;
+			}
+			break;
+
 		case USBTENKI_CHIP_VEML6075_UVA:
 		case USBTENKI_CHIP_VEML6075_UVB:
 		case USBTENKI_CHIP_VEML6075_UVCOMP1:

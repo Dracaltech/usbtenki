@@ -903,6 +903,10 @@ const char *chipToString(int id)
 			return "VEML6075 UVA";
 		case USBTENKI_CHIP_VEML6075_UVB:
 			return "VEML6075 UVB";
+		case USBTENKI_CHIP_VEML6030_ALS:
+			return "VEML6030 ALS";
+		case USBTENKI_CHIP_VEML6030_WHITE:
+			return "VEML6030 WHITE";
 
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
@@ -991,6 +995,10 @@ const char *chipToShortString(int id)
 			return "UVA";
 		case USBTENKI_CHIP_VEML6075_UVB:
 			return "UVB";
+		case USBTENKI_CHIP_VEML6030_ALS:
+			return "Ambiant light";
+		case USBTENKI_CHIP_VEML6030_WHITE:
+			return "White light";
 
 		case USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH:
 		case USBTENKI_CHIP_SHT_RH:
