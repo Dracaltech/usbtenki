@@ -899,6 +899,11 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_MS5611_T:
 			return "MS5611 Temperature";
 
+		case USBTENKI_CHIP_VEML6075_UVA:
+			return "VEML6075 UVA";
+		case USBTENKI_CHIP_VEML6075_UVB:
+			return "VEML6075 UVB";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -981,6 +986,11 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TSL2561_IR_16X:
 		case USBTENKI_CHIP_TSL2568_IR_16X:
 			return "IR (16x gain)";
+
+		case USBTENKI_CHIP_VEML6075_UVA:
+			return "UVA";
+		case USBTENKI_CHIP_VEML6075_UVB:
+			return "UVB";
 
 		case USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH:
 		case USBTENKI_CHIP_SHT_RH:
