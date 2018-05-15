@@ -1979,7 +1979,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 	}
 
 	// Experiment: Arbitrary RGB intensity to Hex color. Does not work very well.
-	if (0)
+	if (NULL != getenv("TENKI_HEXCOLOR"))
 	{
 		unsigned char wanted[3] = { USBTENKI_CHIP_RED, USBTENKI_CHIP_GREEN, USBTENKI_CHIP_BLUE };
 		int j, found = 0;
