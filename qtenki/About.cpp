@@ -3,7 +3,7 @@
 #include "About.h"
 #include "../common/usbtenki_version.h"
 
-#define HOMEPAGE	"http://www.raphnet.net/electronique/usbtenki/index_en.php"
+#define HOMEPAGE	"https://www.dracal.com"
 
 About::About()
 {
@@ -20,9 +20,9 @@ About::About()
 	te->setHtml(
 "<h1>QTenki</h1>"
 "QTenki is part of "
-"USBTenki version "USBTENKI_VERSION"<br>"
+"USBTenki version " USBTENKI_VERSION "<br>"
 USBTENKI_COPYRIGHTS_HTML "<br><br>"
-"Visit the project homepge at <a href=\""HOMEPAGE"\">"HOMEPAGE"</a> for the latest releases."
+"Visit <a href=\"" HOMEPAGE "\">" HOMEPAGE "</a> for the latest releases."
 "<br><br>"
 "<hr>"
 "<h1>License</h1>"
