@@ -46,14 +46,6 @@ BOOL getUsbTenkiValues(TCHAR cmdline[], float **values, int *n_values)
 		return false;
 	}
 
-	// Ensure the read handle to the pipe for STDOUT is not inherited.
-	if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0)) {
-		fprintf(stderr, "Could not configure pipe\n");
-		CloseHandle(g_hChildStd_OUT_Wr);
-		CloseHandle(g_hChildStd_OUT_Rd);
-		return false;
-	}
-
 	// Set up members of the PROCESS_INFORMATION structure.
 	ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
