@@ -759,6 +759,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				uint16_t TVOC;
 				uint8_t data_valid;
 
+				if (chn->raw_length != 4)
+					goto wrongData;
+
 				data_valid = raw_data[0];
 				TVOC = raw_data[1]<<8 | raw_data[2];
 
@@ -778,6 +781,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			{
 				uint16_t eCO2;
 				uint8_t data_valid;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
 
 				data_valid = raw_data[0];
 				eCO2 = raw_data[1]<<8 | raw_data[2];
