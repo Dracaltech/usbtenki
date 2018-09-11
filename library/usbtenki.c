@@ -76,6 +76,10 @@ char matchSerialNumber(const char *str)
 
 int usbtenki_init(void)
 {
+	if (getenv("USBTENKI_VERBOSE")) {
+		g_usbtenki_verbose = 1;
+	}
+
 	usb_init();
 	return 0;
 }
@@ -144,6 +148,10 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 
 	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next)
 	{
+		if (g_usbtenki_verbose) {
+			printf("Bus '%s'\n", ctx->bus->dirname);
+		}
+
 		start_dev = ctx->bus->devices;
 		for (ctx->dev = start_dev; ctx->dev; ctx->dev = ctx->dev->next)
 		{
@@ -203,6 +211,11 @@ USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
 {
 	struct usb_dev_handle *hdl;
 	int res;
+	int i;
+
+	if (g_usbtenki_verbose) {
+		printf("Opening USB device %s\n", ((struct usb_device*)tdev)->filename);
+	}
 
 	hdl = usb_open(tdev);
 	if (!hdl) {
