@@ -1,10 +1,14 @@
 CC=gcc
 LD=$(CC)
 
-# Note: The -I/opt/local/include and -L/opt/local/lib are there
-# for compiling under MacOS X with macports.
-CFLAGS=-Wall -g -O -I../common -I../library -I/opt/local/include
-LDFLAGS=-lusb -lm -L/opt/local/lib/ -L/usr/local/opt/libusb-compat/lib
+#LIBUSB_CFLAGS=-DUSE_OLD_LIBUSB
+#LIBUSB_LDFLAGS=-lusb -L/usr/local/opt/libusb-compat/lib
+
+LIBUSB_CFLAGS=`pkg-config libusb-1.0 --cflags`
+LIBUSB_LDFLAGS=`pkg-config libusb-1.0 --libs`
+
+CFLAGS=-Wall -g -O -I../common -I../library $(LIBUSB_CFLAGS)
+LDFLAGS=-lm `pkg-config libusb-1.0 --libs`
 
 PREFIX=/usr/local
 

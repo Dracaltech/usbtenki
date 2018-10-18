@@ -19,9 +19,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "usbtenki.h"
 #include "usbtenki_priv.h"
@@ -37,6 +39,11 @@
 
 int g_usbtenki_verbose=0;
 int g_usbtenki_num_attempts = 3;
+
+#ifndef USE_OLD_LIBUSB
+#include <libusb.h>
+libusb_context *g_libusbctx;
+#endif
 
 #define VIDPID_NOT_HANDLED		0
 #define VIDPID_HANDLED			1 // Recognized by VID/PID, name irrelevant.
@@ -80,12 +87,20 @@ int usbtenki_init(void)
 		g_usbtenki_verbose = 1;
 	}
 
+#ifdef USE_OLD_LIBUSB
 	usb_init();
+#else
+	libusb_init(&g_libusbctx);
+#endif
 	return 0;
 }
 
 void unsbtenki_shutdown(void)
 {
+#ifdef USE_OLD_LIBUSB
+#else
+	libusb_exit(g_libusbctx);
+#endif
 }
 
 static unsigned char xor_buf(unsigned char *buf, int len)
@@ -98,6 +113,7 @@ static unsigned char xor_buf(unsigned char *buf, int len)
 	return x;
 }
 
+#ifdef USE_OLD_LIBUSB
 static void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx)
 {
 	memset(ctx, 0, sizeof(struct USBTenki_list_ctx));
@@ -395,6 +411,220 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 
 	return datlen;
 }
+#else
+
+int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
+										int id, unsigned char *dst)
+{
+	unsigned char buffer[8];
+	unsigned char xor;
+	int n, i;
+	int datlen;
+	static int first = 1, trace = 0;
+	int attempts;
+
+	if (first) {
+		if (getenv("USBTENKI_TRACE")) {
+			trace = 1;
+		}
+		first = 0;
+	}
+
+	for (attempts = 0; attempts < MAX_USB_ATTEMPTS; attempts++)
+	{
+		n =	libusb_control_transfer(hdl,
+			LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, /* requesttype */
+			cmd, 	/* request*/
+			id, 				/* value */
+			0, 					/* index */
+			buffer, sizeof(buffer), 5000);
+
+		if (trace) {
+			printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
+				cmd, id, 0, n);
+			if (n>0) {
+				for (i=0; i<n; i++) {
+					printf("%02x ", buffer[i]);
+				}
+			}
+			printf("\n");
+		}
+
+		if (n == -ETIMEDOUT) {
+			printf("timeout\n");
+		}
+		if (n == -EPIPE) {
+			printf("broken pipe\n");
+		}
+
+		if (n > 0) {
+			break;
+		}
+	}
+
+	if (n<0) {
+		fprintf(stderr, "USB control message error: %s\n", libusb_strerror(n));
+		return -1;
+	}
+
+	/* Validate size first */
+	if (n>8) {
+		fprintf(stderr, "Too much data received! (%d)\n", n);
+		return -3;
+	} else if (n<2) {
+		fprintf(stderr, "Not enough data received! (%d)\n", n);
+		return -4;
+	}
+
+	/* dont count command and xor */
+	datlen = n - 2;
+
+	/* Check if reply is for this command */
+	if (buffer[0] != cmd) {
+		fprintf(stderr, "Reply does not match request (0x%02x)\n", buffer[0]);
+		return -5;
+	}
+
+	/* Check xor */
+	xor = xor_buf(buffer, n);
+	if (xor) {
+		fprintf(stderr, "Communication corruption occured!\n");
+		return -2;
+	}
+
+	if (datlen) {
+		memcpy(dst, buffer+1, datlen);
+	}
+
+	return datlen;
+}
+
+void usbtenki_closeDevice(USBTenki_dev_handle hdl)
+{
+	libusb_device_handle *dev_handle = (libusb_device_handle*)hdl;
+
+	if (dev_handle) {
+		libusb_close(dev_handle);
+	}
+}
+
+USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
+{
+	libusb_device *dev = (libusb_device*)tdev;
+	libusb_device_handle *dev_handle;
+	int res;
+
+	res = libusb_open(dev, &dev_handle);
+	if (res != 0) {
+		fprintf(stderr, "libusb_open failed: %s\n", libusb_strerror(res));
+		return NULL;
+	}
+
+	return (USBTenki_dev_handle)dev_handle;
+}
+
+USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_info *info)
+{
+	struct USBTenki_list_ctx *devlistctx;
+	struct USBTenki_info inf;
+	USBTenki_device cur_dev;
+	int res;
+
+	devlistctx = usbtenki_allocListCtx();
+	if (!devlistctx) {
+		return NULL;
+	}
+
+	while ((cur_dev=usbtenki_listDevices(&inf, devlistctx)))
+	{
+		if (strcmp(serial, inf.str_serial)==0) {
+			if (info) {
+				memcpy(info, &inf, sizeof (struct USBTenki_info));
+			}
+
+			usbtenki_freeListCtx(devlistctx);
+			return usbtenki_openDevice(cur_dev);
+		}
+	}
+
+	usbtenki_freeListCtx(devlistctx);
+
+	return NULL;
+}
+
+struct USBTenki_list_ctx *usbtenki_allocListCtx(void)
+{
+	struct USBTenki_list_ctx *ctx = calloc(sizeof(struct USBTenki_list_ctx), 1);
+	if (!ctx) {
+		return ctx;
+	}
+	return ctx;
+}
+
+void usbtenki_freeListCtx(struct USBTenki_list_ctx *ctx)
+{
+	if (ctx) {
+		if (ctx->devices) {
+			libusb_free_device_list(ctx->devices, 0); // TODO : unref_devices?
+		}
+		free(ctx);
+	}
+}
+
+USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki_list_ctx *ctx)
+{
+	libusb_device *dev;
+	struct libusb_device_descriptor devdesc;
+	libusb_device_handle *dev_handle;
+	int res;
+
+	if (!info || !ctx) {
+		return NULL;
+	}
+
+	if (!ctx->devices) {
+		ctx->n_devices = libusb_get_device_list(g_libusbctx, &ctx->devices);
+		if (ctx->n_devices <= 0) {
+			return NULL;
+		}
+	}
+
+	while (ctx->cur_device_index < ctx->n_devices) {
+		dev = ctx->devices[ctx->cur_device_index];
+		ctx->cur_device_index++;
+
+		res = libusb_get_device_descriptor(dev, &devdesc);
+		if (res != 0) {
+			fprintf(stderr, "get device descriptor failed: %s\n", libusb_strerror(res));
+			return NULL;
+		}
+
+		if (isHandledVidPid(devdesc.idVendor, devdesc.idProduct)) {
+
+			if (info)
+			{
+				res = libusb_open(dev, &dev_handle);
+				if (res != 0) {
+					fprintf(stderr, "Could not open device: %s\n", libusb_strerror(res));
+					continue;
+				}
+
+				libusb_get_string_descriptor_ascii(dev_handle, devdesc.iProduct, (unsigned char*)info->str_prodname, sizeof(info->str_prodname));
+				libusb_get_string_descriptor_ascii(dev_handle, devdesc.iSerialNumber, (unsigned char*)info->str_serial, sizeof(info->str_serial));
+				info->major = devdesc.bcdDevice >> 8;
+				info->minor = ((devdesc.bcdDevice & 0xf0)>>4) * 10 + (devdesc.bcdDevice & 0xf);
+				libusb_close(dev_handle);
+			}
+
+			return (USBTenki_device)dev;
+		}
+	}
+
+	return NULL;
+}
+
+#endif
+
 
 int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
 {

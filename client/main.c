@@ -407,8 +407,6 @@ int main(int argc, char **argv)
 
 reopen:
 	dev = NULL;
-//	usb_find_busses();
-//	usb_find_devices();
 
 	listContext = usbtenki_allocListCtx();
 	if (!listContext) {
