@@ -806,12 +806,19 @@ const char *chipToString(int id)
 			return "SHT35 Temperature";
 		case USBTENKI_CHIP_SHT35_RH:
 			return "SHT35 Relative Humidity";
+		case USBTENKI_CHIP_SCD30_T:
+			return "SCD30 Temperature";
+		case USBTENKI_CHIP_SCD30_RH:
+			return "SCD30 Relative Humidity";
 
 		case USBTENKI_CHIP_CCS811_TVOC:
 			return "CCS811 TVOC PPB";
 
 		case USBTENKI_CHIP_CCS811_eCO2:
 			return "CCS811 eCO2 PPM";
+
+		case USBTENKI_CHIP_SCD30_CO2:
+			return "SCD30 CO2 GAS PPM";
 
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
@@ -988,6 +995,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_THC_TYPE_E:
 		case USBTENKI_CHIP_THC_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_R:
+		case USBTENKI_CHIP_SCD30_T:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -1021,6 +1029,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CC2_RH:
 		case USBTENKI_CHIP_SHT31_RH:
 		case USBTENKI_CHIP_SHT35_RH:
+		case USBTENKI_CHIP_SCD30_RH:
 			return "Relative Humidity";
 
 		case USBTENKI_MCU_ADC0:
@@ -1060,6 +1069,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CCS811_eCO2:
 		case USBTENKI_CHIP_CCS811_TVOC:
 		case USBTENKI_CHIP_CO2_PPM:
+		case USBTENKI_CHIP_SCD30_CO2:
 			return "Gas PPM";
 
 		case USBTENKI_CHIP_RED:
