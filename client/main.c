@@ -681,7 +681,12 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 			if (chn->saturated) {
 				printf("err");
 			} else {
-				printf(fmt, chn->converted_data);
+				if (chn->converted_unit == TENKI_UNIT_HEXCOLOR) {
+					int color = chn->converted_data;
+					printf("#%06x\n", color);
+				} else {
+					printf(fmt, chn->converted_data);
+				}
 			}
 			printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 		}

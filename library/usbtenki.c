@@ -1,5 +1,6 @@
 /* usbtenki: A library for accessing USBTenki sensors.
- * Copyright (C) 2007-2014  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2018 Dracal Technologies inc.
+ * Copyright (C) 2007-2018  Raphael Assenat
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,13 +18,17 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <math.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "usbtenki.h"
 #include "usbtenki_priv.h"
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
+
+#define MAX_USB_ATTEMPTS	3
 
 #if defined(WINDOWS_VERSION) | defined(WIN32)
 #include <windows.h>
@@ -71,6 +76,10 @@ char matchSerialNumber(const char *str)
 
 int usbtenki_init(void)
 {
+	if (getenv("USBTENKI_VERBOSE")) {
+		g_usbtenki_verbose = 1;
+	}
+
 	usb_init();
 	return 0;
 }
@@ -139,6 +148,10 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 
 	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next)
 	{
+		if (g_usbtenki_verbose) {
+			printf("Bus '%s'\n", ctx->bus->dirname);
+		}
+
 		start_dev = ctx->bus->devices;
 		for (ctx->dev = start_dev; ctx->dev; ctx->dev = ctx->dev->next)
 		{
@@ -198,6 +211,11 @@ USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
 {
 	struct usb_dev_handle *hdl;
 	int res;
+	int i;
+
+	if (g_usbtenki_verbose) {
+		printf("Opening USB device %s\n", ((struct usb_device*)tdev)->filename);
+	}
 
 	hdl = usb_open(tdev);
 	if (!hdl) {
@@ -300,6 +318,7 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	int n, i;
 	int datlen;
 	static int first = 1, trace = 0;
+	int attempts;
 
 	if (first) {
 		if (getenv("USBTENKI_TRACE")) {
@@ -308,22 +327,41 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 		first = 0;
 	}
 
-	n =	usb_control_msg(hdl,
-		USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, /* requesttype */
-		cmd, 	/* request*/
-		id, 				/* value */
-		0, 					/* index */
-		(char*)buffer, sizeof(buffer), 5000);
+	for (attempts = 0; attempts < MAX_USB_ATTEMPTS; attempts++)
+	{
+		n =	usb_control_msg(hdl,
+			USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, /* requesttype */
+			cmd, 	/* request*/
+			id, 				/* value */
+			0, 					/* index */
+			(char*)buffer, sizeof(buffer), 5000);
 
-	if (trace) {
-		printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
-			cmd, id, 0, n);
-		if (n>0) {
-			for (i=0; i<n; i++) {
-				printf("%02x ", buffer[i]);
+		if (trace) {
+			printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
+				cmd, id, 0, n);
+			if (n>0) {
+				for (i=0; i<n; i++) {
+					printf("%02x ", buffer[i]);
+				}
 			}
+			printf("\n");
 		}
-		printf("\n");
+
+		if (n == -ETIMEDOUT) {
+			printf("timeout\n");
+		}
+		if (n == -EPIPE) {
+			printf("broken pipe\n");
+		}
+
+		if (n > 0) {
+			break;
+		}
+	}
+
+	if (n<0) {
+		fprintf(stderr, "USB control message error: %s\n", usb_strerror());
+		return -1;
 	}
 
 	/* Validate size first */
@@ -768,12 +806,19 @@ const char *chipToString(int id)
 			return "SHT35 Temperature";
 		case USBTENKI_CHIP_SHT35_RH:
 			return "SHT35 Relative Humidity";
+		case USBTENKI_CHIP_SCD30_T:
+			return "SCD30 Temperature";
+		case USBTENKI_CHIP_SCD30_RH:
+			return "SCD30 Relative Humidity";
 
 		case USBTENKI_CHIP_CCS811_TVOC:
 			return "CCS811 TVOC PPB";
 
 		case USBTENKI_CHIP_CCS811_eCO2:
 			return "CCS811 eCO2 PPM";
+
+		case USBTENKI_CHIP_SCD30_CO2:
+			return "SCD30 CO2 GAS PPM";
 
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
@@ -876,6 +921,15 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_MS5611_T:
 			return "MS5611 Temperature";
 
+		case USBTENKI_CHIP_VEML6075_UVA:
+			return "VEML6075 UVA";
+		case USBTENKI_CHIP_VEML6075_UVB:
+			return "VEML6075 UVB";
+		case USBTENKI_CHIP_VEML6030_ALS:
+			return "VEML6030 ALS";
+		case USBTENKI_CHIP_VEML6030_WHITE:
+			return "VEML6030 WHITE";
+
 		/* Virtual channels and chipID have the same vales */
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
@@ -899,6 +953,16 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_NONE:
 			return "Unused/unconfigured";
 
+		case USBTENKI_CHIP_RED:
+			return "Red light intensity";
+		case USBTENKI_CHIP_GREEN:
+			return "Green light intensity";
+		case USBTENKI_CHIP_BLUE:
+			return "Blue light intensity";
+		case USBTENKI_CHIP_IR:
+			return "IR light intensity";
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Hexadecimal color";
 	}
 	return "unknown";
 }
@@ -931,6 +995,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_THC_TYPE_E:
 		case USBTENKI_CHIP_THC_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_R:
+		case USBTENKI_CHIP_SCD30_T:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -949,12 +1014,22 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TSL2568_IR_16X:
 			return "IR (16x gain)";
 
+		case USBTENKI_CHIP_VEML6075_UVA:
+			return "UVA";
+		case USBTENKI_CHIP_VEML6075_UVB:
+			return "UVB";
+		case USBTENKI_CHIP_VEML6030_ALS:
+			return "Ambiant light";
+		case USBTENKI_CHIP_VEML6030_WHITE:
+			return "White light";
+
 		case USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH:
 		case USBTENKI_CHIP_SHT_RH:
 		case USBTENKI_CHIP_BS02_RH:
 		case USBTENKI_CHIP_CC2_RH:
 		case USBTENKI_CHIP_SHT31_RH:
 		case USBTENKI_CHIP_SHT35_RH:
+		case USBTENKI_CHIP_SCD30_RH:
 			return "Relative Humidity";
 
 		case USBTENKI_MCU_ADC0:
@@ -994,7 +1069,14 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CCS811_eCO2:
 		case USBTENKI_CHIP_CCS811_TVOC:
 		case USBTENKI_CHIP_CO2_PPM:
+		case USBTENKI_CHIP_SCD30_CO2:
 			return "Gas PPM";
+
+		case USBTENKI_CHIP_RED:
+		case USBTENKI_CHIP_GREEN:
+		case USBTENKI_CHIP_BLUE:
+		case USBTENKI_CHIP_IR:
+			return chipToString(id);
 
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
@@ -1012,6 +1094,9 @@ const char *chipToShortString(int id)
 
 		case USBTENKI_CHIP_NONE:
 			return "N/A";
+
+		case USBTENKI_CHIP_HEXCOLOR:
+			return "Color";
 	}
 	return "unknown";
 }
@@ -1061,6 +1146,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_INCHES: return "in";
 		case TENKI_UNIT_FEET: return "ft";
 		case TENKI_UNIT_YARDS: return "yd";
+		case TENKI_UNIT_ARBITRARY: return "arb. unit";
 	}
 
 	return "";
@@ -1769,6 +1855,39 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						chn->converted_data = HeightFromPressure(P * 1000, standard_sea_level_pressure);
 					}
 					break;
+
+				case USBTENKI_CHIP_HEXCOLOR:
+					{
+						struct USBTenki_channel *red_chn;
+						struct USBTenki_channel *blue_chn;
+						struct USBTenki_channel *green_chn;
+						uint32_t color;
+						double max = 0.0;
+						uint8_t r,g,b;
+
+						red_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_RED, flags);
+						blue_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_BLUE, flags);
+						green_chn = getValidChannelFromChip(hdl, channels, num_channels, USBTENKI_CHIP_GREEN, flags);
+						if (!red_chn || !blue_chn || !green_chn) {
+							return -1;
+						}
+
+						max = red_chn->converted_data;
+						if (green_chn->converted_data > max)
+							max = green_chn->converted_data;
+						if (blue_chn->converted_data > max)
+							max = blue_chn->converted_data;
+
+						r = red_chn->converted_data / max * 255.0;
+						g = green_chn->converted_data / max * 255.0;
+						b = blue_chn->converted_data / max * 255.0;
+
+						color = r<<16 | g<<8 | b;
+						chn->data_valid = 1;
+						chn->converted_unit = TENKI_UNIT_HEXCOLOR;
+						chn->converted_data = color;
+					}
+					break;
 			}
 
 	}
@@ -1886,6 +2005,33 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 			chn.chip_id = chn.channel_id;
 			chn.data_valid = 0;
 			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
+		}
+	}
+
+	// Experiment: Arbitrary RGB intensity to Hex color. Does not work very well.
+	if (NULL != getenv("TENKI_HEXCOLOR"))
+	{
+		unsigned char wanted[3] = { USBTENKI_CHIP_RED, USBTENKI_CHIP_GREEN, USBTENKI_CHIP_BLUE };
+		int j, found = 0;
+
+		for (i=0; i<real_channels; i++)
+		{
+			for (j=0; j<sizeof(wanted); j++) {
+				if (wanted[j] == channels[i].chip_id) {
+					wanted[j] = 0;
+					found++;
+				}
+			}
+		}
+
+		if (found == sizeof(wanted)) {
+			chn.channel_id = USBTENKI_CHIP_HEXCOLOR;
+			chn.chip_id = chn.channel_id;
+			chn.data_valid = 0;
+			chn.converted_data = 0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
 				return -1;

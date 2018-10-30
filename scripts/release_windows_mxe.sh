@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MXE_ROOT=$HOME/mxe
+MXE_ROOT=/opt/mxe/mxe
 
 QMAKE="$MXE_ROOT/usr/i686-w64-mingw32.static/qt/bin/qmake"
 VERSION_H=../common/usbtenki_version.h
