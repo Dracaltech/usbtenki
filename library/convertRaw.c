@@ -819,6 +819,46 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_SCD30_T:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_SCD30_RH:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_RH;
+			}
+			break;
+
+		case USBTENKI_CHIP_SCD30_CO2:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
 		case USBTENKI_CHIP_THC_TYPE_K:
 		case USBTENKI_CHIP_THC_TYPE_J:
 		case USBTENKI_CHIP_THC_TYPE_T:
