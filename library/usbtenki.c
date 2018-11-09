@@ -842,6 +842,8 @@ float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
 		case TENKI_UNIT_MILLIMETERS:
 			meters = length / 1000;
 			break;
+		case TENKI_UNIT_MICROMETERS:
+			meters = length / 1000000;
 
 		case TENKI_UNIT_INCHES:
 			// 1 inch = 25.4mm = 2.54cm = 0.254dm = 0.0254m
@@ -878,6 +880,10 @@ float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
 
 		case TENKI_UNIT_MILLIMETERS:
 			converted = meters * 1000;
+			break;
+
+		case TENKI_UNIT_MICROMETERS:
+			converted = meters * 1000000;
 			break;
 
 		case TENKI_UNIT_INCHES:
@@ -1372,11 +1378,14 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_DECIMETERS: return "dm";
 		case TENKI_UNIT_CENTIMETERS: return "cm";
 		case TENKI_UNIT_MILLIMETERS: return "mm";
+		case TENKI_UNIT_MICROMETERS: return no_fancy_chars ? "um" : "μm";
 		case TENKI_UNIT_MILS: return "mil";
 		case TENKI_UNIT_INCHES: return "in";
 		case TENKI_UNIT_FEET: return "ft";
 		case TENKI_UNIT_YARDS: return "yd";
 		case TENKI_UNIT_ARBITRARY: return "arb. unit";
+		case TENKI_UNIT_uG_PER_M3: return no_fancy_chars ? "ug/m^3" : "μg/m³";
+		case TENKI_UNIT_COUNT_PER_CM3: return no_fancy_chars ? "#/cm^3" : "#/cm³";
 	}
 
 	return "";

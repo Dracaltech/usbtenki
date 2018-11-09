@@ -22,6 +22,9 @@
 #define TENKI_UNIT_PPM			0x1A
 #define TENKI_UNIT_PPB			0x1B
 
+#define TENKI_UNIT_uG_PER_M3	0x1C		// micro grams per cubic meter
+#define TENKI_UNIT_COUNT_PER_CM3	0x1D	// count per cubic centimeter
+
 #define TENKI_UNIT_VOLTS		0x20
 #define TENKI_UNIT_MILLIVOLT	0x23
 #define TENKI_UNIT_AMPS			0x25
@@ -46,6 +49,7 @@
 #define TENKI_UNIT_DECIMETERS	0x61
 #define TENKI_UNIT_CENTIMETERS	0x62
 #define TENKI_UNIT_MILLIMETERS	0x63
+#define TENKI_UNIT_MICROMETERS	0x64
 
 #define TENKI_UNIT_MILS			0x69
 #define TENKI_UNIT_INCHES		0x6A
