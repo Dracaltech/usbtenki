@@ -1059,6 +1059,28 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
 
+		case USBTENKI_CHIP_SPS30_MC_PM1_0:
+			return "Mass Concentration PM1.0";
+		case USBTENKI_CHIP_SPS30_MC_PM2_5:
+			return "Mass Concentration PM2.5";
+		case USBTENKI_CHIP_SPS30_MC_PM4_0:
+			return "Mass Concentration PM4.0";
+		case USBTENKI_CHIP_SPS30_MC_PM10:
+			return "Mass Concentration PM10";
+		case USBTENKI_CHIP_SPS30_NC_PM0_5:
+			return "Number Concentration PM0.5";
+		case USBTENKI_CHIP_SPS30_NC_PM1_0:
+			return "Number Concentration PM1.0";
+		case USBTENKI_CHIP_SPS30_NC_PM2_5:
+			return "Number Concentration PM2.5";
+		case USBTENKI_CHIP_SPS30_NC_PM4_0:
+			return "Number Concentration PM4.0";
+		case USBTENKI_CHIP_SPS30_NC_PM10:
+			return "Number Concentration PM10";
+
+		case USBTENKI_CHIP_SPS30_TYP_PART_SIZE:
+			return "Typical Particle Size";
+
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
 		case USBTENKI_CHIP_TSL2561_IR:
@@ -1313,6 +1335,21 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_BLUE:
 		case USBTENKI_CHIP_IR:
 			return chipToString(id);
+
+		case USBTENKI_CHIP_SPS30_MC_PM1_0:
+		case USBTENKI_CHIP_SPS30_MC_PM2_5:
+		case USBTENKI_CHIP_SPS30_MC_PM4_0:
+		case USBTENKI_CHIP_SPS30_MC_PM10:
+		case USBTENKI_CHIP_SPS30_NC_PM0_5:
+		case USBTENKI_CHIP_SPS30_NC_PM1_0:
+		case USBTENKI_CHIP_SPS30_NC_PM2_5:
+		case USBTENKI_CHIP_SPS30_NC_PM4_0:
+		case USBTENKI_CHIP_SPS30_NC_PM10:
+			return "Concentration";
+		case USBTENKI_CHIP_SPS30_TYP_PART_SIZE:
+			return "Size";
+
+
 
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
