@@ -1008,7 +1008,34 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			break;
 
 		case USBTENKI_CHIP_VEML6075_UVA:
+			{
+				uint16_t value;
+
+				if (chn->raw_length!=2) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+				temperature = value * 0.93;
+				chip_fmt = TENKI_UNIT_uW_PER_CM2;
+			}
+			break;
+
+
 		case USBTENKI_CHIP_VEML6075_UVB:
+			{
+				uint16_t value;
+
+				if (chn->raw_length!=2) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+				temperature = value * 2.1;
+				chip_fmt = TENKI_UNIT_uW_PER_CM2;
+			}
+			break;
+
 		case USBTENKI_CHIP_VEML6075_UVCOMP1:
 		case USBTENKI_CHIP_VEML6075_UVCOMP2:
 			{

@@ -35,6 +35,7 @@
 #define TENKI_UNIT_MILLIWATTS	0x2D
 
 #define TENKI_UNIT_LUX			0x30
+#define TENKI_UNIT_uW_PER_CM2	0x31	// micro watt per square centimeter
 
 #define TENKI_UNIT_METER_SEC	0x40
 
