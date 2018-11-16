@@ -1193,6 +1193,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_ARBITRARY: return "arb. unit";
 		case TENKI_UNIT_uG_PER_M3: return no_fancy_chars ? "ug/m^3" : "μg/m³";
 		case TENKI_UNIT_COUNT_PER_CM3: return no_fancy_chars ? "#/cm^3" : "#/cm³";
+		case TENKI_UNIT_uW_PER_CM2: return no_fancy_chars ? "uW/cm^2" : "μW/cm²";
 	}
 
 	return "";
