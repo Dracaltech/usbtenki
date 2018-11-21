@@ -1,4 +1,14 @@
-Vresion 2.1.13 - November 27, 2017
+Version 2.1.14 - November 21, 2018
+   - [QTenki] Fix a crash when the graph is manipulated certain ways
+   - Add support for the Sensirion SPS30 particle sensor
+   - Add support for the Sensirion SCD30 CO2 sensor
+   - Add support for the VEML6075 UVA/UVB sensor
+   - Add support for the VEML6030 Ambiant light sensor
+   - Add support for arbitrary units
+   - Add programming examples is several languages
+   - libusb 1.0 support
+
+Version 2.1.13 - November 27, 2017
    - [QTenki] Fix thermocouple colorization when multiple units are connected
 
 Version 2.1.12 - November 15, 2017
