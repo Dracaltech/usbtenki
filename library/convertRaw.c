@@ -658,6 +658,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				c4 = caldata[6] | caldata[7]<<8;
 				c5 = caldata[8] | caldata[9]<<8;
 				c6 = caldata[10] | caldata[11]<<8;
+				(void)c6; // silence warning
 /*
 				printf("C1 0x%04x (%d)\n", c1, c1);
 				printf("C2 0x%04x (%d)\n", c2, c2);
@@ -766,8 +767,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				TVOC = raw_data[1]<<8 | raw_data[2];
 
 				if (!data_valid) {
-					fprintf(stderr, "Invalid data\n");
-					break;
+					goto wrongData;
 				}
 				//printf("Status: 0x%02x\n", raw_data[3]);
 
@@ -789,8 +789,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				eCO2 = raw_data[1]<<8 | raw_data[2];
 
 				if (!data_valid) {
-					fprintf(stderr, "Invalid data\n");
-					break;
+					goto wrongData;
 				}
 
 				temperature = eCO2;
@@ -807,10 +806,11 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				status_reg = raw_data[0]<<8 | raw_data[1];
 				ppm_reg = raw_data[2]<<8 | raw_data[3];
 				autocal_status = raw_data[4];
+				(void)autocal_status;
 
 				if (status_reg & 0x7) {
 					fprintf(stderr, "Sensor error 0x%04x\n", status_reg);
-					break;
+					goto sensorError;
 				}
 //				printf("Status reg: 0x%04x\n", status_reg);
 
@@ -1072,6 +1072,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 	chn->converted_unit = chip_fmt;
 
 	return 0;
+
+sensorError:
+	return -1;
 
 wrongData:
 	fprintf(stderr, "Wrong data received\n");

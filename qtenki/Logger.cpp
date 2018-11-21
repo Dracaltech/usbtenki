@@ -222,6 +222,7 @@ void Logger::addTenkiSource(struct sourceDescription *sd)
 
 void Logger::removeTenkiSource(struct sourceDescription *sd)
 {
+	(void)sd;
 }
 
 void Logger::logMessage(QString str)

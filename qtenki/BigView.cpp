@@ -22,6 +22,8 @@ void BigView::addTenkiSource(struct sourceDescription *sd)
 
 void BigView::removeTenkiSource(struct sourceDescription *sd)
 {
+	// TODO
+	(void)sd;
 }
 
 void BigView::addSourceByName(QString sname)

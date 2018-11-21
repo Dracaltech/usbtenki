@@ -238,5 +238,7 @@ void MainWindow::receiveMessage(QString msg)
 	raise();
 	setFocus();
 	showNormal();
+
+	(void)msg;
 }
 
