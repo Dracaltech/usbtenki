@@ -205,6 +205,8 @@ void ConfigPanel::updateFlagsFromCheckboxes(int ignored)
 	QSettings settings;
 	long flags = 0;
 
+	(void)ignored;
+
 	if (cb_disable_heat_index_validation->isChecked()) {
 		flags |= USBTENKI_FLAG_NO_HEAT_INDEX_RANGE;
 	}
@@ -261,6 +263,8 @@ void ConfigPanel::autoSetSLP(void)
 void ConfigPanel::updateMinimizeToTray(int ig)
 {
 	QSettings settings;
+
+	(void)ig;
 
 	minimize_to_tray = cb_minimize_to_system_tray->isChecked();
 

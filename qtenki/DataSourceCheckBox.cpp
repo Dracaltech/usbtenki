@@ -60,6 +60,7 @@ void DataSourceCheckBox::checkChanged(int st)
 {
 	QSettings settings;
 	settings.setValue("sourcesChecked/"+src, checkbox->isChecked());
+	(void)st;
 }
 
 DataSourceCheckBox::~DataSourceCheckBox()

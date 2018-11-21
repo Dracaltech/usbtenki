@@ -50,6 +50,7 @@ void TenkiDashboard::removeTenkiDevice(TenkiDevice *td)
 	// free the DashSensor object.
 	//
 	qDebug() << "TenkiDashboard:: removeTenkiDevice not implemented\n";
+	(void)td;
 }
 
 void TenkiDashboard::refreshView(void)

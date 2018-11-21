@@ -1,14 +1,11 @@
 CC=gcc
 LD=$(CC)
 
-#LIBUSB_CFLAGS=-DUSE_OLD_LIBUSB
-#LIBUSB_LDFLAGS=-lusb -L/usr/local/opt/libusb-compat/lib
-
-LIBUSB_CFLAGS=`pkg-config libusb-1.0 --cflags`
-LIBUSB_LDFLAGS=`pkg-config libusb-1.0 --libs`
+LIBUSB_CFLAGS=-DUSE_OLD_LIBUSB
+LIBUSB_LDFLAGS=-lusb -L/usr/local/opt/libusb-compat/lib
 
 CFLAGS=-Wall -g -O -I../common -I../library $(LIBUSB_CFLAGS)
-LDFLAGS=-lm `pkg-config libusb-1.0 --libs`
+LDFLAGS=-lm -lusb
 
 PREFIX=/usr/local
 
