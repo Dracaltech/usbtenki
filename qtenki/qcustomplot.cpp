@@ -1037,7 +1037,13 @@ void QCPGraph::getLinePlotData(QVector<QPointF> *lineData, QVector<QCPData> *poi
   // get visible data range:
   QCPDataMap::const_iterator lower, upper;
   int dataCount;
+  
   getVisibleDataBounds(lower, upper, dataCount);
+  
+  if (dataCount == 0) {
+	  return;
+  }
+  
   // prepare vectors:
   if (lineData)
   { 
@@ -1664,14 +1670,28 @@ void QCPGraph::getVisibleDataBounds(QCPDataMap::const_iterator &lower, QCPDataMa
   // get visible data range as QMap iterators
   QCPDataMap::const_iterator lbound = mData->lowerBound(mKeyAxis->range().lower);
   QCPDataMap::const_iterator ubound = mData->upperBound(mKeyAxis->range().upper)-1;
-  bool lowoutlier = lbound != mData->constBegin(); // indicates whether there exist points below axis range
-  bool highoutlier = ubound+1 != mData->constEnd(); // indicates whether there exist points above axis range
+  bool lowoutlier, highoutlier;
+  
+  if (lbound == ubound) {
+	  count = 0;
+	  return;
+  }
+  if (mData->lowerBound(mKeyAxis->range().lower) == mData->upperBound(mKeyAxis->range().upper)) {
+      count = 0;
+	  return;
+  }
+  
+  lowoutlier = lbound != mData->constBegin(); // indicates whether there exist points below axis range
+  highoutlier = ubound+1 != mData->constEnd(); // indicates whether there exist points above axis range
+  
   lower = (lowoutlier ? lbound-1 : lbound); // data pointrange that will be actually drawn
   upper = (highoutlier ? ubound+1 : ubound); // data pointrange that will be actually drawn
+  
   
   // count number of points in range lower to upper (including them), so we can allocate array for them in draw functions:
   QCPDataMap::const_iterator it = lower;
   count = 1;
+  
   while (it != upper)
   {
     ++it;
