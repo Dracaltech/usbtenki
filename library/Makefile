@@ -1,9 +1,11 @@
 CC=gcc
 LD=$(CC)
-JAVA_HOME=/opt/jdk1.6.0_06
 
-CFLAGS=-Wall -g -O  -I../common -fpic -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
-LDFLAGS=-lusb -lm
+LIBUSB_CFLAGS=`pkg-config libusb-1.0 --cflags`
+LIBUSB_LDFLAGS=`pkg-config libusb-1.0 --libs`
+
+CFLAGS=-Wall -g -O  -I../common -fpic $(LIBUSB_CFLAGS)
+LDFLAGS=-lm $(LIBUSB_LDFLAGS)
 
 PREFIX=/usr/local
 

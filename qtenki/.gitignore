@@ -5,3 +5,4 @@ Makefile.Debug
 release/
 debug/
 object_script.*
+qtenki

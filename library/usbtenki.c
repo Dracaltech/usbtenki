@@ -1,5 +1,6 @@
 /* usbtenki: A library for accessing USBTenki sensors.
- * Copyright (C) 2007-2014  Raphael Assenat <raph@raphnet.net>
+ * Copyright (C) 2018 Dracal Technologies inc.
+ * Copyright (C) 2007-2018  Raphael Assenat
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,9 +18,12 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "usbtenki.h"
 #include "usbtenki_priv.h"
@@ -35,6 +39,11 @@
 
 int g_usbtenki_verbose=0;
 int g_usbtenki_num_attempts = 3;
+
+#ifndef USE_OLD_LIBUSB
+#include <libusb.h>
+libusb_context *g_libusbctx;
+#endif
 
 #define VIDPID_NOT_HANDLED		0
 #define VIDPID_HANDLED			1 // Recognized by VID/PID, name irrelevant.
@@ -74,12 +83,24 @@ char matchSerialNumber(const char *str)
 
 int usbtenki_init(void)
 {
+	if (getenv("USBTENKI_VERBOSE")) {
+		g_usbtenki_verbose = 1;
+	}
+
+#ifdef USE_OLD_LIBUSB
 	usb_init();
+#else
+	libusb_init(&g_libusbctx);
+#endif
 	return 0;
 }
 
 void unsbtenki_shutdown(void)
 {
+#ifdef USE_OLD_LIBUSB
+#else
+	libusb_exit(g_libusbctx);
+#endif
 }
 
 static unsigned char xor_buf(unsigned char *buf, int len)
@@ -92,6 +113,7 @@ static unsigned char xor_buf(unsigned char *buf, int len)
 	return x;
 }
 
+#ifdef USE_OLD_LIBUSB
 static void usbtenki_initListCtx(struct USBTenki_list_ctx *ctx)
 {
 	memset(ctx, 0, sizeof(struct USBTenki_list_ctx));
@@ -142,6 +164,10 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 
 	for (ctx->bus = start_bus; ctx->bus; ctx->bus = ctx->bus->next)
 	{
+		if (g_usbtenki_verbose) {
+			printf("Bus '%s'\n", ctx->bus->dirname);
+		}
+
 		start_dev = ctx->bus->devices;
 		for (ctx->dev = start_dev; ctx->dev; ctx->dev = ctx->dev->next)
 		{
@@ -201,6 +227,11 @@ USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
 {
 	struct usb_dev_handle *hdl;
 	int res;
+	int i;
+
+	if (g_usbtenki_verbose) {
+		printf("Opening USB device %s\n", ((struct usb_device*)tdev)->filename);
+	}
 
 	hdl = usb_open(tdev);
 	if (!hdl) {
@@ -380,6 +411,220 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 
 	return datlen;
 }
+#else
+
+int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
+										int id, unsigned char *dst)
+{
+	unsigned char buffer[8];
+	unsigned char xor;
+	int n, i;
+	int datlen;
+	static int first = 1, trace = 0;
+	int attempts;
+
+	if (first) {
+		if (getenv("USBTENKI_TRACE")) {
+			trace = 1;
+		}
+		first = 0;
+	}
+
+	for (attempts = 0; attempts < MAX_USB_ATTEMPTS; attempts++)
+	{
+		n =	libusb_control_transfer(hdl,
+			LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_IN, /* requesttype */
+			cmd, 	/* request*/
+			id, 				/* value */
+			0, 					/* index */
+			buffer, sizeof(buffer), 5000);
+
+		if (trace) {
+			printf("req: 0x%02x, val: 0x%02x, idx: 0x%02x <> %d: ",
+				cmd, id, 0, n);
+			if (n>0) {
+				for (i=0; i<n; i++) {
+					printf("%02x ", buffer[i]);
+				}
+			}
+			printf("\n");
+		}
+
+		if (n == -ETIMEDOUT) {
+			printf("timeout\n");
+		}
+		if (n == -EPIPE) {
+			printf("broken pipe\n");
+		}
+
+		if (n > 0) {
+			break;
+		}
+	}
+
+	if (n<0) {
+		fprintf(stderr, "USB control message error: %s\n", libusb_strerror(n));
+		return -1;
+	}
+
+	/* Validate size first */
+	if (n>8) {
+		fprintf(stderr, "Too much data received! (%d)\n", n);
+		return -3;
+	} else if (n<2) {
+		fprintf(stderr, "Not enough data received! (%d)\n", n);
+		return -4;
+	}
+
+	/* dont count command and xor */
+	datlen = n - 2;
+
+	/* Check if reply is for this command */
+	if (buffer[0] != cmd) {
+		fprintf(stderr, "Reply does not match request (0x%02x)\n", buffer[0]);
+		return -5;
+	}
+
+	/* Check xor */
+	xor = xor_buf(buffer, n);
+	if (xor) {
+		fprintf(stderr, "Communication corruption occured!\n");
+		return -2;
+	}
+
+	if (datlen) {
+		memcpy(dst, buffer+1, datlen);
+	}
+
+	return datlen;
+}
+
+void usbtenki_closeDevice(USBTenki_dev_handle hdl)
+{
+	libusb_device_handle *dev_handle = (libusb_device_handle*)hdl;
+
+	if (dev_handle) {
+		libusb_close(dev_handle);
+	}
+}
+
+USBTenki_dev_handle usbtenki_openDevice(USBTenki_device tdev)
+{
+	libusb_device *dev = (libusb_device*)tdev;
+	libusb_device_handle *dev_handle;
+	int res;
+
+	res = libusb_open(dev, &dev_handle);
+	if (res != 0) {
+		fprintf(stderr, "libusb_open failed: %s\n", libusb_strerror(res));
+		return NULL;
+	}
+
+	return (USBTenki_dev_handle)dev_handle;
+}
+
+USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_info *info)
+{
+	struct USBTenki_list_ctx *devlistctx;
+	struct USBTenki_info inf;
+	USBTenki_device cur_dev;
+	int res;
+
+	devlistctx = usbtenki_allocListCtx();
+	if (!devlistctx) {
+		return NULL;
+	}
+
+	while ((cur_dev=usbtenki_listDevices(&inf, devlistctx)))
+	{
+		if (strcmp(serial, inf.str_serial)==0) {
+			if (info) {
+				memcpy(info, &inf, sizeof (struct USBTenki_info));
+			}
+
+			usbtenki_freeListCtx(devlistctx);
+			return usbtenki_openDevice(cur_dev);
+		}
+	}
+
+	usbtenki_freeListCtx(devlistctx);
+
+	return NULL;
+}
+
+struct USBTenki_list_ctx *usbtenki_allocListCtx(void)
+{
+	struct USBTenki_list_ctx *ctx = calloc(sizeof(struct USBTenki_list_ctx), 1);
+	if (!ctx) {
+		return ctx;
+	}
+	return ctx;
+}
+
+void usbtenki_freeListCtx(struct USBTenki_list_ctx *ctx)
+{
+	if (ctx) {
+		if (ctx->devices) {
+			libusb_free_device_list(ctx->devices, 0); // TODO : unref_devices?
+		}
+		free(ctx);
+	}
+}
+
+USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki_list_ctx *ctx)
+{
+	libusb_device *dev;
+	struct libusb_device_descriptor devdesc;
+	libusb_device_handle *dev_handle;
+	int res;
+
+	if (!info || !ctx) {
+		return NULL;
+	}
+
+	if (!ctx->devices) {
+		ctx->n_devices = libusb_get_device_list(g_libusbctx, &ctx->devices);
+		if (ctx->n_devices <= 0) {
+			return NULL;
+		}
+	}
+
+	while (ctx->cur_device_index < ctx->n_devices) {
+		dev = ctx->devices[ctx->cur_device_index];
+		ctx->cur_device_index++;
+
+		res = libusb_get_device_descriptor(dev, &devdesc);
+		if (res != 0) {
+			fprintf(stderr, "get device descriptor failed: %s\n", libusb_strerror(res));
+			return NULL;
+		}
+
+		if (isHandledVidPid(devdesc.idVendor, devdesc.idProduct)) {
+
+			if (info)
+			{
+				res = libusb_open(dev, &dev_handle);
+				if (res != 0) {
+					fprintf(stderr, "Could not open device: %s\n", libusb_strerror(res));
+					continue;
+				}
+
+				libusb_get_string_descriptor_ascii(dev_handle, devdesc.iProduct, (unsigned char*)info->str_prodname, sizeof(info->str_prodname));
+				libusb_get_string_descriptor_ascii(dev_handle, devdesc.iSerialNumber, (unsigned char*)info->str_serial, sizeof(info->str_serial));
+				info->major = devdesc.bcdDevice >> 8;
+				info->minor = ((devdesc.bcdDevice & 0xf0)>>4) * 10 + (devdesc.bcdDevice & 0xf);
+				libusb_close(dev_handle);
+			}
+
+			return (USBTenki_device)dev;
+		}
+	}
+
+	return NULL;
+}
+
+#endif
+
 
 int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
 {
@@ -597,6 +842,8 @@ float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
 		case TENKI_UNIT_MILLIMETERS:
 			meters = length / 1000;
 			break;
+		case TENKI_UNIT_MICROMETERS:
+			meters = length / 1000000;
 
 		case TENKI_UNIT_INCHES:
 			// 1 inch = 25.4mm = 2.54cm = 0.254dm = 0.0254m
@@ -633,6 +880,10 @@ float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
 
 		case TENKI_UNIT_MILLIMETERS:
 			converted = meters * 1000;
+			break;
+
+		case TENKI_UNIT_MICROMETERS:
+			converted = meters * 1000000;
 			break;
 
 		case TENKI_UNIT_INCHES:
@@ -791,6 +1042,10 @@ const char *chipToString(int id)
 			return "SHT35 Temperature";
 		case USBTENKI_CHIP_SHT35_RH:
 			return "SHT35 Relative Humidity";
+		case USBTENKI_CHIP_SCD30_T:
+			return "SCD30 Temperature";
+		case USBTENKI_CHIP_SCD30_RH:
+			return "SCD30 Relative Humidity";
 
 		case USBTENKI_CHIP_CCS811_TVOC:
 			return "CCS811 TVOC PPB";
@@ -798,8 +1053,33 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_CCS811_eCO2:
 			return "CCS811 eCO2 PPM";
 
+		case USBTENKI_CHIP_SCD30_CO2:
+			return "SCD30 CO2 GAS PPM";
+
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
+
+		case USBTENKI_CHIP_SPS30_MC_PM1_0:
+			return "Mass Concentration PM1.0";
+		case USBTENKI_CHIP_SPS30_MC_PM2_5:
+			return "Mass Concentration PM2.5";
+		case USBTENKI_CHIP_SPS30_MC_PM4_0:
+			return "Mass Concentration PM4.0";
+		case USBTENKI_CHIP_SPS30_MC_PM10:
+			return "Mass Concentration PM10";
+		case USBTENKI_CHIP_SPS30_NC_PM0_5:
+			return "Number Concentration PM0.5";
+		case USBTENKI_CHIP_SPS30_NC_PM1_0:
+			return "Number Concentration PM1.0";
+		case USBTENKI_CHIP_SPS30_NC_PM2_5:
+			return "Number Concentration PM2.5";
+		case USBTENKI_CHIP_SPS30_NC_PM4_0:
+			return "Number Concentration PM4.0";
+		case USBTENKI_CHIP_SPS30_NC_PM10:
+			return "Number Concentration PM10";
+
+		case USBTENKI_CHIP_SPS30_TYP_PART_SIZE:
+			return "Typical Particle Size";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
 			return "TSL2561 Channel 0 (IR+Visibile)";
@@ -973,6 +1253,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_THC_TYPE_E:
 		case USBTENKI_CHIP_THC_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_R:
+		case USBTENKI_CHIP_SCD30_T:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -1006,6 +1287,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CC2_RH:
 		case USBTENKI_CHIP_SHT31_RH:
 		case USBTENKI_CHIP_SHT35_RH:
+		case USBTENKI_CHIP_SCD30_RH:
 			return "Relative Humidity";
 
 		case USBTENKI_MCU_ADC0:
@@ -1045,6 +1327,7 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_CCS811_eCO2:
 		case USBTENKI_CHIP_CCS811_TVOC:
 		case USBTENKI_CHIP_CO2_PPM:
+		case USBTENKI_CHIP_SCD30_CO2:
 			return "Gas PPM";
 
 		case USBTENKI_CHIP_RED:
@@ -1052,6 +1335,21 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_BLUE:
 		case USBTENKI_CHIP_IR:
 			return chipToString(id);
+
+		case USBTENKI_CHIP_SPS30_MC_PM1_0:
+		case USBTENKI_CHIP_SPS30_MC_PM2_5:
+		case USBTENKI_CHIP_SPS30_MC_PM4_0:
+		case USBTENKI_CHIP_SPS30_MC_PM10:
+		case USBTENKI_CHIP_SPS30_NC_PM0_5:
+		case USBTENKI_CHIP_SPS30_NC_PM1_0:
+		case USBTENKI_CHIP_SPS30_NC_PM2_5:
+		case USBTENKI_CHIP_SPS30_NC_PM4_0:
+		case USBTENKI_CHIP_SPS30_NC_PM10:
+			return "Concentration";
+		case USBTENKI_CHIP_SPS30_TYP_PART_SIZE:
+			return "Size";
+
+
 
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
@@ -1117,11 +1415,15 @@ const char *unitToString(int unit, int no_fancy_chars)
 		case TENKI_UNIT_DECIMETERS: return "dm";
 		case TENKI_UNIT_CENTIMETERS: return "cm";
 		case TENKI_UNIT_MILLIMETERS: return "mm";
+		case TENKI_UNIT_MICROMETERS: return no_fancy_chars ? "um" : "μm";
 		case TENKI_UNIT_MILS: return "mil";
 		case TENKI_UNIT_INCHES: return "in";
 		case TENKI_UNIT_FEET: return "ft";
 		case TENKI_UNIT_YARDS: return "yd";
 		case TENKI_UNIT_ARBITRARY: return "arb. unit";
+		case TENKI_UNIT_uG_PER_M3: return no_fancy_chars ? "ug/m^3" : "μg/m³";
+		case TENKI_UNIT_COUNT_PER_CM3: return no_fancy_chars ? "#/cm^3" : "#/cm³";
+		case TENKI_UNIT_uW_PER_CM2: return no_fancy_chars ? "uW/cm^2" : "μW/cm²";
 	}
 
 	return "";

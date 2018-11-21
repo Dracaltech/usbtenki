@@ -17,6 +17,7 @@ TenkiSources::TenkiSources()
 	volt_unit = TENKI_UNIT_VOLTS;
 	power_unit = TENKI_UNIT_WATTS;
 	recent_pressure_P = 101325;
+	display_digits = 4;
 
 	timer_interval = 1000;
 

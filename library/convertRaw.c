@@ -759,6 +759,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				uint16_t TVOC;
 				uint8_t data_valid;
 
+				if (chn->raw_length != 4)
+					goto wrongData;
+
 				data_valid = raw_data[0];
 				TVOC = raw_data[1]<<8 | raw_data[2];
 
@@ -778,6 +781,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			{
 				uint16_t eCO2;
 				uint8_t data_valid;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
 
 				data_valid = raw_data[0];
 				eCO2 = raw_data[1]<<8 | raw_data[2];
@@ -810,6 +816,91 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				temperature = ppm_reg;
 				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
+		case USBTENKI_CHIP_SCD30_T:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_SCD30_RH:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_RH;
+			}
+			break;
+
+		case USBTENKI_CHIP_SCD30_CO2:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
+		case USBTENKI_CHIP_SPS30_MC_PM1_0:
+		case USBTENKI_CHIP_SPS30_MC_PM2_5:
+		case USBTENKI_CHIP_SPS30_MC_PM4_0:
+		case USBTENKI_CHIP_SPS30_MC_PM10:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_uG_PER_M3;
+			}
+			break;
+		case USBTENKI_CHIP_SPS30_NC_PM0_5:
+		case USBTENKI_CHIP_SPS30_NC_PM1_0:
+		case USBTENKI_CHIP_SPS30_NC_PM2_5:
+		case USBTENKI_CHIP_SPS30_NC_PM4_0:
+		case USBTENKI_CHIP_SPS30_NC_PM10:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_COUNT_PER_CM3;
+			}
+			break;
+
+		case USBTENKI_CHIP_SPS30_TYP_PART_SIZE:
+			{
+				uint32_t tmp;
+
+				if (chn->raw_length != 4)
+					goto wrongData;
+
+				tmp = (raw_data[0]<<24) | (raw_data[1]<<16) | (raw_data[2]<<8) | raw_data[3];
+				temperature = *(float*)&tmp;
+				chip_fmt = TENKI_UNIT_MICROMETERS;
 			}
 			break;
 
@@ -917,7 +1008,34 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			break;
 
 		case USBTENKI_CHIP_VEML6075_UVA:
+			{
+				uint16_t value;
+
+				if (chn->raw_length!=2) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+				temperature = value * 0.93;
+				chip_fmt = TENKI_UNIT_uW_PER_CM2;
+			}
+			break;
+
+
 		case USBTENKI_CHIP_VEML6075_UVB:
+			{
+				uint16_t value;
+
+				if (chn->raw_length!=2) {
+					goto wrongData;
+				}
+
+				value = raw_data[0] | raw_data[1] << 8;
+				temperature = value * 2.1;
+				chip_fmt = TENKI_UNIT_uW_PER_CM2;
+			}
+			break;
+
 		case USBTENKI_CHIP_VEML6075_UVCOMP1:
 		case USBTENKI_CHIP_VEML6075_UVCOMP2:
 			{
