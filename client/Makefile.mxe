@@ -3,7 +3,7 @@ LD=$(CC)
 
 LIBUSB_DIR=../../libusb-win32-device-bin-0.1.12.2
 
-CFLAGS=-Wall -g -O -I../common -I../library -I$(LIBUSB_DIR)/include
+CFLAGS=-Wall -g -O -I../common -I../library -I$(LIBUSB_DIR)/include -DUSE_OLD_LIBUSB
 LDFLAGS=-L$(LIBUSB_DIR)/lib/gcc -lusb -lm
 
 PROGS=usbtenkiget.exe usbtenkisetup.exe
