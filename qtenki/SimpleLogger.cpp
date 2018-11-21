@@ -190,6 +190,8 @@ void SimpleLogger::logLineEnd()
 
 void SimpleLogger::tsTitlesPre(int step)
 {
+	(void)step;
+
 	// 0: Source names
 	// 1: Measurement type - Unit
 	// 2: Aliases

@@ -226,6 +226,8 @@ void GraphView::addTenkiSource(struct sourceDescription *sd)
 
 void GraphView::removeTenkiSource(struct sourceDescription *sd)
 {
+	// TODO
+	(void)sd;
 }
 
 void GraphView::addSourceByName(QString sname)
@@ -238,7 +240,6 @@ void GraphView::refreshView()
 {
 	struct sourceDescription *sd;
 	struct USBTenki_channel chndata;
-	static int first=1;
 	QSettings settings;
 	QCPGraph *gr;
 	QColor colors[10] = {
@@ -253,7 +254,7 @@ void GraphView::refreshView()
 		Qt::cyan,
 		Qt::black,
 	};
-	
+
 	for (int i=0; i<sources.size(); i++)
 	{
 		if (!settings.value("graphChecked/"+sources.at(i)).toBool())
@@ -270,9 +271,6 @@ void GraphView::refreshView()
 		QString alias = sd->q_alias;
 		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 		QString d;
-		
-//		d.sprintf("%.3f",  chndata.converted_data );
-//		qDebug() << d;
 
 		// Ok, now we have our value.
 		// Find if there is a pre-existing graph
@@ -286,24 +284,14 @@ void GraphView::refreshView()
 			// Create it on the fly
 			gr = plt->addGraph();
 			gr->setName(alias);
-			
+
 			QPen p(colors[i%10]);
 			p.setWidth(2);
 
 			gr->setPen(p);
 			src_graphs.replace(i, gr);
 		}
-	
-	/*	
-		if (first)
-		{
-			int j;
-			printf("Load test\n");
-			for (j=0; j<5000; j++) {
-				gr->addData(x_count++, chndata.converted_data + (j%10)*0.01);
-			}
-		}
-		*/
+
 		if (chndata.data_valid) {
 			gr->addData(x_count, chndata.converted_data);
 		}
@@ -317,14 +305,8 @@ void GraphView::refreshView()
 
 	}
 
-
-//		d.sprintf("%.3f",  chndata.converted_data );
-//		qDebug() << d;
-
 	replot();
-	
 	x_count++;
-
 }
 
 void GraphView::replot(void)
