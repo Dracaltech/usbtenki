@@ -184,7 +184,7 @@ void GraphView::saveGraph(void)
 		}
 		if (sel_filt.startsWith("PNG")) {
 			QFileInfo inf(filename);
-			if (!inf.suffix().toLower().compare("png") == 0) {
+			if (inf.suffix().toLower().compare("png") != 0) {
 				filename = filename + ".png";
 			}
 
@@ -192,7 +192,7 @@ void GraphView::saveGraph(void)
 		}
 		if (sel_filt.startsWith("BMP")) {
 			QFileInfo inf(filename);
-			if (!inf.suffix().toLower().compare("bmp") == 0) {
+			if (inf.suffix().toLower().compare("bmp") != 0) {
 				filename = filename + ".bmp";
 			}
 
@@ -200,7 +200,7 @@ void GraphView::saveGraph(void)
 		}
 		if (sel_filt.startsWith("PDF")) {
 			QFileInfo inf(filename);
-			if (!inf.suffix().toLower().compare("pdf") == 0) {
+			if (inf.suffix().toLower().compare("pdf") != 0) {
 				filename = filename + ".pdf";
 			}
 
