@@ -7,6 +7,11 @@ First make sure you have libusb installed
 (lib _and_ development files). 
 Then, type make.
 
+Note: Since version 2.1.14, libusb-1.0 is used by
+default. To use libusb0.1, compile using the
+makefile for libusb 0.1. eg:
+
+$ make -f Makefile.libusb0.1
 
 *********************************
 Installing under Freebsd
