@@ -55,7 +55,7 @@ char isHandledVidPid(unsigned short vid, unsigned short pid)
 		return VIDPID_HANDLED_STRING;
 	}
 	// The Dracal technoloiges inc. ID range
-	if ((vid == 0x289b)) {
+	if (vid == 0x289b) {
 		if ((pid >= 0x0500) && (pid <= 0x5FF)) {
 			return VIDPID_HANDLED;
 		}
@@ -528,7 +528,6 @@ USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_in
 	struct USBTenki_list_ctx *devlistctx;
 	struct USBTenki_info inf;
 	USBTenki_device cur_dev;
-	int res;
 
 	devlistctx = usbtenki_allocListCtx();
 	if (!devlistctx) {
