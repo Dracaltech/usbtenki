@@ -6,6 +6,7 @@ Version 2.1.14 - November 21, 2018
    - Add support for the VEML6030 Ambiant light sensor
    - Add support for arbitrary units
    - Add programming examples is several languages
+   - Add preventive retries in case of IO errors
    - libusb 1.0 support
 
 Version 2.1.13 - November 27, 2017
