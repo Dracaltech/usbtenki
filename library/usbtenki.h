@@ -78,9 +78,9 @@ void usbtenki_closeDevice(USBTenki_dev_handle hdl);
 
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst);
-int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
-int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst);
+										int id, unsigned char *dst, int dst_max_size);
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size);
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size);
 int usbtenki_getChipID(USBTenki_dev_handle hdl, int id);
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl);
 

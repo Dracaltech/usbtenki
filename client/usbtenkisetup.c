@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 			printf("Setting adc ref to %d\n", ref_id);
 
 		res = usbtenki_command(hdl, USBTENKI_SET_ADC_REF,
-								(ref_id & 0xff), repBuf);
+								(ref_id & 0xff), repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting adc ref to %d\n",
 								ref_id);
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 	/**************** Do zero ****************/
 	if (strcmp(eargv[0], "do_zero")==0) {
 
-		res = usbtenki_command(hdl, USBTENKI_ZERO, 0, repBuf);
+		res = usbtenki_command(hdl, USBTENKI_ZERO, 0, repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error doing zero.n");
 			retval = 2;
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 			printf("Setting rtd calibration to %d\n", ref_id);
 
 		res = usbtenki_command(hdl, USBTENKI_SET_RTD_CORR, 
-								(ref_id & 0xffff), repBuf);
+								(ref_id & 0xffff), repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting adc calibration to %d\n",
 								ref_id);
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 			printf("Setting adc channel %d to chip_id %d\n", adc_id, chip_id);
 
 		res = usbtenki_command(hdl, USBTENKI_SET_ADC_CHIP, 
-								(adc_id & 0xff) | ((chip_id&0xff)<<8), repBuf);
+								(adc_id & 0xff) | ((chip_id&0xff)<<8), repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting channel %d to chip_id %d\n",
 								adc_id, chip_id);
@@ -298,7 +298,7 @@ int main(int argc, char **argv)
 				printf("Setting serial number character '%c'\n", eargv[1][i]);
 
 			res = usbtenki_command(hdl, USBTENKI_SET_SERIAL, 
-									(i&0xff) | (eargv[1][i]<<8), repBuf);
+									(i&0xff) | (eargv[1][i]<<8), repBuf, sizeof(repBuf));
 			if (res!=0) {
 				fprintf(stderr, "Error writing character '%c'. (%d)\n",
 								eargv[1][i], res);
@@ -308,7 +308,7 @@ int main(int argc, char **argv)
 		}
 		/* index 0xff means store to eeprom. */
 		res = usbtenki_command(hdl, USBTENKI_SET_SERIAL, 
-								(0xff) | (eargv[1][i]<<8), repBuf);
+								(0xff) | (eargv[1][i]<<8), repBuf, sizeof(repBuf));
 		if (res != 0) {
 			retval = 2;
 			goto cleanAndExit;
@@ -349,14 +349,14 @@ int main(int argc, char **argv)
 			printf("Setting em1 config: Max current=%d,  calibration=0x%04x\n", max_current, calibration);
 
 		res = usbtenki_command(hdl, USBTENKI_SET_EM1_CALIBRATION, 
-								calibration, repBuf);
+								calibration, repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting calibration\n");
 			retval = 2;
 		}
 
 		res = usbtenki_command(hdl, USBTENKI_SET_EM1_MAX_CURRENT, 
-								max_current, repBuf);
+								max_current, repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting calibration\n");
 			retval = 2;
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 		if (g_verbose)
 			printf("Setting SHT31 poll rate to value %d\n", rate_value);
 
-		res = usbtenki_command(hdl, USBTENKI_SET_SHT31_RATE, rate_value, repBuf);
+		res = usbtenki_command(hdl, USBTENKI_SET_SHT31_RATE, rate_value, repBuf, sizeof(repBuf));
 		if (res!=0) {
 			fprintf(stderr, "Error setting SHT31 poll rate to value %d\n",
 								rate_value);
@@ -425,7 +425,7 @@ int main(int argc, char **argv)
 			printf("Setting thermocouple[%d] to type %d\n", chn, type);
 		}
 
-		res = usbtenki_command(hdl, USBTENKI_SET_THERMOCOUPLE_TYPE, chn | type << 8, repBuf);
+		res = usbtenki_command(hdl, USBTENKI_SET_THERMOCOUPLE_TYPE, chn | type << 8, repBuf, sizeof(repBuf));
 		if (res != 0) {
 			fprintf(stderr, "Error configuring thermocouple\n");
 			retval = 2;
@@ -452,7 +452,7 @@ int main(int argc, char **argv)
 			goto cleanAndExit;
 		}
 
-		res = usbtenki_command(hdl, USBTENKI_GET_THERMOCOUPLE_TYPE, chn, repBuf);
+		res = usbtenki_command(hdl, USBTENKI_GET_THERMOCOUPLE_TYPE, chn, repBuf, sizeof(repBuf));
 		if (res < 1) {
 			fprintf(stderr, "Error reading thermocouple configuration\n");
 			retval = 2;
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
 
 	/**************** Bootloader *****************/
 	if (strcmp(eargv[0], "bootloader")==0) {
-		usbtenki_command(hdl, USBTENKI_BOOTLOADER, 0xB007, repBuf);
+		usbtenki_command(hdl, USBTENKI_BOOTLOADER, 0xB007, repBuf, sizeof(repBuf));
 
 		goto cleanAndExit;
 	}

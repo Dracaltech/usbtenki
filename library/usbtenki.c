@@ -327,9 +327,9 @@ USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_in
 }
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst)
+										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[8];
+	unsigned char buffer[16];
 	unsigned char xor;
 	int n, i;
 	int datlen;
@@ -381,7 +381,7 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	}
 
 	/* Validate size first */
-	if (n>8) {
+	if (n>dst_max_size) {
 		fprintf(stderr, "Too much data received! (%d)\n", n);
 		return -3;
 	} else if (n<2) {
@@ -414,9 +414,9 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 #else
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst)
+										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[8];
+	unsigned char buffer[16];
 	unsigned char xor;
 	int n, i;
 	int datlen;
@@ -468,16 +468,18 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	}
 
 	/* Validate size first */
-	if (n>8) {
-		fprintf(stderr, "Too much data received! (%d)\n", n);
-		return -3;
-	} else if (n<2) {
+	if (n<2) {
 		fprintf(stderr, "Not enough data received! (%d)\n", n);
 		return -4;
 	}
 
 	/* dont count command and xor */
 	datlen = n - 2;
+
+	if (datlen > dst_max_size) {
+		fprintf(stderr, "Too much data received! (%d)\n", n);
+		return -3;
+	}
 
 	/* Check if reply is for this command */
 	if (buffer[0] != cmd) {
@@ -625,22 +627,18 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 #endif
 
 
-int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size)
 {
 	int res;
-	res = usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst);
-	/*if (res > 0) {
-		int i;
-		for (i=0; i<res; i++) {
-			printf("[%02x] ", dst[i]);
-		}
-	}*/
+
+	res = usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst, dst_max_size);
+
 	return res;
 }
 
-int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst)
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size)
 {
-	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst);
+	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst, dst_max_size);
 }
 
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl)
@@ -648,7 +646,7 @@ int usbtenki_getNumChannels(USBTenki_dev_handle hdl)
 	unsigned char dst[8];
 	int res;
 
-	res = usbtenki_command(hdl, USBTENKI_GET_NUM_CHANNELS, 0, dst);
+	res = usbtenki_command(hdl, USBTENKI_GET_NUM_CHANNELS, 0, dst, sizeof(dst));
 	if (res<0)
 		return res;
 	if (res<1) /* Illegal for this command */
@@ -661,7 +659,7 @@ int usbtenki_getChipID(USBTenki_dev_handle hdl, int id)
 	unsigned char dst[8];
 	int res;
 
-	res = usbtenki_command(hdl, USBTENKI_GET_CHIP_ID, id, dst);
+	res = usbtenki_command(hdl, USBTENKI_GET_CHIP_ID, id, dst, sizeof(dst));
 	if (res<0)
 		return res;
 	if (res!=1) /* Illegal for this command */
@@ -1144,6 +1142,12 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Tachometer";
 
+		case USBTENKI_CHIP_RTD300_PT100_2W:
+			return "2-Wire PT100 Temperature sensor";
+
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+			return "3-Wire PT100 Temperature sensor";
+
 		case USBTENKI_CHIP_PT100_RTD:
 			return "PT100 Temperature sensor";
 
@@ -1236,6 +1240,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 		case USBTENKI_CHIP_PT100_RTD:
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+		case USBTENKI_CHIP_RTD300_PT100_2W:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MS5611_T:
@@ -1516,7 +1522,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 				printf("usbtenki_getRaw %d/%d chn %d attempt %d\n", i+1, num, dst[j].channel_id, n+1);
 				usleep(100000);
 			}
-			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data);
+			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data, sizeof(dst[j].raw_data));
 			if (dst[j].raw_length<0) {
 				usleep(200);
 				continue;
@@ -1533,7 +1539,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 		if (dst[j].chip_id == USBTENKI_CHIP_PT100_RTD) {
 //			printf("Fetching PT100 calibration data...\n");
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, 0, caldata, sizeof(caldata));
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -1567,7 +1573,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 
 			//printf("Fetching MS5611 calibration data (offset: %d)...\n", offset);
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, offset + 0, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, offset + 0, caldata, sizeof(caldata)-offset);
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -1581,7 +1587,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 
 			for (n=0; n<num_attempts; n++) {
 				int l;
-				l = usbtenki_getCalibration(hdl, offset + 1, caldata + caldata_len);
+				l = usbtenki_getCalibration(hdl, offset + 1, caldata + caldata_len, sizeof(caldata)-offset);
 				if (l<0) {
 					usleep(200);
 					continue;
