@@ -622,6 +622,105 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_RTD300_PT1000_3W:
+			{
+				uint32_t output_code;
+				uint16_t ref_res_base;
+				int16_t ref_trim;
+				double rtd_res, gain, ref_res;
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[2]);
+				ref_res_base = raw_data[3] << 8;
+				ref_res_base |= raw_data[4];
+				gain = pow(2, (raw_data[5]>>4));
+				ref_trim = raw_data[6] << 8;
+				ref_trim |= raw_data[7];
+				ref_res = ref_res_base + ref_trim / 10000;
+
+				//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("amplitude: %.10f\n", output_code / pow(2,23));
+
+				rtd_res = ref_res * output_code / (pow(2, 23) * gain);
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temperature = rtd_res; //  searchTempFromR(rtd_res);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+			{
+				uint32_t output_code;
+				uint16_t ref_res_base;
+				int16_t ref_trim;
+				double rtd_res, gain, ref_res, temp_raw;
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[2]);
+				ref_res_base = raw_data[3] << 8;
+				ref_res_base |= raw_data[4];
+				gain = pow(2, (raw_data[5]>>4));
+				ref_trim = raw_data[6] << 8;
+				ref_trim |= raw_data[7];
+				ref_res = ref_res_base + ref_trim / 10000;
+
+				//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("amplitude: %.10f\n", output_code / pow(2,23));
+
+				rtd_res = ref_res * output_code / (pow(2, 23) * gain);
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temp_raw = searchTempFromR(rtd_res);
+				temperature = temp_raw;
+//				temperature = round(temp_raw * 100) / 100;
+//				printf("Temperature: %.06f : %.06f\n", temperature);
+
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_RTD300_PT100_2W:
+			{
+				uint32_t output_code;
+				double rtd_res, gain = 4.0, ref = 2.5, Iref = 0.000500;
+				double irefs[10] = { 0,10,50,100,250,500,750,1000,1500,2000 };
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[0]);
+
+				gain = pow(2, (raw_data[5]>>4));
+
+				if ((raw_data[5] & 0xf) >= 10) {
+					goto wrongData;
+				}
+
+				Iref = irefs[raw_data[5] & 0xf] / 1000000;
+
+				//printf("Gain: %f, Iref: %f\n", gain, Iref);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("DeltaV: %.10f\n", output_code / pow(2,23));
+				rtd_res = (output_code / pow(2,23) / gain * ref) / Iref;
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temperature = searchTempFromR(rtd_res);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 			{
