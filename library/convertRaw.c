@@ -36,7 +36,7 @@ static double _searchTempFromR(double r, double t_start, double step)
 	}
 
 	// looks like we are close enough.
-	if (step < 0.001)
+	if (step < 0.00001)
 		return t_start;
 
 	for (t=t_start; t<1000; t+=step)
