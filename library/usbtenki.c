@@ -416,7 +416,7 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[16];
+	unsigned char buffer[32];
 	unsigned char xor;
 	int n, i;
 	int datlen;
@@ -1151,24 +1151,33 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_PT100_RTD:
 			return "PT100 Temperature sensor";
 
+		case USBTENKI_CHIP_TMC200_COLD:
 		case USBTENKI_CHIP_THC_COLD:
 			return "Thermocouple cold junction temperature";
 		case USBTENKI_CHIP_THC_HOT:
 			return "Thermocouple hot junction temperature";
+		case USBTENKI_CHIP_TMC200_TYPE_K:
 		case USBTENKI_CHIP_THC_TYPE_K:
 			return "Type-K Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_J:
 		case USBTENKI_CHIP_THC_TYPE_J:
 			return "Type-J Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_T:
 		case USBTENKI_CHIP_THC_TYPE_T:
 			return "Type-T Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_N:
 		case USBTENKI_CHIP_THC_TYPE_N:
 			return "Type-N Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_S:
 		case USBTENKI_CHIP_THC_TYPE_S:
 			return "Type-S Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_E:
 		case USBTENKI_CHIP_THC_TYPE_E:
 			return "Type-E Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_B:
 			return "Type-B Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_R:
 		case USBTENKI_CHIP_THC_TYPE_R:
 			return "Type-R Thermocouple";
 
@@ -1240,6 +1249,15 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 		case USBTENKI_CHIP_PT100_RTD:
+		case USBTENKI_CHIP_TMC200_COLD:
+		case USBTENKI_CHIP_TMC200_TYPE_K:
+		case USBTENKI_CHIP_TMC200_TYPE_J:
+		case USBTENKI_CHIP_TMC200_TYPE_N:
+		case USBTENKI_CHIP_TMC200_TYPE_E:
+		case USBTENKI_CHIP_TMC200_TYPE_T:
+		case USBTENKI_CHIP_TMC200_TYPE_B:
+		case USBTENKI_CHIP_TMC200_TYPE_S:
+		case USBTENKI_CHIP_TMC200_TYPE_R:
 		case USBTENKI_CHIP_RTD300_PT100_3W:
 		case USBTENKI_CHIP_RTD300_PT100_2W:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
