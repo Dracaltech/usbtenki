@@ -41,7 +41,7 @@ struct USBTenki_channel {
 	int chip_id;
 	char data_valid;
 	char saturated;
-	unsigned char raw_data[8];
+	unsigned char raw_data[32];
 	int raw_length;
 	float raw_value; // Not always used.
 	float converted_data;
