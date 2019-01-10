@@ -48,6 +48,17 @@ struct USBTenki_channel {
 	int converted_unit;
 };
 
+struct USBTenki_unitPreferences {
+	int temperature;
+	int pressure;
+	int frequency;
+	int voltage;
+	int current;
+	int power;
+	int length;
+	int concentration; // PPM, PPB, PERCENT
+};
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a)	(sizeof(a)/sizeof(a[0]))
 #endif
@@ -114,7 +125,7 @@ const char *unitToString(int unit, int no_fancy_chars);
 const char *thermocoupleTypeToString(int type);
 int thermocoupleStringToType(const char *type);
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int voltage_unit, int current_unit, int power_unit, int length_unit);
+void usbtenki_convertUnits(struct USBTenki_channel *chn, const struct USBTenki_unitPreferences *units);
 
 #ifdef __cplusplus
 }

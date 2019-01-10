@@ -91,13 +91,16 @@ class TenkiSources : public QObject
 		int scanForDevices();
 		int addDeviceSources(TenkiDevice *td);
 		int addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_channel *chndat);
-		int pressure_unit;
+
+		struct USBTenki_unitPreferences units;
+/*		int pressure_unit;
 		int temperature_unit;
 		int frequency_unit;
 		int volt_unit;
 		int current_unit;
 		int power_unit;
-		int length_unit;
+		int length_unit;*/
+
 		int timer_interval;
 		int display_digits;
 		int use_iec_thermocouple_colors;

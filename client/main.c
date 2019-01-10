@@ -42,13 +42,17 @@
 
 
 int g_verbose = 0;
-int g_temp_format = TENKI_UNIT_CELCIUS;
-int g_pressure_format = TENKI_UNIT_KPA;
-int g_frequency_format = TENKI_UNIT_HZ;
-int g_voltage_format = TENKI_UNIT_VOLTS;
-int g_current_format = TENKI_UNIT_AMPS;
-int g_power_format = TENKI_UNIT_WATTS;
-int g_length_format = TENKI_UNIT_METERS;
+
+struct USBTenki_unitPreferences g_unit_prefs = {
+	.temperature = TENKI_UNIT_CELCIUS,
+	.pressure = TENKI_UNIT_KPA,
+	.frequency = TENKI_UNIT_HZ,
+	.current = TENKI_UNIT_AMPS,
+	.power = TENKI_UNIT_WATTS,
+	.length = TENKI_UNIT_METERS,
+	.concentration = TENKI_UNIT_PPM,
+};
+
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_decimal_digits = DEFAULT_DECIMAL_DIGITS;
@@ -218,15 +222,15 @@ int main(int argc, char **argv)
 				break;
 
 			case 'T':
-				if (strcasecmp(optarg, "Celcius")==0 || 
+				if (strcasecmp(optarg, "Celcius")==0 ||
 						strcasecmp(optarg, "C")==0)
-					g_temp_format = TENKI_UNIT_CELCIUS;
+					g_unit_prefs.temperature = TENKI_UNIT_CELCIUS;
 				else if (strcasecmp(optarg, "Fahrenheit")==0 ||
 						strcasecmp(optarg, "F")==0)
-					g_temp_format = TENKI_UNIT_FAHRENHEIT;
+					g_unit_prefs.temperature = TENKI_UNIT_FAHRENHEIT;
 				else if (strcasecmp(optarg, "Kelvin")==0 ||
 						strcasecmp(optarg, "K")==0)
-					g_temp_format = TENKI_UNIT_KELVIN;
+					g_unit_prefs.temperature = TENKI_UNIT_KELVIN;
 				else {
 					fprintf(stderr, "Unknown temperature format: '%s'\n",
 										optarg);
@@ -249,7 +253,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_frequency_format = tbl[i].fmt;
+							g_unit_prefs.frequency = tbl[i].fmt;
 							break;
 						}
 					}
@@ -278,7 +282,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_pressure_format = tbl[i].fmt;
+							g_unit_prefs.pressure = tbl[i].fmt;
 							break;
 						}
 					}
@@ -308,7 +312,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_length_format = tbl[i].fmt;
+							g_unit_prefs.length = tbl[i].fmt;
 							break;
 						}
 					}
@@ -392,7 +396,6 @@ int main(int argc, char **argv)
 			printf("%d ", requested_channels[i]);
 		}
 		printf("\n");
-		printf("  g_temp_format: %d\n", g_temp_format);
 		printf("  list_mode: %d\n", list_mode);
 		if (use_serial)
 			printf("  use_serial: %s\n", use_serial);
@@ -670,7 +673,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 			return -2;
 		}
 
-		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format, g_length_format);
+		usbtenki_convertUnits(chn, &g_unit_prefs);
 
 		sprintf(fmt, "%%.%df", g_decimal_digits);
 
