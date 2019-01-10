@@ -1056,6 +1056,11 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
 
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+			return "CO2 GAS PPM (filtered)";
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
+			return "CO2 GAS PPM (instant)";
+
 		case USBTENKI_CHIP_SPS30_MC_PM1_0:
 			return "Mass Concentration PM1.0";
 		case USBTENKI_CHIP_SPS30_MC_PM2_5:
@@ -1347,10 +1352,14 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Frequency";
 
-		case USBTENKI_CHIP_CCS811_eCO2:
-		case USBTENKI_CHIP_CCS811_TVOC:
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
 		case USBTENKI_CHIP_CO2_PPM:
 		case USBTENKI_CHIP_SCD30_CO2:
+			return "CO2 Gas PPM";
+
+		case USBTENKI_CHIP_CCS811_eCO2:
+		case USBTENKI_CHIP_CCS811_TVOC:
 			return "Gas PPM";
 
 		case USBTENKI_CHIP_RED:

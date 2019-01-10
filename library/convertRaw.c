@@ -806,6 +806,41 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
+			{
+				uint8_t status;
+				uint16_t value, multiplier;
+				int i;
+
+				/*printf("Data: ");
+				for (i=0; i<chn->raw_length; i++) {
+					printf("%02x ", raw_data[i]);
+				}
+				printf("\n");*/
+
+				if (chn->raw_length != 5) {
+					goto wrongData;
+				}
+
+				status = raw_data[0];
+				value = (raw_data[1]<<8) | raw_data[2];
+				multiplier = (raw_data[3]<<8) | raw_data[4];
+
+				//printf("Status: %d, value: %d, multiplier: %d\n", status, value, multiplier);
+
+				if (status != 0x01) {
+					goto sensorError;
+				}
+				if (multiplier == 0) {
+					goto sensorError;
+				}
+
+				temperature = value * multiplier;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 			{
