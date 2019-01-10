@@ -19,6 +19,7 @@
 #define TENKI_UNIT_PSI			0x16
 #define TENKI_UNIT_INHG			0x17 // 3386.389 pascals
 
+#define TENKI_UNIT_PERCENT		0x19
 #define TENKI_UNIT_PPM			0x1A
 #define TENKI_UNIT_PPB			0x1B
 
