@@ -213,9 +213,13 @@ void DashSensor::refresh()
 		// react to setting changes
 		recolorizeThermocouple();
 
-		cdat = tenki_device->getChannelData(channel_id.at(i));	
-		if (!cdat || !cdat->data_valid) {
+		cdat = tenki_device->getChannelData(channel_id.at(i));
+		if (!cdat) {
 			values.at(i)->setText("Error");
+			continue;
+		}
+		if (cdat->status != USBTENKI_CHN_STATUS_VALID) {
+			values.at(i)->setText(usbtenki_getChannelStatusString(cdat));
 			continue;
 		}
 

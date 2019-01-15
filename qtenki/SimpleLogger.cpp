@@ -326,6 +326,7 @@ void SimpleLogger::doLog()
 			// this would be an internal error.
 			emit logMessage("Source '" + sources.at(i)+ "' not found");
 		} else {
+			// device level error
 			if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
 				// call log error with a value. Knowing the converted data
 				// will stay at it's last value, this makes it possible for
@@ -334,9 +335,15 @@ void SimpleLogger::doLog()
 				emit logMessage("ERROR: An error occured on '" +sources.at(i) + "'.");
 			}
 			else {
-				struct USBTenki_channel tmp;
-				tenkisources->convertToUnits(sd->chn_data, &tmp);
-				logValue(tmp.converted_data, i==(sources.size()-1));
+				// source level error
+				if (sd->chn_data->status != USBTENKI_CHN_STATUS_VALID) {
+					logError(sd->chn_data->converted_data, i==(sources.size()-1));
+					emit logMessage("ERROR: An error occured on '" +sources.at(i) + "': " + usbtenki_getChannelStatusString(sd->chn_data) + ".");
+				} else {
+					struct USBTenki_channel tmp;
+					tenkisources->convertToUnits(sd->chn_data, &tmp);
+					logValue(tmp.converted_data, i==(sources.size()-1));
+				}
 			}
 		}
 	}
