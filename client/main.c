@@ -106,6 +106,26 @@ static void printUsage(void)
 	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
 	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
 	printf("    old_sht75            Use the old SHT RH compensention coefficients.\n");
+	printf("    legacy_errors        Output channel errors in the old (unspecific) way.\n");
+	printf("                         For instance: The string 'err' instead of 'ProbeDisconnected'\n");
+
+	printf("\nErrors:\n");
+	printf("\nWhen an error occurs reading a channel, the value is replaced by an error string:\n");
+	printf("    Undefined            Unknown/undefined error.\n");
+	printf("    Saturated            Sensor (or resulting value) is saturated and unusable.\n");
+	printf("    SensorError          The physical sensor or interface circuitry is not working properly\n");
+	printf("    ProbeDisconnected    Indicates that the probe is disconnected or cable is cut/open\n");
+	printf("    OutOfRange           The reading falls outside the sensor possible or supported range\n");
+	printf("    InvalidData          The data received from the sensor did not make sense or was incomplete\n");
+	printf("\n");
+
+	printf("Note: If pretty output is enabled (see -p) there will be spaces in the error messages. See also\n");
+	printf("the 'legacy_errors' options to restore the old behaviour of returning 'err', regarless\n");
+	printf("of what the specific error was.\n");
+
+	printf("\nReturn value:\n");
+	printf(" - On success, usbtenkiget returns 0.\n");
+	printf(" - If the requested serial number (see -s) was not found, or if no devices were found (-f and -l) a non-zero value is returned.\n");
 }
 
 static void printVersion(void)
@@ -329,15 +349,20 @@ int main(int argc, char **argv)
 					struct {
 						const char *name;
 						long flag;
+						int *set;
 					} tbl[] = {
 						{ "no_heat_index_range", USBTENKI_FLAG_NO_HEAT_INDEX_RANGE },
 						{ "no_humidex_range", USBTENKI_FLAG_NO_HUMIDEX_RANGE },
 						{ "old_sht75", USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION },
+						{ "legacy_errors", 0, &g_legacy_errors },
 					};
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
 							g_flags |= tbl[i].flag;
+							if (tbl[i].set) {
+								*tbl[i].set = 1;
+							}
 							break;
 						}
 					}
@@ -695,7 +720,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 		}
 		else {
 			if (chn->status != USBTENKI_CHN_STATUS_VALID) {
-				printf("%s", g_legacy_errors ? "err" : usbtenki_getChannelStatusString(chn));
+				printf("%s", g_legacy_errors ? "err" : usbtenki_getChannelStatusStringNoSpaces(chn));
 			} else {
 				printf(fmt , chn->converted_data);
 			}
