@@ -778,25 +778,25 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				cold_temp = getColdTemp(chn);
 				cold_mv = typeK_temp_to_mv(cold_temp);
-				printf("TMC cold junction temperature: %.4f C\n", cold_temp);
-				printf("TMC cold junction voltage: %.4f mV\n", cold_mv);
+//				printf("TMC cold junction temperature: %.4f C\n", cold_temp);
+//				printf("TMC cold junction voltage: %.4f mV\n", cold_mv);
 
 				status = raw_data[14];
 				gain = pow(2, (raw_data[13]>>4));
 				output_code = (raw_data[10] << 24) | (raw_data[11] << 16) | (raw_data[12]<<8);
 				output_code >>= 8;
-				printf("TMC Gain: %f, vref: %f\n", gain, vref);
-				printf("TMC output code: %06x\n", output_code);
+//				printf("TMC Gain: %f, vref: %f\n", gain, vref);
+//				printf("TMC output code: %06x\n", output_code);
 				t_v = output_code * (2.0 * vref / gain) / pow(2,24); // ( vref * output_code ) / ( pow(2, 15) * gain );
-				printf("TMC voltage: %.8f V\n", t_v);
+//				printf("TMC voltage: %.8f V\n", t_v);
 
 				comp_mv = cold_mv + t_v * 1000;
 
-				printf("Cold-junction compensated voltage: %.4f mV\n", comp_mv );
+//				printf("Cold-junction compensated voltage: %.4f mV\n", comp_mv );
 
 				temperature = typeK_mv_to_temp(comp_mv);
 
-				printf("Burn-out detection status: 0x%02x\n", status);
+//				printf("Burn-out detection status: 0x%02x\n", status);
 				if (status & 0x3C) {
 					goto probeDisconnected;
 				}
