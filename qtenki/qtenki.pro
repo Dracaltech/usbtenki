@@ -27,7 +27,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 # Input
 
-HEADERS += ../library/usbtenki.h ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h \
+HEADERS += ../library/usbtenki.h ../library/convert_type_k.h ../common/usbtenki_cmds.h ../common/usbtenki_version.h About.h \
 			 TextViewer.h TenkiSources.h DashSensor.h TenkiDashboard.h TenkiDevice.h Logger.h \
 			DataSourceCheckBox.h SimpleLogger.h MainWindow.h BigView.h GraphView.h BigLabel.h SourceAliasEdit.h \
 			PowerPreference.h CurrentPreference.h TemperaturePreference.h PressurePreference.h FrequencyPreference.h ConfigCheckbox.h \
@@ -35,7 +35,7 @@ HEADERS += ../library/usbtenki.h ../common/usbtenki_cmds.h ../common/usbtenki_ve
 			MinMaxResettable.h ThermocoupleColorPreference.h
 
 
-SOURCES += ../library/usbtenki.c ../library/convertRaw.c main.cpp \
+SOURCES += ../library/usbtenki.c ../library/convertRaw.c ../library/convert_type_k.c main.cpp \
 			TextViewer.cpp TenkiSources.cpp SimpleLogger.cpp DashSensor.cpp TenkiDashboard.cpp \
 			TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp About.cpp MainWindow.cpp BigView.cpp GraphView.cpp \
 			PowerPreference.cpp CurrentPreference.cpp VoltagePreference.cpp TemperaturePreference.cpp PressurePreference.cpp FrequencyPreference.cpp ConfigCheckbox.cpp \

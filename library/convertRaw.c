@@ -4,8 +4,7 @@
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
-
-#include "convert_type_k.c"
+#include "convert_type_k.h"
 
 /* Calculate the theoric resistance of an RTD for a given temperature. */
 static double temp_to_pt100_r(double temp)

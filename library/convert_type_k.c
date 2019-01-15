@@ -1,14 +1,15 @@
 #include <math.h>
+#include "usbtenki.h"
 #include "convert_type_k.h"
 
-float typeK_temp_to_mv(float t90)
+double typeK_temp_to_mv(double t90)
 {
-	int i;
-	float mv = 0.0;
-	float a0 = 0.118597600000E+00;
-	float a1 = -0.118343200000E-03;
-	float a2 = 0.126968600000E+03;
-	const float coefficients_above_zero[] = {
+	unsigned int i;
+	double mv = 0.0;
+	double a0 = 0.118597600000E+00;
+	double a1 = -0.118343200000E-03;
+	double a2 = 0.126968600000E+03;
+	const double coefficients_above_zero[] = {
 		-0.176004136860E-01,
 		0.389212049750E-01,
 		0.185587700320E-04,
@@ -20,7 +21,7 @@ float typeK_temp_to_mv(float t90)
 		0.971511471520E-22,
 		-0.121047212750E-25
 	};
-	const float coefficients_below_zero[] = {
+	const double coefficients_below_zero[] = {
 		0.000000000000E+00,
 		0.394501280250E-01,
 		0.236223735980E-04,
@@ -48,13 +49,13 @@ float typeK_temp_to_mv(float t90)
 	return mv;
 }
 
-float typeK_mv_to_temp(float mv)
+double typeK_mv_to_temp(double mv)
 {
-	float t90 = 0;
-	int i;
+	double t90 = 0;
+	unsigned int i;
 
 	// -5.891 to 0
-	const float range1_d[] = {
+	const double range1_d[] = {
 		0.0000000E+00,
 		2.5173462E+01,
 		-1.1662878E+00,
@@ -66,7 +67,7 @@ float typeK_mv_to_temp(float mv)
 		-5.1920577E-04,
 		0.0000000E+00,
 	};
-	const float range2_d[] = {
+	const double range2_d[] = {
 		0.000000E+00,
 		2.508355E+01,
 		7.860106E-02,
@@ -78,7 +79,7 @@ float typeK_mv_to_temp(float mv)
 		1.057734E-06,
 		-1.052755E-08
 	};
-	const float range3_d[] = {
+	const double range3_d[] = {
 		-1.318058E+02,
 		4.830222E+01,
 		-1.646031E+00,

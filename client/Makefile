@@ -7,8 +7,13 @@ LD=$(CC)
 LIBUSB_CFLAGS=`pkg-config libusb-1.0 --cflags`
 LIBUSB_LDFLAGS=`pkg-config libusb-1.0 --libs`
 
+USBTENKI_OBJS=usbtenki.o convertRaw.o convert_type_k.o
+
 CFLAGS=-Wall -g -O -I../common -I../library $(LIBUSB_CFLAGS)
 LDFLAGS=-lm `pkg-config libusb-1.0 --libs`
+
+vpath %.c ../library
+vpath %.h ../library
 
 PREFIX=/usr/local
 
@@ -18,20 +23,14 @@ PROGS=usbtenkiget usbtenkisetup
 
 all: usbtenkiget usbtenkisetup
 
-usbtenkiget: usbtenki.o main.o timestamp.o convertRaw.o
+usbtenkiget: $(USBTENKI_OBJS) main.o timestamp.o
 	$(LD) $^ -o $@ $(LDFLAGS)
-	
-usbtenkisetup: usbtenki.o usbtenkisetup.o convertRaw.o
+
+usbtenkisetup: $(USBTENKI_OBJS) usbtenkisetup.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-convertRaw.o: ../library/convertRaw.c 
-	$(CC) $(CFLAGS) -c $< -o convertRaw.o
-
-usbtenki.o: ../library/usbtenki.c 
-	$(CC) $(CFLAGS) -c $< -o usbtenki.o
 
 clean:
 	rm -f *.o $(PROGS)

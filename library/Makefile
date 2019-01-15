@@ -13,9 +13,9 @@ PROGS=usbtenkiget usbtenkisetup
 
 .PHONY : clean install
 
-all: libtenki.so 
+all: libtenki.so
 
-libtenki.so: usbtenki.o convertRaw.o #com_raphnet_tenki_JNI.o
+libtenki.so: usbtenki.o convertRaw.o convert_type_k.o
 	$(LD) -shared $(LDFLAGS) $^ -o $@
 
 %.o: %.c %.h
