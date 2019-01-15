@@ -17,6 +17,7 @@ TenkiSources::TenkiSources()
 		.current = TENKI_UNIT_AMPS,
 		.power = TENKI_UNIT_WATTS,
 		.length = TENKI_UNIT_METERS,
+		.concentration = TENKI_UNIT_PPM,
 	};
 
 	units = default_units;
