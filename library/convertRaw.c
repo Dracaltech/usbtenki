@@ -801,6 +801,11 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					printf("Probe disconnected / open\n");
 				}
 
+				// Limit output temperature to what is *possible* for a working Type-K thermocouple
+				if ((temperature < -270) || (temperature > 1372)) {
+					goto sensorError; // TODO : Implement specific error codes
+				} 
+
 
 				chip_fmt = TENKI_UNIT_CELCIUS;
 			}
