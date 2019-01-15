@@ -124,6 +124,29 @@ static double getColdTemp(struct USBTenki_channel *chn)
 	return temperature;
 }
 
+static double getColdTempAlt(struct USBTenki_channel *chn)
+{
+	uint32_t output_code;
+	double rtd_res, gain, temp_raw, ref = 2.5;
+	unsigned char *raw_data = chn->raw_data;
+	double temperature;
+	double irefs[10] = { 0,10,50,100,250,500,750,1000,1500,2000 };
+
+	double Iref;
+
+	output_code = (raw_data[1] << 16) | (raw_data[2] << 8) | (raw_data[3]);
+	gain = pow(2, (raw_data[6]>>4));
+	Iref = irefs[raw_data[6] & 0xf] / 1000000;
+
+	rtd_res = (output_code / pow(2,23) / gain * ref) / Iref;
+
+	temp_raw = searchTempFromR(rtd_res);
+	temperature = temp_raw;
+
+	return temperature;
+}
+
+
 int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsigned char *caldata, int caldata_len)
 {
 	float temperature;
@@ -758,7 +781,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 				}
 
-				temperature = getColdTemp(chn);
+				//temperature = getColdTemp(chn);
+				temperature = getColdTempAlt(chn);
 				chip_fmt = TENKI_UNIT_CELCIUS;
 			}
 			break;
@@ -775,7 +799,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto wrongData;
 				}
 
-				cold_temp = getColdTemp(chn);
+				cold_temp = getColdTempAlt(chn);
 				cold_mv = typeK_temp_to_mv(cold_temp);
 
 				status = raw_data[14];
