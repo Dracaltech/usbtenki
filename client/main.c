@@ -60,6 +60,7 @@ int g_7bit_clean = 0;
 int g_log_mode = 0;
 int g_log_interval = DEFAULT_LOG_INTERVAL;
 int g_must_run = 1;
+int g_legacy_errors = 0;
 const char *g_log_file = NULL;
 FILE *g_log_fptr = NULL;
 long g_flags = 0;
@@ -667,7 +668,7 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 				break;
 		}
 
-		if (!chn || (!chn->data_valid && !chn->saturated) ) {
+		if (!chn) {
 			fprintf(stderr, "Internal error..\n");
 			res = -2;
 			return -2;
@@ -679,8 +680,8 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 
 		if (g_pretty) {
 			printf("%s: ", chipToShortString(chn->chip_id));
-			if (chn->saturated) {
-				printf("err");
+			if (chn->status != USBTENKI_CHN_STATUS_VALID) {
+				printf("%s\n", g_legacy_errors ? "err" : usbtenki_getChannelStatusString(chn));
 			} else {
 				if (chn->converted_unit == TENKI_UNIT_HEXCOLOR) {
 					int color = chn->converted_data;
@@ -688,12 +689,13 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 				} else {
 					printf(fmt, chn->converted_data);
 				}
+
+				printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 			}
-			printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 		}
 		else {
-			if (chn->saturated) {
-				printf("err");
+			if (chn->status != USBTENKI_CHN_STATUS_VALID) {
+				printf("%s", g_legacy_errors ? "err" : usbtenki_getChannelStatusString(chn));
 			} else {
 				printf(fmt , chn->converted_data);
 			}

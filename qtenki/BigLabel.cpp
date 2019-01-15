@@ -28,30 +28,43 @@ void BigLabel::refresh()
 		return;
 	}
 
-	g_tenkisources->convertToUnits(sd->chn_data, &chndata);
-
 	QString alias = sd->q_alias;
-	QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 
-	QString d;
+	if (sd->chn_data->status != USBTENKI_CHN_STATUS_VALID) {
 
-	g_tenkisources->formatValue(&d, chndata.converted_data);
+		if (settings.value("bigview/show_aliases").toBool()) {
+			final_text += alias;
+			final_text += ": ";
+		}
 
-
-	if (settings.value("bigview/show_aliases").toBool()) {
-		final_text += alias;
-		final_text += ": ";
+		final_text += usbtenki_getChannelStatusString(sd->chn_data);
 	}
+	else
+	{
+		g_tenkisources->convertToUnits(sd->chn_data, &chndata);
 
-	final_text += d;
+		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 
-	if (settings.value("bigview/show_units").toBool()) {
-		final_text += " ";
-		final_text += units;
-	}
+		QString d;
 
-	if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
-		final_text += " (error)";
+		g_tenkisources->formatValue(&d, chndata.converted_data);
+
+
+		if (settings.value("bigview/show_aliases").toBool()) {
+			final_text += alias;
+			final_text += ": ";
+		}
+
+		final_text += d;
+
+		if (settings.value("bigview/show_units").toBool()) {
+			final_text += " ";
+			final_text += units;
+		}
+
+		if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
+			final_text += " (error)";
+		}
 	}
 
 	setText(final_text);

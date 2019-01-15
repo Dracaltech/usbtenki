@@ -292,7 +292,7 @@ void GraphView::refreshView()
 			src_graphs.replace(i, gr);
 		}
 
-		if (chndata.data_valid) {
+		if (chndata.status == USBTENKI_CHN_STATUS_VALID) {
 			gr->addData(x_count, chndata.converted_data);
 		}
 		else {

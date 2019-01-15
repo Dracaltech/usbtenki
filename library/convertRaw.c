@@ -798,7 +798,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 				printf("Burn-out detection status: 0x%02x\n", status);
 				if (status & 0x3C) {
-					printf("Probe disconnected / open\n");
+					goto probeDisconnected;
 				}
 
 
@@ -1289,13 +1289,20 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 	chn->converted_data = temperature;
 	chn->converted_unit = chip_fmt;
+	chn->status = USBTENKI_CHN_STATUS_VALID;
 
 	return 0;
 
+probeDisconnected:
+	chn->status = USBTENKI_CHN_STATUS_PROBE_DISCONNECTED;
+	return -1;
+
 sensorError:
+	chn->status = USBTENKI_CHN_STATUS_SENSOR_ERROR;
 	return -1;
 
 wrongData:
+	chn->status = USBTENKI_CHN_STATUS_INVALID_DATA;
 	fprintf(stderr, "Wrong data received\n");
 	return -1;
 }
