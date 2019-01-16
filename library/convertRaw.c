@@ -131,14 +131,22 @@ static double getColdTempAlt(struct USBTenki_channel *chn)
 	unsigned char *raw_data = chn->raw_data;
 	double temperature;
 	double irefs[10] = { 0,10,50,100,250,500,750,1000,1500,2000 };
+	int16_t ref_trim;
 
 	double Iref;
 
 	output_code = (raw_data[1] << 16) | (raw_data[2] << 8) | (raw_data[3]);
 	gain = pow(2, (raw_data[6]>>4));
 	Iref = irefs[raw_data[6] & 0xf] / 1000000;
+	ref_trim = raw_data[7] << 8;
+	ref_trim |= raw_data[8];
 
 	rtd_res = (output_code / pow(2,23) / gain * ref) / Iref;
+//	printf("RTD res: %.4f\n", rtd_res);
+//	printf("ref trim: %d\n", ref_trim);
+//  printf("%02x %02x\n", raw_data[7], raw_data[8]);
+	rtd_res += ref_trim / 1000.0;
+//	printf("RTD res: %.4f\n", rtd_res);
 
 	temp_raw = searchTempFromR(rtd_res);
 	temperature = temp_raw;
