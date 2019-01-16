@@ -792,6 +792,13 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				//temperature = getColdTemp(chn);
 				temperature = getColdTempAlt(chn);
 				chip_fmt = TENKI_UNIT_CELCIUS;
+
+				// This is an on-board cold junction sensor. Reasonable limits
+				// are expected. Anything else strongly suggest defective components
+				// rather than a true temperature.
+				if ((temperature < -40) || (temperature > 90)) {
+					goto outOfRange;
+				}
 			}
 			break;
 
@@ -826,6 +833,10 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 //				printf("TMC voltage: %.8f V\n", t_v);
 //				printf("Cold-junction compensated voltage: %.4f mV\n", comp_mv );
 //				printf("Burn-out detection status: 0x%02x\n", status);
+
+				if ((cold_temp < -40) || (cold_temp > 90)) {
+					goto sensorError;
+				}
 
 				if (status & 0x3C) {
 					goto probeDisconnected;
