@@ -842,8 +842,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto probeDisconnected;
 				}
 
-				// Limit output temperature to what is *possible* for a working Type-K thermocouple
-				if ((temperature < -270) || (temperature > 1372)) {
+				// Limit output temperature to what is *possible* for a working Type-K thermocouple +/- 5C
+				if ((temperature < (-270-5)) || (temperature > (1372+5))) {
 					goto outOfRange;
 				}
 
