@@ -9,13 +9,19 @@
 TenkiSources::TenkiSources()
 {
 	QSettings settings;
+	struct USBTenki_unitPreferences default_units = {
+		.temperature = TENKI_UNIT_CELCIUS,
+		.pressure = TENKI_UNIT_KPA,
+		.frequency = TENKI_UNIT_HZ,
+		.voltage = TENKI_UNIT_VOLTS,
+		.current = TENKI_UNIT_AMPS,
+		.power = TENKI_UNIT_WATTS,
+		.length = TENKI_UNIT_METERS,
+		.concentration = TENKI_UNIT_PPM,
+	};
 
-	pressure_unit = TENKI_UNIT_KPA;
-	temperature_unit = TENKI_UNIT_CELCIUS;
-	frequency_unit = TENKI_UNIT_HZ;
-	length_unit = TENKI_UNIT_METERS;
-	volt_unit = TENKI_UNIT_VOLTS;
-	power_unit = TENKI_UNIT_WATTS;
+	units = default_units;
+
 	recent_pressure_P = 101325;
 	display_digits = 4;
 
@@ -78,17 +84,17 @@ int TenkiSources::getUseIECthermocoupleColors(void)
 
 void TenkiSources::setTemperatureUnit(int tenki_temp_unit)
 {
-	this->temperature_unit = tenki_temp_unit;
+	this->units.temperature = tenki_temp_unit;
 }
 
 void TenkiSources::setPressureUnit(int pressure_unit)
 {
-	this->pressure_unit = pressure_unit;
+	this->units.pressure = pressure_unit;
 }
 
 void TenkiSources::setFrequencyUnit(int frequency_unit)
 {
-	this->frequency_unit = frequency_unit;
+	this->units.frequency = frequency_unit;
 }
 
 void TenkiSources::setDisplayDigits(int digits)
@@ -103,22 +109,22 @@ int TenkiSources::displayDigits()
 
 void TenkiSources::setVoltageUnit(int volt_unit)
 {
-	this->volt_unit = volt_unit;
+	this->units.voltage = volt_unit;
 }
 
 void TenkiSources::setCurrentUnit(int current_unit)
 {
-	this->current_unit = current_unit;
+	this->units.current = current_unit;
 }
 
 void TenkiSources::setPowerUnit(int power_unit)
 {
-	this->power_unit = power_unit;
+	this->units.power = power_unit;
 }
 
 void TenkiSources::setLengthUnit(int length_unit)
 {
-	this->length_unit = length_unit;
+	this->units.length = length_unit;
 }
 
 void TenkiSources::setReferenceSeaLevelPressure(double value)
@@ -241,7 +247,7 @@ void TenkiSources::convertToUnits(const struct USBTenki_channel *chn, struct USB
 	}
 
 	memcpy(&tmp, chn, sizeof(tmp));
-	usbtenki_convertUnits(&tmp, temperature_unit, pressure_unit, frequency_unit, volt_unit, current_unit, power_unit, length_unit);
+	usbtenki_convertUnits(&tmp, &units); //temperature_unit, pressure_unit, frequency_unit, volt_unit, current_unit, power_unit, length_unit);
 	memcpy(dst, &tmp, sizeof(tmp));
 }
 

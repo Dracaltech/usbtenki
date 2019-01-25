@@ -36,16 +36,35 @@ struct USBTenki_info {
 
 struct USBTenki_list_ctx;
 
+#define USBTENKI_CHN_STATUS_UNDEFINED			0
+#define USBTENKI_CHN_STATUS_VALID				1
+#define USBTENKI_CHN_STATUS_SATURATED			2
+#define USBTENKI_CHN_STATUS_SENSOR_ERROR		3
+#define USBTENKI_CHN_STATUS_PROBE_DISCONNECTED	4
+#define USBTENKI_CHN_STATUS_OUT_OF_RANGE		5
+#define USBTENKI_CHN_STATUS_INVALID_DATA		6
+#define USBTENKI_CHN_STATUS_SENSOR_SHORTED		7
+
 struct USBTenki_channel {
 	int channel_id;
 	int chip_id;
-	char data_valid;
-	char saturated;
-	unsigned char raw_data[8];
+	unsigned char status;
+	unsigned char raw_data[32];
 	int raw_length;
 	float raw_value; // Not always used.
 	float converted_data;
 	int converted_unit;
+};
+
+struct USBTenki_unitPreferences {
+	int temperature;
+	int pressure;
+	int frequency;
+	int voltage;
+	int current;
+	int power;
+	int length;
+	int concentration; // PPM, PPB, PERCENT
 };
 
 #ifndef ARRAY_SIZE
@@ -78,9 +97,9 @@ void usbtenki_closeDevice(USBTenki_dev_handle hdl);
 
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst);
-int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst);
-int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst);
+										int id, unsigned char *dst, int dst_max_size);
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size);
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size);
 int usbtenki_getChipID(USBTenki_dev_handle hdl, int id);
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl);
 
@@ -114,7 +133,10 @@ const char *unitToString(int unit, int no_fancy_chars);
 const char *thermocoupleTypeToString(int type);
 int thermocoupleStringToType(const char *type);
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int voltage_unit, int current_unit, int power_unit, int length_unit);
+void usbtenki_convertUnits(struct USBTenki_channel *chn, const struct USBTenki_unitPreferences *units);
+
+const char *usbtenki_getChannelStatusString(const struct USBTenki_channel *chn);
+const char *usbtenki_getChannelStatusStringNoSpaces(const struct USBTenki_channel *chn);
 
 #ifdef __cplusplus
 }

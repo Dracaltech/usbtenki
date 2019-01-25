@@ -4,7 +4,7 @@
 #include "usbtenki.h"
 #include "usbtenki_cmds.h"
 #include "usbtenki_units.h"
-
+#include "convert_type_k.h"
 
 /* Calculate the theoric resistance of an RTD for a given temperature. */
 static double temp_to_pt100_r(double temp)
@@ -36,7 +36,7 @@ static double _searchTempFromR(double r, double t_start, double step)
 	}
 
 	// looks like we are close enough.
-	if (step < 0.001)
+	if (step < 0.00001)
 		return t_start;
 
 	for (t=t_start; t<1000; t+=step)
@@ -90,6 +90,70 @@ double searchTempFromR(double r)
 	// completes after approx. 40 calls to temp_to_pt100_r
 	return _searchTempFromR(r, -274, 100);
 }
+
+static double getColdTemp(struct USBTenki_channel *chn)
+{
+	uint32_t output_code;
+	uint16_t ref_res_base;
+	int16_t ref_trim;
+	double rtd_res, gain, ref_res, temp_raw;
+	unsigned char *raw_data = chn->raw_data;
+	double temperature;
+
+	output_code = (raw_data[1] << 16) | (raw_data[2] << 8) | (raw_data[3]);
+	ref_res_base = raw_data[4] << 8;
+	ref_res_base |= raw_data[5];
+	gain = pow(2, (raw_data[6]>>4));
+	ref_trim = raw_data[7] << 8;
+	ref_trim |= raw_data[8];
+	ref_res = ref_res_base + ref_trim / 10000;
+
+	//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
+	//printf("Output code: %d (%06x)\n", output_code, output_code);
+	//printf("amplitude: %.10f\n", output_code / pow(2,23));
+
+	rtd_res = ref_res * output_code / (pow(2, 23) * gain);
+	//printf("RTD resistance: %.6f\n", rtd_res);
+
+	temp_raw = searchTempFromR(rtd_res);
+	temperature = temp_raw;
+//				temperature = round(temp_raw * 100) / 100;
+//				printf("Temperature: %.06f : %.06f\n", temperature);
+
+
+	return temperature;
+}
+
+static double getColdTempAlt(struct USBTenki_channel *chn)
+{
+	uint32_t output_code;
+	double rtd_res, gain, temp_raw, ref = 2.5;
+	unsigned char *raw_data = chn->raw_data;
+	double temperature;
+	double irefs[10] = { 0,10,50,100,250,500,750,1000,1500,2000 };
+	int16_t ref_trim;
+
+	double Iref;
+
+	output_code = (raw_data[1] << 16) | (raw_data[2] << 8) | (raw_data[3]);
+	gain = pow(2, (raw_data[6]>>4));
+	Iref = irefs[raw_data[6] & 0xf] / 1000000;
+	ref_trim = raw_data[7] << 8;
+	ref_trim |= raw_data[8];
+
+	rtd_res = (output_code / pow(2,23) / gain * ref) / Iref;
+//	printf("RTD res: %.4f\n", rtd_res);
+//	printf("ref trim: %d\n", ref_trim);
+//  printf("%02x %02x\n", raw_data[7], raw_data[8]);
+	rtd_res += ref_trim / 1000.0;
+//	printf("RTD res: %.4f\n", rtd_res);
+
+	temp_raw = searchTempFromR(rtd_res);
+	temperature = temp_raw;
+
+	return temperature;
+}
+
 
 int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsigned char *caldata, int caldata_len)
 {
@@ -622,6 +686,209 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			}
 			break;
 
+		case USBTENKI_CHIP_RTD300_PT1000_3W:
+			{
+				uint32_t output_code;
+				uint16_t ref_res_base;
+				int16_t ref_trim;
+				double rtd_res, gain, ref_res;
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[2]);
+				ref_res_base = raw_data[3] << 8;
+				ref_res_base |= raw_data[4];
+				gain = pow(2, (raw_data[5]>>4));
+				ref_trim = raw_data[6] << 8;
+				ref_trim |= raw_data[7];
+				ref_res = ref_res_base + ref_trim / 10000;
+
+				//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("amplitude: %.10f\n", output_code / pow(2,23));
+
+				rtd_res = ref_res * output_code / (pow(2, 23) * gain);
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temperature = rtd_res; //  searchTempFromR(rtd_res);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+			{
+				uint32_t output_code;
+				uint16_t ref_res_base;
+				int16_t ref_trim;
+				double rtd_res, gain, ref_res, temp_raw;
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[2]);
+				ref_res_base = raw_data[3] << 8;
+				ref_res_base |= raw_data[4];
+				gain = pow(2, (raw_data[5]>>4));
+				ref_trim = raw_data[6] << 8;
+				ref_trim |= raw_data[7];
+				ref_res = ref_res_base + ref_trim / 10000;
+
+				//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("amplitude: %.10f\n", output_code / pow(2,23));
+
+				rtd_res = ref_res * output_code / (pow(2, 23) * gain);
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temp_raw = searchTempFromR(rtd_res);
+				temperature = temp_raw;
+//				temperature = round(temp_raw * 100) / 100;
+//				printf("Temperature: %.06f : %.06f\n", temperature);
+
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_RTD300_PT100_2W:
+			{
+				uint32_t output_code;
+				double rtd_res, gain = 4.0, ref = 2.5, Iref = 0.000500;
+				double irefs[10] = { 0,10,50,100,250,500,750,1000,1500,2000 };
+
+				if (chn->raw_length < 3) {
+					goto wrongData;
+				}
+
+				output_code = (raw_data[0] << 16) | (raw_data[1] << 8) | (raw_data[2]);
+
+				gain = pow(2, (raw_data[5]>>4));
+
+				if ((raw_data[5] & 0xf) >= 10) {
+					goto wrongData;
+				}
+
+				Iref = irefs[raw_data[5] & 0xf] / 1000000;
+
+				//printf("Gain: %f, Iref: %f\n", gain, Iref);
+				//printf("Output code: %d (%06x)\n", output_code, output_code);
+				//printf("DeltaV: %.10f\n", output_code / pow(2,23));
+				rtd_res = (output_code / pow(2,23) / gain * ref) / Iref;
+				//printf("RTD resistance: %.6f\n", rtd_res);
+
+				temperature = searchTempFromR(rtd_res);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_TMC200_COLD:
+			{
+				if (chn->raw_length != 9) {
+					goto wrongData;
+				}
+
+				//temperature = getColdTemp(chn);
+				temperature = getColdTempAlt(chn);
+				chip_fmt = TENKI_UNIT_CELCIUS;
+
+				// This is an on-board cold junction sensor. Reasonable limits
+				// are expected. Anything else strongly suggest defective components
+				// rather than a true temperature.
+				if ((temperature < -40) || (temperature > 90)) {
+					goto outOfRange;
+				}
+			}
+			break;
+
+		case USBTENKI_CHIP_TMC200_TYPE_K:
+			{
+				uint8_t status;
+				double cold_temp, cold_mv, comp_mv, t_v;
+				int32_t output_code;
+				double gain, vref = 2.5;
+				gain = pow(2, (raw_data[5]>>4));
+
+				if (chn->raw_length < 15) {
+					goto wrongData;
+				}
+
+				cold_temp = getColdTempAlt(chn);
+				cold_mv = typeK_temp_to_mv(cold_temp);
+
+				status = raw_data[14];
+				gain = pow(2, (raw_data[13]>>4));
+				output_code = (raw_data[10] << 24) | (raw_data[11] << 16) | (raw_data[12]<<8);
+				output_code >>= 8;
+				t_v = output_code * (2.0 * vref / gain) / pow(2,24); // ( vref * output_code ) / ( pow(2, 15) * gain );
+
+				comp_mv = cold_mv + t_v * 1000;
+				temperature = typeK_mv_to_temp(comp_mv);
+
+//				printf("TMC cold junction temperature: %.4f C\n", cold_temp);
+//				printf("TMC cold junction voltage: %.4f mV\n", cold_mv);
+//				printf("TMC Gain: %f, vref: %f\n", gain, vref);
+//				printf("TMC output code: %06x\n", output_code);
+//				printf("TMC voltage: %.8f V\n", t_v);
+//				printf("Cold-junction compensated voltage: %.4f mV\n", comp_mv );
+//				printf("Burn-out detection status: 0x%02x\n", status);
+
+				if ((cold_temp < -40) || (cold_temp > 90)) {
+					goto sensorError;
+				}
+
+				if (status & 0x3C) {
+					goto probeDisconnected;
+				}
+
+				// Limit output temperature to what is *possible* for a working Type-K thermocouple +/- 5C
+				if ((temperature < (-270-5)) || (temperature > (1372+5))) {
+					goto outOfRange;
+				}
+
+
+				chip_fmt = TENKI_UNIT_CELCIUS;
+			}
+			break;
+
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
+			{
+				uint8_t status;
+				uint16_t value, multiplier;
+
+				/*
+				int i;
+				printf("Data: ");
+				for (i=0; i<chn->raw_length; i++) {
+					printf("%02x ", raw_data[i]);
+				}
+				printf("\n");
+				*/
+
+				if (chn->raw_length != 5) {
+					goto wrongData;
+				}
+
+				status = raw_data[0];
+				value = (raw_data[1]<<8) | raw_data[2];
+				multiplier = (raw_data[3]<<8) | raw_data[4];
+
+				//printf("Status: %d, value: %d, multiplier: %d\n", status, value, multiplier);
+
+				if (status != 0x01) {
+					goto sensorError;
+				}
+				if (multiplier == 0) {
+					goto sensorError;
+				}
+
+				temperature = value * multiplier;
+				chip_fmt = TENKI_UNIT_PPM;
+			}
+			break;
+
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 			{
@@ -1070,13 +1337,24 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 	chn->converted_data = temperature;
 	chn->converted_unit = chip_fmt;
+	chn->status = USBTENKI_CHN_STATUS_VALID;
 
 	return 0;
 
+outOfRange:
+	chn->status = USBTENKI_CHN_STATUS_OUT_OF_RANGE;
+	return -1;
+
+probeDisconnected:
+	chn->status = USBTENKI_CHN_STATUS_PROBE_DISCONNECTED;
+	return -1;
+
 sensorError:
+	chn->status = USBTENKI_CHN_STATUS_SENSOR_ERROR;
 	return -1;
 
 wrongData:
+	chn->status = USBTENKI_CHN_STATUS_INVALID_DATA;
 	fprintf(stderr, "Wrong data received\n");
 	return -1;
 }

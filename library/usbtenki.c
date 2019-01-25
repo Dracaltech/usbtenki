@@ -327,9 +327,9 @@ USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_in
 }
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst)
+										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[8];
+	unsigned char buffer[16];
 	unsigned char xor;
 	int n, i;
 	int datlen;
@@ -381,7 +381,7 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	}
 
 	/* Validate size first */
-	if (n>8) {
+	if (n>dst_max_size) {
 		fprintf(stderr, "Too much data received! (%d)\n", n);
 		return -3;
 	} else if (n<2) {
@@ -414,9 +414,9 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 #else
 
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
-										int id, unsigned char *dst)
+										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[8];
+	unsigned char buffer[32];
 	unsigned char xor;
 	int n, i;
 	int datlen;
@@ -468,16 +468,18 @@ int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 	}
 
 	/* Validate size first */
-	if (n>8) {
-		fprintf(stderr, "Too much data received! (%d)\n", n);
-		return -3;
-	} else if (n<2) {
+	if (n<2) {
 		fprintf(stderr, "Not enough data received! (%d)\n", n);
 		return -4;
 	}
 
 	/* dont count command and xor */
 	datlen = n - 2;
+
+	if (datlen > dst_max_size) {
+		fprintf(stderr, "Too much data received! (%d)\n", n);
+		return -3;
+	}
 
 	/* Check if reply is for this command */
 	if (buffer[0] != cmd) {
@@ -625,22 +627,18 @@ USBTenki_device usbtenki_listDevices(struct USBTenki_info *info, struct USBTenki
 #endif
 
 
-int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst)
+int usbtenki_getCalibration(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size)
 {
 	int res;
-	res = usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst);
-	/*if (res > 0) {
-		int i;
-		for (i=0; i<res; i++) {
-			printf("[%02x] ", dst[i]);
-		}
-	}*/
+
+	res = usbtenki_command(hdl, USBTENKI_GET_CALIBRATION, id, dst, dst_max_size);
+
 	return res;
 }
 
-int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst)
+int usbtenki_getRaw(USBTenki_dev_handle hdl, int id, unsigned char *dst, int dst_max_size)
 {
-	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst);
+	return usbtenki_command(hdl, USBTENKI_GET_RAW, id, dst, dst_max_size);
 }
 
 int usbtenki_getNumChannels(USBTenki_dev_handle hdl)
@@ -648,7 +646,7 @@ int usbtenki_getNumChannels(USBTenki_dev_handle hdl)
 	unsigned char dst[8];
 	int res;
 
-	res = usbtenki_command(hdl, USBTENKI_GET_NUM_CHANNELS, 0, dst);
+	res = usbtenki_command(hdl, USBTENKI_GET_NUM_CHANNELS, 0, dst, sizeof(dst));
 	if (res<0)
 		return res;
 	if (res<1) /* Illegal for this command */
@@ -661,7 +659,7 @@ int usbtenki_getChipID(USBTenki_dev_handle hdl, int id)
 	unsigned char dst[8];
 	int res;
 
-	res = usbtenki_command(hdl, USBTENKI_GET_CHIP_ID, id, dst);
+	res = usbtenki_command(hdl, USBTENKI_GET_CHIP_ID, id, dst, sizeof(dst));
 	if (res<0)
 		return res;
 	if (res!=1) /* Illegal for this command */
@@ -1058,6 +1056,11 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_CO2_PPM:
 			return "CO2 GAS PPM";
 
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+			return "CO2 GAS PPM (filtered)";
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
+			return "CO2 GAS PPM (instant)";
+
 		case USBTENKI_CHIP_SPS30_MC_PM1_0:
 			return "Mass Concentration PM1.0";
 		case USBTENKI_CHIP_SPS30_MC_PM2_5:
@@ -1144,27 +1147,42 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Tachometer";
 
+		case USBTENKI_CHIP_RTD300_PT100_2W:
+			return "2-Wire PT100 Temperature sensor";
+
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+			return "3-Wire PT100 Temperature sensor";
+
 		case USBTENKI_CHIP_PT100_RTD:
 			return "PT100 Temperature sensor";
 
+		case USBTENKI_CHIP_TMC200_COLD:
 		case USBTENKI_CHIP_THC_COLD:
 			return "Thermocouple cold junction temperature";
 		case USBTENKI_CHIP_THC_HOT:
 			return "Thermocouple hot junction temperature";
+		case USBTENKI_CHIP_TMC200_TYPE_K:
 		case USBTENKI_CHIP_THC_TYPE_K:
 			return "Type-K Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_J:
 		case USBTENKI_CHIP_THC_TYPE_J:
 			return "Type-J Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_T:
 		case USBTENKI_CHIP_THC_TYPE_T:
 			return "Type-T Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_N:
 		case USBTENKI_CHIP_THC_TYPE_N:
 			return "Type-N Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_S:
 		case USBTENKI_CHIP_THC_TYPE_S:
 			return "Type-S Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_E:
 		case USBTENKI_CHIP_THC_TYPE_E:
 			return "Type-E Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_B:
 			return "Type-B Thermocouple";
+		case USBTENKI_CHIP_TMC200_TYPE_R:
 		case USBTENKI_CHIP_THC_TYPE_R:
 			return "Type-R Thermocouple";
 
@@ -1236,6 +1254,17 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT_TEMP:
 		case USBTENKI_CHIP_BS02_TEMP:
 		case USBTENKI_CHIP_PT100_RTD:
+		case USBTENKI_CHIP_TMC200_COLD:
+		case USBTENKI_CHIP_TMC200_TYPE_K:
+		case USBTENKI_CHIP_TMC200_TYPE_J:
+		case USBTENKI_CHIP_TMC200_TYPE_N:
+		case USBTENKI_CHIP_TMC200_TYPE_E:
+		case USBTENKI_CHIP_TMC200_TYPE_T:
+		case USBTENKI_CHIP_TMC200_TYPE_B:
+		case USBTENKI_CHIP_TMC200_TYPE_S:
+		case USBTENKI_CHIP_TMC200_TYPE_R:
+		case USBTENKI_CHIP_RTD300_PT100_3W:
+		case USBTENKI_CHIP_RTD300_PT100_2W:
 		case USBTENKI_CHIP_MLX90614_TOBJ:
 		case USBTENKI_CHIP_MLX90614_TA:
 		case USBTENKI_CHIP_MS5611_T:
@@ -1323,10 +1352,14 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_TACHOMETER:
 			return "Frequency";
 
-		case USBTENKI_CHIP_CCS811_eCO2:
-		case USBTENKI_CHIP_CCS811_TVOC:
+		case USBTENKI_CHIP_CO2_DXC200_FILTERED:
+		case USBTENKI_CHIP_CO2_DXC200_INSTANT:
 		case USBTENKI_CHIP_CO2_PPM:
 		case USBTENKI_CHIP_SCD30_CO2:
+			return "CO2 Gas PPM";
+
+		case USBTENKI_CHIP_CCS811_eCO2:
+		case USBTENKI_CHIP_CCS811_TVOC:
 			return "Gas PPM";
 
 		case USBTENKI_CHIP_RED:
@@ -1508,7 +1541,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 			continue;
 		}
 
-		if (dst[j].data_valid)
+		if (dst[j].status != USBTENKI_CHN_STATUS_UNDEFINED)
 			continue; /* already done */
 
 		for (n=0; n<num_attempts; n++) {
@@ -1516,7 +1549,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 				printf("usbtenki_getRaw %d/%d chn %d attempt %d\n", i+1, num, dst[j].channel_id, n+1);
 				usleep(100000);
 			}
-			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data);
+			dst[j].raw_length = usbtenki_getRaw(hdl, dst[j].channel_id, dst[j].raw_data, sizeof(dst[j].raw_data));
 			if (dst[j].raw_length<0) {
 				usleep(200);
 				continue;
@@ -1533,7 +1566,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 		if (dst[j].chip_id == USBTENKI_CHIP_PT100_RTD) {
 //			printf("Fetching PT100 calibration data...\n");
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, 0, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, 0, caldata, sizeof(caldata));
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -1567,7 +1600,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 
 			//printf("Fetching MS5611 calibration data (offset: %d)...\n", offset);
 			for (n=0; n<num_attempts; n++) {
-				caldata_len = usbtenki_getCalibration(hdl, offset + 0, caldata);
+				caldata_len = usbtenki_getCalibration(hdl, offset + 0, caldata, sizeof(caldata)-offset);
 				if (caldata_len<0) {
 					usleep(200);
 					continue;
@@ -1581,7 +1614,7 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 
 			for (n=0; n<num_attempts; n++) {
 				int l;
-				l = usbtenki_getCalibration(hdl, offset + 1, caldata + caldata_len);
+				l = usbtenki_getCalibration(hdl, offset + 1, caldata + caldata_len, sizeof(caldata)-offset);
 				if (l<0) {
 					usleep(200);
 					continue;
@@ -1597,11 +1630,12 @@ int usbtenki_readChannelList(USBTenki_dev_handle hdl, const int channel_ids[], i
 //			printf("Received %d bytes of calibration\n", caldata_len);
 		}
 
-		dst[j].data_valid = 1;
 		res = usbtenki_convertRaw(&dst[j], flags, caldata, caldata_len);
 		if (res==-1) {
-			fprintf(stderr, "Failed to convert raw value from chip %d, channel: %d\n",
+			if (g_usbtenki_verbose) {
+				fprintf(stderr, "Failed to convert raw value from chip %d, channel: %d\n",
 								dst[j].chip_id, dst[j].channel_id);
+			}
 		}
 	}
 
@@ -1623,7 +1657,7 @@ int usbtenki_listChannels(USBTenki_dev_handle hdl, struct USBTenki_channel *dstA
 		memset(dstArray, 0, sizeof(struct USBTenki_channel));
 		dstArray->channel_id = i;
 		dstArray->chip_id = usbtenki_getChipID(hdl, i);
-		dstArray->data_valid = 0;
+		dstArray->status = USBTENKI_CHN_STATUS_UNDEFINED;
 
 		dstArray++;
 	}
@@ -1692,7 +1726,7 @@ static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct 
 				printf("%s: found channel id %d at index %d\n" , __FUNCTION__,
 							requested_channel_id, i);
 
-			if (channels[i].data_valid) {
+			if (channels[i].status == USBTENKI_CHN_STATUS_VALID) {
 				if (g_usbtenki_verbose)
 					printf("Data already valid for this channel.\n");
 				return &channels[i];
@@ -1705,7 +1739,7 @@ static struct USBTenki_channel *getValidChannel(USBTenki_dev_handle hdl, struct 
 				return NULL;
 			}
 
-			if (channels[i].data_valid) {
+			if (channels[i].status == USBTENKI_CHN_STATUS_VALID) {
 				if (g_usbtenki_verbose)
 					printf("Data is now valid for this channel.\n");
 				return &channels[i];
@@ -1856,8 +1890,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						}
 
 						if (ch0 > 65534 || ch1 > 65534) {
-							chn->data_valid = 0;
-							chn->saturated = 1;
+							chn->status = USBTENKI_CHN_STATUS_SATURATED;
 							chn->converted_data = -1;
 							chn->converted_unit = TENKI_UNIT_LUX;
 							break;
@@ -1887,7 +1920,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 
 //						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
 
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_data = lx;
 						chn->converted_unit = TENKI_UNIT_LUX;
 					}
@@ -1934,7 +1967,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 
 //						printf("ch1: %f, ch0: %f, lx: %f\n", ch1, ch0, lx);
 
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_data = lx;
 						chn->converted_unit = TENKI_UNIT_LUX;
 					}
@@ -1968,7 +2001,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						if (RH_true > 100)
 							RH_true = 100;
 
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_data = RH_true;
 						chn->converted_unit = TENKI_UNIT_RH;
 					}
@@ -1997,7 +2030,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 							(17.62*T)/(243.12+T);
 						Dp = 243.12 * H / (17.62 - H);
 
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_data = Dp;
 						chn->converted_unit = TENKI_UNIT_CELCIUS;
 					}
@@ -2052,7 +2085,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 							chn->converted_unit = TENKI_UNIT_CELCIUS;
 						}
 
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 					}
 					break;
 
@@ -2100,11 +2133,11 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						}
 
 						if (out_of_range) {
-							chn->data_valid = 1;
+							chn->status = USBTENKI_CHN_STATUS_VALID;
 							chn->converted_data = T;
 							chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
 						} else {
-							chn->data_valid = 1;
+							chn->status = USBTENKI_CHN_STATUS_VALID;
 							chn->converted_data = HI;
 							chn->converted_unit = TENKI_UNIT_FAHRENHEIT;
 						}
@@ -2126,7 +2159,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						}
 
 						P = usbtenki_convertPressure(pressure_chn->converted_data, pressure_chn->converted_unit, TENKI_UNIT_KPA);
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_unit = TENKI_UNIT_METERS;
 						chn->converted_data = HeightFromPressure(P * 1000, standard_sea_level_pressure);
 					}
@@ -2159,7 +2192,7 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 						b = blue_chn->converted_data / max * 255.0;
 
 						color = r<<16 | g<<8 | b;
-						chn->data_valid = 1;
+						chn->status = USBTENKI_CHN_STATUS_VALID;
 						chn->converted_unit = TENKI_UNIT_HEXCOLOR;
 						chn->converted_data = color;
 					}
@@ -2211,7 +2244,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 		if (hfound && tfound) {
 			chn.channel_id = USBTENKI_VIRTUAL_DEW_POINT;
 			chn.chip_id = chn.channel_id;
-			chn.data_valid = 0;
+			chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
 			chn.converted_data = 0.0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
@@ -2256,7 +2289,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 		if (vir_found && ir_found) {
 			chn.channel_id = USBTENKI_VIRTUAL_TSL2561_LUX;
 			chn.chip_id = chn.channel_id;
-			chn.data_valid = 0;
+			chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
 			chn.converted_data = 0.0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
@@ -2279,7 +2312,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 		if (vir_found && ir_found) {
 			chn.channel_id = USBTENKI_VIRTUAL_TSL2568_LUX;
 			chn.chip_id = chn.channel_id;
-			chn.data_valid = 0;
+			chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
 			chn.converted_data = 0.0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
@@ -2291,7 +2324,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 	if (NULL != getenv("TENKI_HEXCOLOR"))
 	{
 		unsigned char wanted[3] = { USBTENKI_CHIP_RED, USBTENKI_CHIP_GREEN, USBTENKI_CHIP_BLUE };
-		int j, found = 0;
+		unsigned int j, found = 0;
 
 		for (i=0; i<real_channels; i++)
 		{
@@ -2306,7 +2339,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 		if (found == sizeof(wanted)) {
 			chn.channel_id = USBTENKI_CHIP_HEXCOLOR;
 			chn.chip_id = chn.channel_id;
-			chn.data_valid = 0;
+			chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
 			chn.converted_data = 0;
 			chn.converted_unit = 0;
 			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
@@ -2322,7 +2355,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 			{
 				chn.channel_id = USBTENKI_VIRTUAL_ALTITUDE;
 				chn.chip_id = chn.channel_id;
-				chn.data_valid = 0;
+				chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
 				chn.converted_data = 0.0;
 				chn.converted_unit = 0;
 				if (addVirtualChannel(channels, num_channels, max_channels, &chn))
@@ -2334,7 +2367,7 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 	return 0;
 }
 
-void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit_pressure, int unit_frequency, int unit_voltage, int unit_current, int unit_power, int unit_length)
+void usbtenki_convertUnits(struct USBTenki_channel *chn, const struct USBTenki_unitPreferences *units)
 {
 	/* Perform format conversion */
 	switch (chn->converted_unit)
@@ -2349,8 +2382,8 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_YARDS:
 			chn->converted_data = usbtenki_convertLength(chn->converted_data,
 															chn->converted_unit,
-																		unit_length);
-			chn->converted_unit = unit_length;
+																		units->length);
+			chn->converted_unit = units->length;
 			break;
 
 		case TENKI_UNIT_FAHRENHEIT:
@@ -2358,8 +2391,8 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_KELVIN:
 			chn->converted_data = usbtenki_convertTemperature(chn->converted_data,
 																chn->converted_unit,
-																		unit_temp);
-			chn->converted_unit = unit_temp;
+																		units->temperature);
+			chn->converted_unit = units->temperature;
 			break;
 
 		case TENKI_UNIT_KPA:
@@ -2372,8 +2405,8 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_INHG:
 			chn->converted_data = usbtenki_convertPressure(chn->converted_data,
 															chn->converted_unit,
-																unit_pressure);
-			chn->converted_unit = unit_pressure;
+																units->pressure);
+			chn->converted_unit = units->pressure;
 			break;
 
 		case TENKI_UNIT_MILLIHZ:
@@ -2382,24 +2415,24 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_MHZ:
 			chn->converted_data = usbtenki_convertFrequency(chn->converted_data,
 															chn->converted_unit,
-															unit_frequency);
-			chn->converted_unit = unit_frequency;
+															units->frequency);
+			chn->converted_unit = units->frequency;
 			break;
 
 		case TENKI_UNIT_VOLTS:
 		case TENKI_UNIT_MILLIVOLT:
 			chn->converted_data = usbtenki_convertVoltage(chn->converted_data,
 															chn->converted_unit,
-															unit_voltage);
-			chn->converted_unit = unit_voltage;
+															units->voltage);
+			chn->converted_unit = units->voltage;
 			break;
 
 		case TENKI_UNIT_AMPS:
 		case TENKI_UNIT_MILLIAMPS:
 			chn->converted_data = usbtenki_convertCurrent(chn->converted_data,
 															chn->converted_unit,
-															unit_current);
-			chn->converted_unit = unit_current;
+															units->current);
+			chn->converted_unit = units->current;
 			break;
 
 		case TENKI_UNIT_KILOWATTS:
@@ -2407,9 +2440,66 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, int unit_temp, int unit
 		case TENKI_UNIT_MILLIWATTS:
 			chn->converted_data = usbtenki_convertPower(chn->converted_data,
 															chn->converted_unit,
-															unit_power);
-			chn->converted_unit = unit_power;
+															units->power);
+			chn->converted_unit = units->power;
 			break;
+
+		case TENKI_UNIT_PPB:
+		case TENKI_UNIT_PPM:
+		case TENKI_UNIT_PERCENT:
+			break;
+	}
+}
+
+const char *usbtenki_getChannelStatusStringNoSpaces(const struct USBTenki_channel *chn)
+{
+	if (!chn) {
+		return "Undefined";
+	}
+
+	switch (chn->status)
+	{
+		default:
+		case USBTENKI_CHN_STATUS_UNDEFINED:
+			return "Undefined";
+		case USBTENKI_CHN_STATUS_VALID:
+			return "Valid";
+		case USBTENKI_CHN_STATUS_SATURATED:
+			return "Saturated";
+		case USBTENKI_CHN_STATUS_SENSOR_ERROR:
+			return "SensorError";
+		case USBTENKI_CHN_STATUS_PROBE_DISCONNECTED:
+			return "ProbeDisconnected";
+		case USBTENKI_CHN_STATUS_OUT_OF_RANGE:
+			return "OutOfRange";
+		case USBTENKI_CHN_STATUS_INVALID_DATA:
+			return "InvalidData";
+	}
+}
+
+const char *usbtenki_getChannelStatusString(const struct USBTenki_channel *chn)
+{
+	if (!chn) {
+		return "Undefined";
+	}
+
+	switch (chn->status)
+	{
+		default:
+		case USBTENKI_CHN_STATUS_UNDEFINED:
+			return "Undefined";
+		case USBTENKI_CHN_STATUS_VALID:
+			return "Valid";
+		case USBTENKI_CHN_STATUS_SATURATED:
+			return "Saturated";
+		case USBTENKI_CHN_STATUS_SENSOR_ERROR:
+			return "Sensor Error";
+		case USBTENKI_CHN_STATUS_PROBE_DISCONNECTED:
+			return "Probe Disconnected";
+		case USBTENKI_CHN_STATUS_OUT_OF_RANGE:
+			return "Out Of Range";
+		case USBTENKI_CHN_STATUS_INVALID_DATA:
+			return "Invalid Data";
 	}
 }
 

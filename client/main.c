@@ -42,13 +42,17 @@
 
 
 int g_verbose = 0;
-int g_temp_format = TENKI_UNIT_CELCIUS;
-int g_pressure_format = TENKI_UNIT_KPA;
-int g_frequency_format = TENKI_UNIT_HZ;
-int g_voltage_format = TENKI_UNIT_VOLTS;
-int g_current_format = TENKI_UNIT_AMPS;
-int g_power_format = TENKI_UNIT_WATTS;
-int g_length_format = TENKI_UNIT_METERS;
+
+struct USBTenki_unitPreferences g_unit_prefs = {
+	.temperature = TENKI_UNIT_CELCIUS,
+	.pressure = TENKI_UNIT_KPA,
+	.frequency = TENKI_UNIT_HZ,
+	.current = TENKI_UNIT_AMPS,
+	.power = TENKI_UNIT_WATTS,
+	.length = TENKI_UNIT_METERS,
+	.concentration = TENKI_UNIT_PPM,
+};
+
 int g_pretty = 0;
 int g_full_display_mode = 0;
 int g_decimal_digits = DEFAULT_DECIMAL_DIGITS;
@@ -56,6 +60,7 @@ int g_7bit_clean = 0;
 int g_log_mode = 0;
 int g_log_interval = DEFAULT_LOG_INTERVAL;
 int g_must_run = 1;
+int g_legacy_errors = 0;
 const char *g_log_file = NULL;
 FILE *g_log_fptr = NULL;
 long g_flags = 0;
@@ -101,6 +106,26 @@ static void printUsage(void)
 	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
 	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
 	printf("    old_sht75            Use the old SHT RH compensention coefficients.\n");
+	printf("    legacy_errors        Output channel errors in the old (unspecific) way.\n");
+	printf("                         For instance: The string 'err' instead of 'ProbeDisconnected'\n");
+
+	printf("\nErrors:\n");
+	printf("\nWhen an error occurs reading a channel, the value is replaced by an error string:\n");
+	printf("    Undefined            Unknown/undefined error.\n");
+	printf("    Saturated            Sensor (or resulting value) is saturated and unusable.\n");
+	printf("    SensorError          The physical sensor or interface circuitry is not working properly\n");
+	printf("    ProbeDisconnected    Indicates that the probe is disconnected or cable is cut/open\n");
+	printf("    OutOfRange           The reading falls outside the sensor possible or supported range\n");
+	printf("    InvalidData          The data received from the sensor did not make sense or was incomplete\n");
+	printf("\n");
+
+	printf("Note: If pretty output is enabled (see -p) there will be spaces in the error messages. See also\n");
+	printf("the 'legacy_errors' options to restore the old behaviour of returning 'err', regarless\n");
+	printf("of what the specific error was.\n");
+
+	printf("\nReturn value:\n");
+	printf(" - On success, usbtenkiget returns 0.\n");
+	printf(" - If the requested serial number (see -s) was not found, or if no devices were found (-f and -l) a non-zero value is returned.\n");
 }
 
 static void printVersion(void)
@@ -218,15 +243,15 @@ int main(int argc, char **argv)
 				break;
 
 			case 'T':
-				if (strcasecmp(optarg, "Celcius")==0 || 
+				if (strcasecmp(optarg, "Celcius")==0 ||
 						strcasecmp(optarg, "C")==0)
-					g_temp_format = TENKI_UNIT_CELCIUS;
+					g_unit_prefs.temperature = TENKI_UNIT_CELCIUS;
 				else if (strcasecmp(optarg, "Fahrenheit")==0 ||
 						strcasecmp(optarg, "F")==0)
-					g_temp_format = TENKI_UNIT_FAHRENHEIT;
+					g_unit_prefs.temperature = TENKI_UNIT_FAHRENHEIT;
 				else if (strcasecmp(optarg, "Kelvin")==0 ||
 						strcasecmp(optarg, "K")==0)
-					g_temp_format = TENKI_UNIT_KELVIN;
+					g_unit_prefs.temperature = TENKI_UNIT_KELVIN;
 				else {
 					fprintf(stderr, "Unknown temperature format: '%s'\n",
 										optarg);
@@ -249,7 +274,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_frequency_format = tbl[i].fmt;
+							g_unit_prefs.frequency = tbl[i].fmt;
 							break;
 						}
 					}
@@ -278,7 +303,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_pressure_format = tbl[i].fmt;
+							g_unit_prefs.pressure = tbl[i].fmt;
 							break;
 						}
 					}
@@ -308,7 +333,7 @@ int main(int argc, char **argv)
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
-							g_length_format = tbl[i].fmt;
+							g_unit_prefs.length = tbl[i].fmt;
 							break;
 						}
 					}
@@ -324,15 +349,20 @@ int main(int argc, char **argv)
 					struct {
 						const char *name;
 						long flag;
+						int *set;
 					} tbl[] = {
 						{ "no_heat_index_range", USBTENKI_FLAG_NO_HEAT_INDEX_RANGE },
 						{ "no_humidex_range", USBTENKI_FLAG_NO_HUMIDEX_RANGE },
 						{ "old_sht75", USBTENKI_FLAG_USE_OLD_SHT75_COMPENSATION },
+						{ "legacy_errors", 0, &g_legacy_errors },
 					};
 
 					for (i=0; i<ARRAY_SIZE(tbl); i++) {
 						if (strcasecmp(tbl[i].name, optarg)==0) {
 							g_flags |= tbl[i].flag;
+							if (tbl[i].set) {
+								*tbl[i].set = 1;
+							}
 							break;
 						}
 					}
@@ -392,7 +422,6 @@ int main(int argc, char **argv)
 			printf("%d ", requested_channels[i]);
 		}
 		printf("\n");
-		printf("  g_temp_format: %d\n", g_temp_format);
 		printf("  list_mode: %d\n", list_mode);
 		if (use_serial)
 			printf("  use_serial: %s\n", use_serial);
@@ -664,20 +693,20 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 				break;
 		}
 
-		if (!chn || (!chn->data_valid && !chn->saturated) ) {
+		if (!chn) {
 			fprintf(stderr, "Internal error..\n");
 			res = -2;
 			return -2;
 		}
 
-		usbtenki_convertUnits(chn, g_temp_format, g_pressure_format, g_frequency_format, g_voltage_format, g_current_format, g_power_format, g_length_format);
+		usbtenki_convertUnits(chn, &g_unit_prefs);
 
 		sprintf(fmt, "%%.%df", g_decimal_digits);
 
 		if (g_pretty) {
 			printf("%s: ", chipToShortString(chn->chip_id));
-			if (chn->saturated) {
-				printf("err");
+			if (chn->status != USBTENKI_CHN_STATUS_VALID) {
+				printf("%s\n", g_legacy_errors ? "err" : usbtenki_getChannelStatusString(chn));
 			} else {
 				if (chn->converted_unit == TENKI_UNIT_HEXCOLOR) {
 					int color = chn->converted_data;
@@ -685,12 +714,13 @@ int processChannels(USBTenki_dev_handle hdl, int *requested_channels, int num_re
 				} else {
 					printf(fmt, chn->converted_data);
 				}
+
+				printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 			}
-			printf(" %s\n", unitToString(chn->converted_unit, g_7bit_clean));
 		}
 		else {
-			if (chn->saturated) {
-				printf("err");
+			if (chn->status != USBTENKI_CHN_STATUS_VALID) {
+				printf("%s", g_legacy_errors ? "err" : usbtenki_getChannelStatusStringNoSpaces(chn));
 			} else {
 				printf(fmt , chn->converted_data);
 			}

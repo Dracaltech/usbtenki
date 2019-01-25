@@ -76,7 +76,7 @@ int TenkiDevice::updateChannelData()
 				continue;
 
 			memcpy(&tmpdata, &channel_data[i], sizeof(struct USBTenki_channel));
-			tmpdata.data_valid = 0;
+			tmpdata.status = USBTENKI_CHN_STATUS_UNDEFINED;
 
 			res = usbtenki_readChannel(tenki_hdl, &tmpdata, g_usbtenki_flags);
 			if (res) {
