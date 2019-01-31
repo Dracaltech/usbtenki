@@ -1,3 +1,13 @@
+Version 2.1.16 - January 31, 2019
+   - Bugfix for libusb0.1 build type
+
+Version 2.1.15 - January 25, 2019
+   - Add support for the TMC-200k thermocouple converter
+   - Add support for specific per-channel status/error such as 'probe
+     disconnected' (for products with the necessary circuitry only)
+   - Prepare support for upcoming DXC Gaz sensor products
+   - Prepare support for upcoming RTD-300 products
+
 Version 2.1.14 - November 21, 2018
    - [QTenki] Fix a crash when the graph is manipulated certain ways
    - Add support for the Sensirion SPS30 particle sensor
