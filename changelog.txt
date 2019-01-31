@@ -1,3 +1,6 @@
+Version 2.1.16 - January 31, 2019
+   - Bugfix for libusb0.1 build type
+
 Version 2.1.15 - January 25, 2019
    - Add support for the TMC-200k thermocouple converter
    - Add support for specific per-channel status/error such as 'probe
