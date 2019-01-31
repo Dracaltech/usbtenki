@@ -329,7 +329,7 @@ USBTenki_dev_handle usbtenki_openBySerial(const char *serial, struct USBTenki_in
 int usbtenki_command(USBTenki_dev_handle hdl, unsigned char cmd,
 										int id, unsigned char *dst, int dst_max_size)
 {
-	unsigned char buffer[16];
+	unsigned char buffer[32];
 	unsigned char xor;
 	int n, i;
 	int datlen;
