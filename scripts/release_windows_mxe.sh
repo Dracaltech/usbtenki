@@ -7,6 +7,11 @@ VERSION_H=../common/usbtenki_version.h
 VERSION=`grep USBTENKI_VERSION $VERSION_H | head -1 | cut -d \" -f 2`
 TMPDIR="./tmp"
 
+# Provide a way to manually force a version (for test builds, etc)
+if [[ $# > 0 ]]; then
+	VERSION=$1
+fi
+
 function errorexit
 {
 	echo -e "\033[31;1m*** ERROR ***: \033[0m" $2
@@ -48,7 +53,7 @@ cp ../../libusb/bin/libusb0.dll $TMPDIR
 cp -r ../windows_driver $TMPDIR/usb_driver
 cp qtenki_mxe.nsi $TMPDIR
 mkdir $TMPDIR/sources
-./release.sh $TMPDIR/sources
+./release.sh $TMPDIR/sources $VERSION
 
 makensis -DVERSION=$VERSION $TMPDIR/qtenki_mxe.nsi
 
