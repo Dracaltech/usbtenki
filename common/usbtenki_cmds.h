@@ -126,6 +126,7 @@
 // Sets Zero or point of origin depending on sensor.
 #define USBTENKI_ZERO					0xf6
 
+
 /* Set poll rate for SHT31.
  *   request: USBTENKI_GET_NUM_CHANNELS
  *   value: Rate, where
@@ -144,6 +145,8 @@
 
 #define USBTENKI_SEND_BUF   0xF8
 #define USBTENKI_RECV_BUF   0xF9
+
+#define USBTENKI_ZERO_IN_KNOWN_PPM		0xFA
 
 /* Command the device to enter bootloader mode.
  *

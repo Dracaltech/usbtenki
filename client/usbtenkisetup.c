@@ -51,8 +51,8 @@ static void printUsage(void)
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
 	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
 	printf("    em1_config  max_current  calibration\n");
-	printf("    misc1_cal   value\n");
-	printf("    do_zero     Device specific effect.\n");
+	printf("    do_zero          Device specific effect.\n");
+	printf("    dxc200_kz ppm    Set zero in known gas concentration (for DXC-200)\n");
 	printf("    sht31_rate	rate (0: 0.5 MPS, 1: 1 MPS, 2: 2 MPS, 3: 4 MPS, 4: 10 MPS)\n");
 	printf("                (MPS is measurements per second)\n");
 	printf("    set_thermocouple_type channel type\n");
@@ -461,6 +461,35 @@ int main(int argc, char **argv)
 
 		printf("Thermocouple type configured for channel %d: Type %s\n", chn,
 				thermocoupleTypeToString(repBuf[0]));
+
+		goto cleanAndExit;
+	}
+
+	/**************** Set zero in known gas concentration (DXC-200 CO2 Sensor) ****************/
+	if (strcmp(eargv[0], "dxc200_kz")==0) {
+		int ppm;
+		char *e;
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		ppm = strtol(eargv[1], &e, 0);
+		if (e == eargv[1]) {
+			fprintf(stderr, "Bad PPM value\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		printf("Setting zero in known gas concentration of %d ppm\n", ppm);
+
+		res = usbtenki_command(hdl, USBTENKI_ZERO_IN_KNOWN_PPM, ppm, repBuf, sizeof(repBuf));
+		if (res != 0) {
+			fprintf(stderr, "Error setting zero in known concentration\n");
+			retval = 2;
+		}
 
 		goto cleanAndExit;
 	}
