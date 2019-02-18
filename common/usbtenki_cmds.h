@@ -148,6 +148,8 @@
 
 #define USBTENKI_ZERO_IN_KNOWN_PPM		0xFA
 
+#define USBTENKI_UNLOCK_CALIBRATION		0xFE
+
 /* Command the device to enter bootloader mode.
  *
  *   request: USBTENKI_BOOTLOADER

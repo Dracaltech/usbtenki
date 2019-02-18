@@ -59,6 +59,7 @@ static void printUsage(void)
 	printf("       (where channel is the port number [counted from 0])\n");
 	printf("       (where type is the thermocouple type K, J, T, N, S, E, B, or R)\n");
 	printf("    get_thermocouple_type channel\n");
+	printf("    unlock_cal code   Unlock calibration using code\n");
 	printf("    bootloader  Enter bootloader mode (not supported by all devices)\n");
 }
 
@@ -493,6 +494,34 @@ int main(int argc, char **argv)
 
 		goto cleanAndExit;
 	}
+
+	/**************** Unlock calibration ****************/
+	if (strcmp(eargv[0], "unlock_cal")==0) {
+		int code;
+		char *e;
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		code = strtol(eargv[1], &e, 0);
+		if (e == eargv[1]) {
+			fprintf(stderr, "Malformed code\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		res = usbtenki_command(hdl, USBTENKI_UNLOCK_CALIBRATION, code, repBuf, sizeof(repBuf));
+		if (res != 0) {
+			fprintf(stderr, "Error setting zero in known concentration\n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
 
 	/**************** Bootloader *****************/
 	if (strcmp(eargv[0], "bootloader")==0) {
