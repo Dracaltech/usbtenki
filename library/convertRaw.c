@@ -1355,7 +1355,7 @@ sensorError:
 
 wrongData:
 	chn->status = USBTENKI_CHN_STATUS_INVALID_DATA;
-	fprintf(stderr, "Wrong data received\n");
+//	fprintf(stderr, "Wrong data received\n");
 	return -1;
 }
 
