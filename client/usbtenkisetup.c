@@ -51,14 +51,15 @@ static void printUsage(void)
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
 	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
 	printf("    em1_config  max_current  calibration\n");
-	printf("    misc1_cal   value\n");
-	printf("    do_zero     Device specific effect.\n");
+	printf("    do_zero          Device specific effect.\n");
+	printf("    dxc200_kz ppm    Set zero in known gas concentration (for DXC-200)\n");
 	printf("    sht31_rate	rate (0: 0.5 MPS, 1: 1 MPS, 2: 2 MPS, 3: 4 MPS, 4: 10 MPS)\n");
 	printf("                (MPS is measurements per second)\n");
 	printf("    set_thermocouple_type channel type\n");
 	printf("       (where channel is the port number [counted from 0])\n");
 	printf("       (where type is the thermocouple type K, J, T, N, S, E, B, or R)\n");
 	printf("    get_thermocouple_type channel\n");
+	printf("    unlock_cal code   Unlock calibration using code\n");
 	printf("    bootloader  Enter bootloader mode (not supported by all devices)\n");
 }
 
@@ -464,6 +465,63 @@ int main(int argc, char **argv)
 
 		goto cleanAndExit;
 	}
+
+	/**************** Set zero in known gas concentration (DXC-200 CO2 Sensor) ****************/
+	if (strcmp(eargv[0], "dxc200_kz")==0) {
+		int ppm;
+		char *e;
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		ppm = strtol(eargv[1], &e, 0);
+		if (e == eargv[1]) {
+			fprintf(stderr, "Bad PPM value\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		printf("Setting zero in known gas concentration of %d ppm\n", ppm);
+
+		res = usbtenki_command(hdl, USBTENKI_ZERO_IN_KNOWN_PPM, ppm, repBuf, sizeof(repBuf));
+		if (res != 0) {
+			fprintf(stderr, "Error setting zero in known concentration\n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+	/**************** Unlock calibration ****************/
+	if (strcmp(eargv[0], "unlock_cal")==0) {
+		int code;
+		char *e;
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		code = strtol(eargv[1], &e, 0);
+		if (e == eargv[1]) {
+			fprintf(stderr, "Malformed code\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		res = usbtenki_command(hdl, USBTENKI_UNLOCK_CALIBRATION, code, repBuf, sizeof(repBuf));
+		if (res != 0) {
+			fprintf(stderr, "Error setting zero in known concentration\n");
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
 
 	/**************** Bootloader *****************/
 	if (strcmp(eargv[0], "bootloader")==0) {

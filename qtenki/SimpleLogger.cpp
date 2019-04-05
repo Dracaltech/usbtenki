@@ -29,6 +29,8 @@ SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_m
 			break;
 	}
 
+	logLocale->setNumberOptions(QLocale::OmitGroupSeparator);
+
 	timestamp_format = tfmt;
 	on_error = onerr;	
 	use_utc = 0;
