@@ -1,3 +1,7 @@
+Version 2.1.17 - April 5, 2019
+   - [QTenki] Disable group separator (eg: thousands) in logger
+   - Improved support for CO2 sensors
+
 Version 2.1.16 - January 31, 2019
    - Bugfix for libusb0.1 build type
 
