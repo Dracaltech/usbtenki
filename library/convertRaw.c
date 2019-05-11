@@ -734,7 +734,7 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				gain = pow(2, (raw_data[5]>>4));
 				ref_trim = raw_data[6] << 8;
 				ref_trim |= raw_data[7];
-				ref_res = ref_res_base + ref_trim / 10000;
+				ref_res = ref_res_base + ref_trim / 10000.0;
 
 				//printf("Gain: %f, ref_res: %.5f\n", gain, ref_res);
 				//printf("Output code: %d (%06x)\n", output_code, output_code);
