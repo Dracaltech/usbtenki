@@ -148,6 +148,12 @@
 
 #define USBTENKI_ZERO_IN_KNOWN_PPM		0xFA
 
+#define USBTENKI_SET_PROTOCOL			0xFB
+#define USBTENKI_PROTOCOL_ID_STANDARD	0
+#define USBTENKI_PROTOCOL_ID_NMEA		1
+
+#define USBTENKI_RESET_FIRMWARE			0xFD
+
 #define USBTENKI_UNLOCK_CALIBRATION		0xFE
 
 /* Command the device to enter bootloader mode.

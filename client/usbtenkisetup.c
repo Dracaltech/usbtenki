@@ -62,7 +62,13 @@ static void printUsage(void)
 	printf("       (where type is the thermocouple type K, J, T, N, S, E, B, or R)\n");
 	printf("    get_thermocouple_type channel\n");
 	printf("    unlock_cal code   Unlock calibration using code\n");
-	printf("    bootloader  Enter bootloader mode (not supported by all devices)\n");
+	printf("    bootloader                 Enter bootloader mode\n");
+	printf("                               (not supported by all devices)\n");
+	printf("    set_protocol  protocol_id  Switch the device to another protocol.\n");
+	printf("                               0: Standard (usbtenki)\n");
+	printf("                               1: NMEA, USB CDC-ACM (Virtual COMM port)\n");
+	printf("                               (not supported by all devices)\n");
+	printf("    reset           Restart the firmware (not supported by all devices)\n");
 }
 
 #define MAX_EXTRA_ARGS	8
@@ -115,7 +121,7 @@ int main(int argc, char **argv)
 
 	for (i=optind; i<argc; i++) {
 		eargv[i-optind] = argv[i];
-		if (g_verbose) 
+		if (g_verbose)
 			printf("  %d: %s\n", i-optind, eargv[i-optind]);
 	}
 
@@ -524,6 +530,43 @@ int main(int argc, char **argv)
 		goto cleanAndExit;
 	}
 
+	/**************** set_protocol *****************/
+	if (strcmp(eargv[0], "set_protocol")==0) {
+		int protocol_id;
+		char *e;
+
+		if (n_extra_args<2) {
+			fprintf(stderr, "Missing arguments to command\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		protocol_id = strtol(eargv[1], &e, 0);
+		if (e==eargv[1] || protocol_id < 0 || protocol_id > 255) {
+			fprintf(stderr, "Bad protocol id\n");
+			retval = 1;
+			goto cleanAndExit;
+		}
+
+		if (g_verbose)
+			printf("Setting protocol id to %d\n", protocol_id);
+
+		res = usbtenki_command(hdl, USBTENKI_SET_PROTOCOL, protocol_id, repBuf, sizeof(repBuf));
+		if (res!=0) {
+			fprintf(stderr, "Error setting protocol id to %d\n",
+								protocol_id);
+			retval = 2;
+		}
+
+		goto cleanAndExit;
+	}
+
+	/**************** Reset *****************/
+	if (strcmp(eargv[0], "reset")==0) {
+		usbtenki_command(hdl, USBTENKI_RESET_FIRMWARE, 0, repBuf, sizeof(repBuf));
+
+		goto cleanAndExit;
+	}
 
 	/**************** Bootloader *****************/
 	if (strcmp(eargv[0], "bootloader")==0) {
