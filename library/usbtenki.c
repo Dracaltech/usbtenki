@@ -865,6 +865,7 @@ float usbtenki_convertTemperature(float temperature, int src_fmt, int dst_fmt)
 			{
 				case TENKI_UNIT_CELCIUS:
 					converted = temperature - 273.15;
+					break;
 
 				case TENKI_UNIT_FAHRENHEIT:
 					converted = (temperature * 1.8) - 459.67;
@@ -899,6 +900,7 @@ float usbtenki_convertLength(float length, int src_fmt, int dst_fmt)
 			break;
 		case TENKI_UNIT_MICROMETERS:
 			meters = length / 1000000;
+			break;
 
 		case TENKI_UNIT_INCHES:
 			// 1 inch = 25.4mm = 2.54cm = 0.254dm = 0.0254m
