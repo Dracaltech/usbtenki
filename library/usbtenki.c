@@ -667,6 +667,64 @@ int usbtenki_getChipID(USBTenki_dev_handle hdl, int id)
 	return dst[0];
 }
 
+float usbtenki_convertConcentration(float c, int src_fmt, int dst_fmt, int *returned_units)
+{
+	double tmp_ppb;
+	float out;
+
+	// If no conversion is needed due to identical units, return the value as-is.
+	// If no conversion is needed since native sensor units are requested, return the value as-is.
+	if ((src_fmt == dst_fmt) || (dst_fmt == TENKI_UNIT_SENSOR_DEFAULT ) ) {
+		if (returned_units) {
+			*returned_units = src_fmt;
+		}
+		return c;
+	}
+
+	switch (src_fmt)
+	{
+		case TENKI_UNIT_PPB:
+			tmp_ppb = c;
+			break;
+		case TENKI_UNIT_PPM:
+			tmp_ppb = c * 1000;
+			break;
+		case TENKI_UNIT_PERCENT:
+			tmp_ppb = c / 100 * 1000000000;
+			break;
+		default:
+			// unsupported? Leave it as-is.
+			if (returned_units) {
+				*returned_units = src_fmt;
+			}
+			return c;
+	}
+
+	switch (dst_fmt)
+	{
+		case TENKI_UNIT_PPB:
+			out = tmp_ppb;
+			break;
+		case TENKI_UNIT_PPM:
+			out = tmp_ppb / 1000;
+			break;
+		case TENKI_UNIT_PERCENT:
+			out = tmp_ppb * 100 / 1000000000;
+			break;
+		default:
+			if (returned_units) {
+				*returned_units = src_fmt;
+			}
+			return c;
+	}
+
+	if (returned_units) {
+		*returned_units = dst_fmt;
+	}
+
+	return out;
+}
+
 float usbtenki_convertFrequency(float freq, int src_fmt, int dst_fmt)
 {
 	double hz;
@@ -2448,6 +2506,10 @@ void usbtenki_convertUnits(struct USBTenki_channel *chn, const struct USBTenki_u
 		case TENKI_UNIT_PPB:
 		case TENKI_UNIT_PPM:
 		case TENKI_UNIT_PERCENT:
+			chn->converted_data = usbtenki_convertConcentration(chn->converted_data,
+																chn->converted_unit,
+																units->concentration,
+																&chn->converted_unit);
 			break;
 	}
 }
