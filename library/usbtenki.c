@@ -1410,6 +1410,7 @@ const char *unitToString(int unit, int no_fancy_chars)
 {
 	switch(unit)
 	{
+		case TENKI_UNIT_PERCENT:
 		case TENKI_UNIT_RH: return "%";
 
 		/* Note: The degree symbol may appear incorrectly as two characters
