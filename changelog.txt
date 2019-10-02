@@ -1,4 +1,5 @@
 Version WIP
+   - Add support for concentration unit conversion (ppm, ppb, percent)
    - Add reset and set_protocol commands to usbtenkisetup
 
 Version 2.1.17 - April 5, 2019
