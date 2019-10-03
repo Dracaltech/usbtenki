@@ -884,8 +884,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					goto sensorError;
 				}
 
-				temperature = value * multiplier;
-				chip_fmt = TENKI_UNIT_PPM;
+				temperature = (value * multiplier) / 10000.0;
+				chip_fmt = TENKI_UNIT_PERCENT;
 			}
 			break;
 
