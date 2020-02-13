@@ -273,6 +273,9 @@
 #define USBTENKI_MCU_ADC4		0x84
 #define USBTENKI_MCU_ADC5		0x85
 
+#define USBTENKI_ACCEL_X		0x8A
+#define USBTENKI_ACCEL_Y		0x8B
+#define USBTENKI_ACCEL_Z		0x8C
 
 #define USBTENKI_CHIP_MPX4115	0x90
 
@@ -288,6 +291,13 @@
 
 #define USBTENKI_CHIP_TACHOMETER	0xA0
 
+/* For cases where there are identical sensors
+ * in different locations that must be clearly
+ * labelled as such (eg: Internal, external...) */
+#define USBTENKI_CHIP_SHT31_T_INTERNAL	0xB0
+#define USBTENKI_CHIP_SHT31_RH_INTERNAL	0xB1
+#define USBTENKI_CHIP_SHT31_T_EXTERNAL	0xB2
+#define USBTENKI_CHIP_SHT31_RH_EXTERNAL	0xB3
 
 #define USBTENKI_CHIP_NONE		0xFF
 
@@ -302,6 +312,9 @@
 #define USBTENKI_VIRTUAL_SHT75_COMPENSATED_RH	0x105
 #define USBTENKI_VIRTUAL_ALTITUDE	0x106
 #define USBTENKI_CHIP_HEXCOLOR	0x107
+
+#define USBTENKI_VIRTUAL_INTERNAL_DEW_POINT	0x108
+#define USBTENKI_VIRTUAL_EXTERNAL_DEW_POINT	0x109
 
 #endif // _usbtenki_h__
 

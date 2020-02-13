@@ -1104,6 +1104,15 @@ const char *chipToString(int id)
 		case USBTENKI_CHIP_SCD30_RH:
 			return "SCD30 Relative Humidity";
 
+		case USBTENKI_CHIP_SHT31_T_INTERNAL:
+			return "Internal Temperature";
+		case USBTENKI_CHIP_SHT31_RH_INTERNAL:
+			return "Internal Relative Humidity";
+		case USBTENKI_CHIP_SHT31_T_EXTERNAL:
+			return "External Temperature";
+		case USBTENKI_CHIP_SHT31_RH_EXTERNAL:
+			return "External Relative Humidity";
+
 		case USBTENKI_CHIP_CCS811_TVOC:
 			return "CCS811 TVOC PPB";
 
@@ -1266,6 +1275,8 @@ const char *chipToString(int id)
 			return "VEML6030 WHITE";
 
 		/* Virtual channels and chipID have the same vales */
+		case USBTENKI_VIRTUAL_INTERNAL_DEW_POINT:
+			return "Internal Dew point";
 		case USBTENKI_VIRTUAL_DEW_POINT:
 			return "Dew point";
 		case USBTENKI_VIRTUAL_HUMIDEX:
@@ -1342,6 +1353,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_THC_TYPE_B:
 		case USBTENKI_CHIP_THC_TYPE_R:
 		case USBTENKI_CHIP_SCD30_T:
+		case USBTENKI_CHIP_SHT31_T_INTERNAL:
+		case USBTENKI_CHIP_SHT31_T_EXTERNAL:
 			return "Temperature";
 
 		case USBTENKI_CHIP_TSL2561_IR_VISIBLE:
@@ -1376,6 +1389,8 @@ const char *chipToShortString(int id)
 		case USBTENKI_CHIP_SHT31_RH:
 		case USBTENKI_CHIP_SHT35_RH:
 		case USBTENKI_CHIP_SCD30_RH:
+		case USBTENKI_CHIP_SHT31_RH_INTERNAL:
+		case USBTENKI_CHIP_SHT31_RH_EXTERNAL:
 			return "Relative Humidity";
 
 		case USBTENKI_MCU_ADC0:
@@ -1445,6 +1460,8 @@ const char *chipToShortString(int id)
 
 		/* Virtual channels and chipID share the same namespace */
 		case USBTENKI_VIRTUAL_DEW_POINT:
+		case USBTENKI_VIRTUAL_INTERNAL_DEW_POINT:
+		case USBTENKI_VIRTUAL_EXTERNAL_DEW_POINT:
 			return "Dew point";
 		case USBTENKI_VIRTUAL_HUMIDEX:
 			return "Humidex";
@@ -1875,9 +1892,9 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 	int i, j;
 	struct USBTenki_channel *chn;
 	int temp_sources[] = { USBTENKI_CHIP_SHT_TEMP, USBTENKI_CHIP_BS02_TEMP,
-		USBTENKI_CHIP_CC2_T, USBTENKI_CHIP_SHT31_T, USBTENKI_CHIP_SHT35_T };
+		USBTENKI_CHIP_CC2_T, USBTENKI_CHIP_SHT31_T, USBTENKI_CHIP_SHT35_T, USBTENKI_CHIP_SHT31_T_EXTERNAL };
 	int rh_sources[] = { USBTENKI_CHIP_SHT_RH, USBTENKI_CHIP_BS02_RH,
-		USBTENKI_CHIP_CC2_RH, USBTENKI_CHIP_SHT31_RH, USBTENKI_CHIP_SHT35_RH };
+		USBTENKI_CHIP_CC2_RH, USBTENKI_CHIP_SHT31_RH, USBTENKI_CHIP_SHT35_RH, USBTENKI_CHIP_SHT31_RH_EXTERNAL };
 
 	for (i=0; i<num_channels; i++)
 	{
@@ -2068,12 +2085,41 @@ int usbtenki_processSomeVirtualChannels(USBTenki_dev_handle hdl, struct USBTenki
 					}
 					break;
 
+				case USBTENKI_VIRTUAL_INTERNAL_DEW_POINT:
+					{
+						struct USBTenki_channel *temp_chn, *rh_chn;
+						float H, Dp, T;
+						int temp_sources[] = { USBTENKI_CHIP_SHT31_T_INTERNAL };
+						int rh_sources[] = { USBTENKI_CHIP_SHT31_RH_INTERNAL };
+
+						if (g_usbtenki_verbose)
+							printf("Processing dew point virtual channel\n");
+
+						temp_chn = getValidChannelFromChip_list(hdl, channels, num_channels, temp_sources, ARRAY_SIZE(temp_sources), flags);
+						rh_chn = getValidChannelFromChip_list(hdl, channels, num_channels, rh_sources, ARRAY_SIZE(rh_sources), flags);
+
+						if (temp_chn == NULL || rh_chn == NULL) {
+							fprintf(stderr, "Failed to read channels required for computing virtual channel!\n");
+							return -1;
+						}
+
+						T = temp_chn->converted_data;
+						H = (log10(rh_chn->converted_data)-2.0)/0.4343 +
+							(17.62*T)/(243.12+T);
+						Dp = 243.12 * H / (17.62 - H);
+
+						chn->status = USBTENKI_CHN_STATUS_VALID;
+						chn->converted_data = Dp;
+						chn->converted_unit = TENKI_UNIT_CELCIUS;
+					}
+					break;
+
 				case USBTENKI_VIRTUAL_DEW_POINT:
 					{
 						struct USBTenki_channel *temp_chn, *rh_chn;
 						float H, Dp, T;
-						int temp_sources[] = { USBTENKI_CHIP_SHT_TEMP, USBTENKI_CHIP_BS02_TEMP, USBTENKI_CHIP_CC2_T, USBTENKI_CHIP_SHT31_T, USBTENKI_CHIP_SHT35_T };
-						int rh_sources[] = { USBTENKI_CHIP_SHT_RH, USBTENKI_CHIP_BS02_RH, USBTENKI_CHIP_CC2_RH, USBTENKI_CHIP_SHT31_RH, USBTENKI_CHIP_SHT35_RH };
+						int temp_sources[] = { USBTENKI_CHIP_SHT_TEMP, USBTENKI_CHIP_BS02_TEMP, USBTENKI_CHIP_CC2_T, USBTENKI_CHIP_SHT31_T, USBTENKI_CHIP_SHT35_T, USBTENKI_CHIP_SHT31_T_EXTERNAL };
+						int rh_sources[] = { USBTENKI_CHIP_SHT_RH, USBTENKI_CHIP_BS02_RH, USBTENKI_CHIP_CC2_RH, USBTENKI_CHIP_SHT31_RH, USBTENKI_CHIP_SHT35_RH, USBTENKI_CHIP_SHT31_RH_EXTERNAL };
 
 						if (g_usbtenki_verbose)
 							printf("Processing dew point virtual channel\n");
@@ -2300,6 +2346,10 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 				tfound = channels[i].chip_id;
 			if (channels[i].chip_id == USBTENKI_CHIP_SHT35_RH)
 				hfound = channels[i].chip_id;
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT31_T_EXTERNAL)
+				tfound = channels[i].chip_id;
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT31_RH_EXTERNAL)
+				hfound = channels[i].chip_id;
 		}
 
 		if (hfound && tfound) {
@@ -2332,6 +2382,31 @@ int usbtenki_addVirtualChannels(struct USBTenki_channel *channels, int *num_chan
 				if (addVirtualChannel(channels, num_channels, max_channels, &chn))
 					return -1;
 			}
+		}
+	}
+
+	/* Dew point for internal sensor */
+	if (1)
+	{
+		int hfound=0, tfound=0;
+
+		for (i=0; i<real_channels; i++)
+		{
+			hfound = channels[i].chip_id;
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT31_T_INTERNAL)
+				tfound = channels[i].chip_id;
+			if (channels[i].chip_id == USBTENKI_CHIP_SHT31_RH_INTERNAL)
+				hfound = channels[i].chip_id;
+		}
+
+		if (hfound && tfound) {
+			chn.channel_id = USBTENKI_VIRTUAL_INTERNAL_DEW_POINT;
+			chn.chip_id = chn.channel_id;
+			chn.status = USBTENKI_CHN_STATUS_UNDEFINED;
+			chn.converted_data = 0.0;
+			chn.converted_unit = 0;
+			if (addVirtualChannel(channels, num_channels, max_channels, &chn))
+				return -1;
 		}
 	}
 
