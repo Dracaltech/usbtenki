@@ -1,6 +1,7 @@
 Version WIP
    - Add support for concentration unit conversion (ppm, ppb, percent)
    - Add reset and set_protocol commands to usbtenkisetup
+   - Add support for Internal/External T/RH channels
 
 Version 2.1.17 - April 5, 2019
    - [QTenki] Disable group separator (eg: thousands) in logger
