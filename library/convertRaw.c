@@ -912,8 +912,9 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 			{
 				uint16_t c1,c2,c3,c4,c5,c6;
 				int32_t dT;
+				int32_t TEMP, T2;
 				uint32_t D1,D2;
-				int64_t OFF, SENS;
+				int64_t OFF, SENS, OFF2, SENS2;
 				int32_t P;
 
 				D1 = raw_data[0] | raw_data[1]<<8 | raw_data[2]<<16;
@@ -926,7 +927,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				c5 = caldata[8] | caldata[9]<<8;
 				c6 = caldata[10] | caldata[11]<<8;
 				(void)c6; // silence warning
-/*
+
+#if 1
 				printf("C1 0x%04x (%d)\n", c1, c1);
 				printf("C2 0x%04x (%d)\n", c2, c2);
 				printf("C3 0x%04x (%d)\n", c3, c3);
@@ -934,11 +936,43 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				printf("C5 0x%04x (%d)\n", c5, c5);
 				printf("C6 0x%04x (%d)\n", c6, c6);
 				printf("D1 0x%08x (%d)\n", D1, D1);
-*/
+				printf("D2 0x%08x (%d)\n", D2, D2);
+#endif
 
 				dT = D2 - c5 * 256;
+				TEMP = 2000ll + (int64_t)dT * ((uint64_t)c6) / 8388608ll;
 				OFF = (int64_t)c2 * 65536ll + ((int64_t)c4 * (int64_t)dT) / 128ll;
 				SENS = (int64_t)c1 * 32768ll + ((int64_t)c3 * (int64_t)dT) / 256ll;
+				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
+
+				if (TEMP < 2000) {
+					// Low temperature
+					T2 = (dT * dT) / 0x80000000;						// DT^2 / 2^31
+					OFF2 = 5 * ((TEMP - 2000) * (TEMP - 2000)) / 2;		// OFF2 = 5 * (TEMP - 2000)^2 / 2^1
+					SENS2 = 5 * ((TEMP - 2000) * (TEMP - 2000)) / 4;	// SENS2 = 5 * (TEMP -2000)~2 / 2^2
+					printf("Low temp.\n");
+
+					// Very low temperature
+					if (TEMP < -1500) {
+						OFF2 = OFF2 + 7 * (TEMP + 1500) * (TEMP + 1500);
+						SENS2 = SENS2 + 11 * ((TEMP + 1500) * (TEMP + 1500)) / 2;
+						printf("Very low temp.\n");
+					}
+				} else {
+					T2 = 0;
+					OFF2 = 0;
+					SENS2 = 0;
+				}
+
+				printf("Pre-comp: %d %ld %ld\n", TEMP, OFF, SENS);
+
+				TEMP = TEMP - T2;
+				OFF = OFF - OFF2;
+				SENS = SENS - SENS2;
+
+				printf("Post-comp: %d %ld %ld\n", TEMP, OFF, SENS);
+
+
 				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
 
 				temperature = P;
