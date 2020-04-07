@@ -945,6 +945,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				SENS = (int64_t)c1 * 32768ll + ((int64_t)c3 * (int64_t)dT) / 256ll;
 				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
 
+				printf("Pressure pre-compensation: %.4f Bar\n", P / 100000.0);
+
 				if (TEMP < 2000) {
 					// Low temperature
 					T2 = (dT * dT) / 0x80000000;						// DT^2 / 2^31
@@ -974,6 +976,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 
 
 				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
+
+				printf("Pressure post-compensation: %.4f Bar\n", P / 100000.0);
 
 				temperature = P;
 				temperature /= 100000.0;
