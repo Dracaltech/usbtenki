@@ -926,9 +926,8 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				c4 = caldata[6] | caldata[7]<<8;
 				c5 = caldata[8] | caldata[9]<<8;
 				c6 = caldata[10] | caldata[11]<<8;
-				(void)c6; // silence warning
 
-#if 1
+#if 0
 				printf("C1 0x%04x (%d)\n", c1, c1);
 				printf("C2 0x%04x (%d)\n", c2, c2);
 				printf("C3 0x%04x (%d)\n", c3, c3);
@@ -945,20 +944,20 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 				SENS = (int64_t)c1 * 32768ll + ((int64_t)c3 * (int64_t)dT) / 256ll;
 				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
 
-				printf("Pressure pre-compensation: %.4f Bar\n", P / 100000.0);
+	//			printf("Pressure pre-compensation: %.4f Bar\n", P / 100000.0);
 
 				if (TEMP < 2000) {
 					// Low temperature
 					T2 = (dT * dT) / 0x80000000;						// DT^2 / 2^31
 					OFF2 = 5 * ((TEMP - 2000) * (TEMP - 2000)) / 2;		// OFF2 = 5 * (TEMP - 2000)^2 / 2^1
 					SENS2 = 5 * ((TEMP - 2000) * (TEMP - 2000)) / 4;	// SENS2 = 5 * (TEMP -2000)~2 / 2^2
-					printf("Low temp.\n");
+//					printf("Low temp.\n");
 
 					// Very low temperature
 					if (TEMP < -1500) {
 						OFF2 = OFF2 + 7 * (TEMP + 1500) * (TEMP + 1500);
 						SENS2 = SENS2 + 11 * ((TEMP + 1500) * (TEMP + 1500)) / 2;
-						printf("Very low temp.\n");
+//						printf("Very low temp.\n");
 					}
 				} else {
 					T2 = 0;
@@ -966,18 +965,18 @@ int usbtenki_convertRaw(struct USBTenki_channel *chn, unsigned long flags, unsig
 					SENS2 = 0;
 				}
 
-				printf("Pre-comp: %d %ld %ld\n", TEMP, OFF, SENS);
+	//			printf("Pre-comp: %d %ld %ld\n", TEMP, OFF, SENS);
 
 				TEMP = TEMP - T2;
 				OFF = OFF - OFF2;
 				SENS = SENS - SENS2;
 
-				printf("Post-comp: %d %ld %ld\n", TEMP, OFF, SENS);
+	//			printf("Post-comp: %d %ld %ld\n", TEMP, OFF, SENS);
 
 
 				P = ((int64_t)D1 * SENS / 2097152ll - OFF) / 32768;
 
-				printf("Pressure post-compensation: %.4f Bar\n", P / 100000.0);
+	//			printf("Pressure post-compensation: %.4f Bar\n", P / 100000.0);
 
 				temperature = P;
 				temperature /= 100000.0;
