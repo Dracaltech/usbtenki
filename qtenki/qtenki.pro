@@ -32,7 +32,7 @@ HEADERS += ../library/usbtenki.h ../library/convert_type_k.h ../common/usbtenki_
 			DataSourceCheckBox.h SimpleLogger.h MainWindow.h BigView.h GraphView.h BigLabel.h SourceAliasEdit.h \
 			PowerPreference.h CurrentPreference.h TemperaturePreference.h PressurePreference.h FrequencyPreference.h ConfigCheckbox.h \
 			VoltagePreference.h ConfigPanel.h SelectableColor.h globals.h qcustomplot.h GraphLegendPreference.h single_application.h LengthPreference.h \
-			MinMaxResettable.h ThermocoupleColorPreference.h
+			MinMaxResettable.h ThermocoupleColorPreference.h ConcentrationPreference.h
 
 
 SOURCES += ../library/usbtenki.c ../library/convertRaw.c ../library/convert_type_k.c main.cpp \
@@ -40,5 +40,5 @@ SOURCES += ../library/usbtenki.c ../library/convertRaw.c ../library/convert_type
 			TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp About.cpp MainWindow.cpp BigView.cpp GraphView.cpp \
 			PowerPreference.cpp CurrentPreference.cpp VoltagePreference.cpp TemperaturePreference.cpp PressurePreference.cpp FrequencyPreference.cpp ConfigCheckbox.cpp \
 			SourceAliasEdit.cpp BigLabel.cpp ConfigPanel.cpp SelectableColor.cpp globals.cpp qcustomplot.cpp GraphLegendPreference.cpp single_application.cpp \
-			LengthPreference.cpp MinMaxResettable.cpp ThermocoupleColorPreference.cpp
+			LengthPreference.cpp MinMaxResettable.cpp ThermocoupleColorPreference.cpp ConcentrationPreference.cpp
 

@@ -62,5 +62,11 @@
 
 #define TENKI_UNIT_HEXCOLOR		0x90
 
+
+// used with USBTenki_unitPreferences to indicate
+// that the units used natively by the sensor
+// shall be used. (eg: VOC in ppb, CO2 in ppm)
+#define TENKI_UNIT_SENSOR_DEFAULT	0xFF
+
 #endif
 

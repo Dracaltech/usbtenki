@@ -22,6 +22,7 @@
 #include "PowerPreference.h"
 #include "LengthPreference.h"
 #include "ThermocoupleColorPreference.h"
+#include "ConcentrationPreference.h"
 
 ConfigPanel::ConfigPanel()
 {
@@ -75,52 +76,59 @@ ConfigPanel::ConfigPanel()
 	PowerPreference *power_pref = new PowerPreference();
 	LengthPreference *length_pref = new LengthPreference();
 	ThermocoupleColorPreference *thermocouple_pref = new ThermocoupleColorPreference();
+	ConcentrationPreference *concentration_pref = new ConcentrationPreference();
 
-	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), 0, 0 );
-	dataBox_layout->addWidget(t_pref, 0, 1);
+	int row = 0;
 
-	dataBox_layout->addWidget(new QLabel(tr("Pressure unit: ")), 1, 0 );
-	dataBox_layout->addWidget(p_pref, 1, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Temperature unit: ")), row, 0 );
+	dataBox_layout->addWidget(t_pref, row, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Voltage unit: ")), row, 2 );
+	dataBox_layout->addWidget(volt_pref, row, 3);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), 2, 0 );
-	dataBox_layout->addWidget(f_pref, 2, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Pressure unit: ")), row, 0 );
+	dataBox_layout->addWidget(p_pref, row, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Current unit: ")), row, 2 );
+	dataBox_layout->addWidget(current_pref, row, 3);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Length unit: ")), 3, 0);
-	dataBox_layout->addWidget(length_pref, 3, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Frequency unit: ")), row, 0 );
+	dataBox_layout->addWidget(f_pref, row, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Power unit: ")), row, 2 );
+	dataBox_layout->addWidget(power_pref, row, 3);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Voltage unit: ")), 0, 2 );
-	dataBox_layout->addWidget(volt_pref, 0, 3);
+	dataBox_layout->addWidget(new QLabel(tr("Length unit: ")), row, 0);
+	dataBox_layout->addWidget(length_pref, row, 1);
+	dataBox_layout->addWidget(new QLabel(tr("Thermocouple color: ")), row, 2 );
+	dataBox_layout->addWidget(thermocouple_pref, row, 3);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Current unit: ")), 1, 2 );
-	dataBox_layout->addWidget(current_pref, 1, 3);
+	dataBox_layout->addWidget(new QLabel(tr("Concentration unit: ")), row, 0 );
+	dataBox_layout->addWidget(concentration_pref, row, 1);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Power unit: ")), 2, 2 );
-	dataBox_layout->addWidget(power_pref, 2, 3);
+	dataBox_layout->addWidget(cb_use_old_sht_coefficients, row++, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_heat_index_validation, row++, 0, 1, -1);
+	dataBox_layout->addWidget(cb_disable_humidex_validation, row++, 0, 1, -1);
 
-	dataBox_layout->addWidget(new QLabel(tr("Thermocouple color: ")), 3, 2 );
-	dataBox_layout->addWidget(thermocouple_pref, 3, 3);
+	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), row, 0);
+	dataBox_layout->addWidget(sample_interval, row, 1);
+	row++;
 
-	dataBox_layout->addWidget(cb_use_old_sht_coefficients, 4, 0, 1, -1);
-	dataBox_layout->addWidget(cb_disable_heat_index_validation, 5, 0, 1, -1);
-	dataBox_layout->addWidget(cb_disable_humidex_validation, 6, 0, 1, -1);
+	dataBox_layout->addWidget(new QLabel(tr("Number of digits after the decimal point:")), row, 0);
+	dataBox_layout->addWidget(display_digits, row, 1);
+	row++;
 
-	dataBox_layout->addWidget(new QLabel(tr("Sampling loop target interval (ms):")), 7, 0);
-	dataBox_layout->addWidget(sample_interval, 7, 1);
-
-	dataBox_layout->addWidget(new QLabel(tr("Number of digits after the decimal point:")), 8, 0);
-	dataBox_layout->addWidget(display_digits, 8, 1);
-
-	dataBox_layout->addWidget(new QLabel(tr("Reference sea level pressure (kPa):")), 9, 0);
-	dataBox_layout->addWidget(ref_slp, 9, 1);
-
+	dataBox_layout->addWidget(new QLabel(tr("Reference sea level pressure (kPa):")), row, 0);
+	dataBox_layout->addWidget(ref_slp, row, 1);
 	QPushButton *btn_setStandardSlp = new QPushButton(tr("Set to 101.325"));
 	connect(btn_setStandardSlp, SIGNAL(clicked()), this, SLOT(setStandardSLP()));
-
 	QPushButton *btn_setSlpToCurrent = new QPushButton(tr("Set to current pressure"));
 	connect(btn_setSlpToCurrent, SIGNAL(clicked()), this, SLOT(autoSetSLP()));
-
-	dataBox_layout->addWidget(btn_setStandardSlp, 9, 2);
-	dataBox_layout->addWidget(btn_setSlpToCurrent, 9, 3);
+	dataBox_layout->addWidget(btn_setStandardSlp, row, 2);
+	dataBox_layout->addWidget(btn_setSlpToCurrent, row, 3);
+	row++;
 
 //	dataBox_layout->setColumnStretch(2, 100);
 

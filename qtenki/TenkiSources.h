@@ -57,6 +57,7 @@ class TenkiSources : public QObject
 		void setCurrentUnit(int current_unit);
 		void setPowerUnit(int power_unit);
 		void setLengthUnit(int length_unit);
+		void setConcentrationUnit(int concentration_unit);
 		void setDisplayDigits(int digits);
 		void setReferenceSeaLevelPressure(double value); // In Pascals
 		void setUseIECthermocoupleColors(int use_iec); // otherwise, use ANSI

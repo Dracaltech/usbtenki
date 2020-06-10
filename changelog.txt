@@ -1,3 +1,10 @@
+Version 2.1.18 - June 10, 2020
+   - Add support for concentration unit conversion (ppm, ppb, percent)
+   - Default concentration units for DXC-200 is now Percent.
+   - Add reset and set_protocol commands to usbtenkisetup
+   - Add support for Internal/External T/RH channels
+   - Add low temperature compensaion ms5611-based redings (USB-BAR20 and PTH-200)
+
 Version 2.1.17 - April 5, 2019
    - [QTenki] Disable group separator (eg: thousands) in logger
    - Improved support for CO2 sensors

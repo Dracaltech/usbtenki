@@ -51,7 +51,7 @@ struct USBTenki_unitPreferences g_unit_prefs = {
 	.current = TENKI_UNIT_AMPS,
 	.power = TENKI_UNIT_WATTS,
 	.length = TENKI_UNIT_METERS,
-	.concentration = TENKI_UNIT_PPM,
+	.concentration = TENKI_UNIT_SENSOR_DEFAULT,
 };
 
 int g_pretty = 0;
@@ -87,6 +87,7 @@ static void printUsage(void)
 	printf("    -P unit      Select the pressure unit to use. Default: kPa\n");
 	printf("    -F unit      Select the frequency unit to use. Default: Hz\n");
 	printf("    -M unit      Select the length unit to use. Default: m\n");
+	printf("    -C unit      Select the concentration unit to use. Default: Sensor default\n");
 	printf("    -p           Enable pretty output\n");
 	printf("    -7           Use 7 bit clean output (no fancy degree symbols)\n");
 	printf("    -L logfile   Log to specified file (use - for none)\n");
@@ -103,6 +104,8 @@ static void printUsage(void)
 	printf("    mHz, Hz, kHz, MHz, rpm\n");
 	printf("\nValid length units:\n");
 	printf("    mm, cm, dm, m, mil, in, ft, yd\n");
+	printf("\nValid concentration units:\n");
+	printf("    ppb, ppm, percent\n");
 	printf("\nOptions:\n");
 	printf("    no_humidex_range     Calculate humidex even if input values are out of range.\n");
 	printf("    no_heat_index_range  Calculate heat index even if the input values are out of range.\n");
@@ -165,7 +168,7 @@ int main(int argc, char **argv)
 	setlinebuf(stdout);
 #endif
 
-	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:M:")))
+	while (-1 != (res=getopt(argc, argv, "Vvhlfs:i:T:P:p7R:L:I:F:o:x:S:M:C:")))
 	{
 		switch (res)
 		{
@@ -346,6 +349,32 @@ int main(int argc, char **argv)
 					}
 				}
 				break;
+
+			case 'C':
+				{
+					struct {
+						const char *name;
+						int fmt;
+					} tbl[] = {
+						{ "ppb", TENKI_UNIT_PPB },
+						{ "ppm", TENKI_UNIT_PPM },
+						{ "percent", TENKI_UNIT_PERCENT },
+						{ "sensor", TENKI_UNIT_SENSOR_DEFAULT },
+					};
+
+					for (i=0; i<ARRAY_SIZE(tbl); i++) {
+						if (strcasecmp(tbl[i].name, optarg)==0) {
+							g_unit_prefs.concentration = tbl[i].fmt;
+							break;
+						}
+					}
+					if (i==ARRAY_SIZE(tbl)) {
+						fprintf(stderr,
+							"Unknown concentration unit: '%s'\n", optarg);
+					}
+				}
+				break;
+
 
 			case 'o':
 				{

@@ -127,6 +127,12 @@ void TenkiSources::setLengthUnit(int length_unit)
 	this->units.length = length_unit;
 }
 
+void TenkiSources::setConcentrationUnit(int concentration_unit)
+{
+	this->units.concentration = concentration_unit;
+}
+
+
 void TenkiSources::setReferenceSeaLevelPressure(double value)
 {
 	usbtenki_set_seaLevelStandardPressure(value);
