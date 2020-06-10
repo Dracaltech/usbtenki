@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MXE_ROOT=/opt/mxe/mxe
+MXE_ROOT=/home/mxe/mxe
 
 QMAKE="$MXE_ROOT/usr/i686-w64-mingw32.static/qt/bin/qmake"
 VERSION_H=../common/usbtenki_version.h
@@ -33,10 +33,10 @@ function build_qtenki
 echo "Checking for dependencies..."
 
 command -v makensis || errorexit 1 "makensis not found"
-command -v $QMAKE || errorexit 1 "qmake not found"
-[ -d ../../libusb ] || errorexit 1 "Expected libusb-win32-debice-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
-[ -d ../../libusb/lib ] || errorexit 1 "Expected libusb-win32-debice-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
-[ -d ../../libusb/bin ] || errorexit 1 "Expected libusb-win32-debice-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
+command -v $QMAKE || errorexit 1 "qmake not found : $QMAKE"
+[ -d ../../libusb ] || errorexit 1 "Expected libusb-win32-device-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
+[ -d ../../libusb/lib ] || errorexit 1 "Expected libusb-win32-device-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
+[ -d ../../libusb/bin ] || errorexit 1 "Expected libusb-win32-device-bin-0.1.12.2 at ../../libusb (renamed or symlink)"
 
 echo $MXE_ROOT
 echo $VERSION
