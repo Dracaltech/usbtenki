@@ -59,7 +59,7 @@ Section "QTenki (required)"
   File "qtenki.exe"
   File "QtGui4.dll"
   File "usbtenkiget.exe"
-  File "usbtenkisetup.exe"
+  File "usbtenkiset.exe"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\QTenki "Install_Dir" "$INSTDIR"

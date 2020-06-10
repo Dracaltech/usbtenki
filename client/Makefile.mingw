@@ -6,16 +6,16 @@ LDFLAGS=-lusb -lm -L../../libusb/lib/gcc
 
 PREFIX=/usr/local
 
-PROGS=usbtenkiget usbtenkisetup
+PROGS=usbtenkiget usbtenkiset
 
 .PHONY : clean install
 
-all: usbtenkiget usbtenkisetup
+all: usbtenkiget usbtenkiset
 
 usbtenkiget: usbtenki.o main.o timestamp.o convertRaw.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 	
-usbtenkisetup: usbtenki.o usbtenkisetup.o convertRaw.o
+usbtenkiset: usbtenki.o usbtenkiset.o convertRaw.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h

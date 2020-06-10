@@ -59,7 +59,7 @@ Section "QTenki (required)"
   File "qtenki.exe"
   ;File "QtGui4.dll"
   File "usbtenkiget.exe"
-  File "usbtenkisetup.exe"
+  File "usbtenkiset.exe"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\QTenki "Install_Dir" "$INSTDIR"
@@ -127,7 +127,7 @@ Section "Uninstall"
   Delete $INSTDIR\qtenki.exe
   ;Delete $INSTDIR\QtGui4.dll
   Delete $INSTDIR\usbtenkiget.exe
-  Delete $INSTDIR\usbtenkisetup.exe
+  Delete $INSTDIR\usbtenkiset.exe
 
   ; Remove sources, if installed
   Delete "$INSTDIR\sources\*.*"

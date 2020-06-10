@@ -17,16 +17,16 @@ vpath %.h ../library
 
 PREFIX=/usr/local
 
-PROGS=usbtenkiget usbtenkisetup
+PROGS=usbtenkiget usbtenkiset
 
 .PHONY : clean install
 
-all: usbtenkiget usbtenkisetup
+all: usbtenkiget usbtenkiset
 
 usbtenkiget: $(USBTENKI_OBJS) main.o timestamp.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
-usbtenkisetup: $(USBTENKI_OBJS) usbtenkisetup.o
+usbtenkiset: $(USBTENKI_OBJS) usbtenkiset.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h

@@ -6,25 +6,25 @@ LIBUSB_DIR=../../libusb-win32-device-bin-0.1.12.2
 CFLAGS=-Wall -g -O -I../common -I../library -I$(LIBUSB_DIR)/include -DUSE_OLD_LIBUSB
 LDFLAGS=-L$(LIBUSB_DIR)/lib/gcc -lusb -lm
 
-PROGS=usbtenkiget.exe usbtenkisetup.exe
+PROGS=usbtenkiget.exe usbtenkiset.exe
 
-.PHONY : clean 
+.PHONY : clean
 
 all: $(PROGS)
 
 usbtenkiget.exe: usbtenki.o main.o timestamp.o convertRaw.o
 	$(LD) $^ -o $@ $(LDFLAGS)
-	
-usbtenkisetup.exe: usbtenki.o usbtenkisetup.o convertRaw.o
+
+usbtenkiset.exe: usbtenki.o usbtenkiset.o convertRaw.o
 	$(LD) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-convertRaw.o: ../library/convertRaw.c 
+convertRaw.o: ../library/convertRaw.c
 	$(CC) $(CFLAGS) -c $< -o convertRaw.o
 
-usbtenki.o: ../library/usbtenki.c 
+usbtenki.o: ../library/usbtenki.c
 	$(CC) $(CFLAGS) -c $< -o usbtenki.o
 
 clean:

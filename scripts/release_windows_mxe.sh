@@ -46,7 +46,7 @@ build_qtenki
 
 rm -rf $TMPDIR
 mkdir $TMPDIR
-cp ../client/usbtenkiget.exe ../client/usbtenkisetup.exe $TMPDIR
+cp ../client/usbtenkiget.exe ../client/usbtenkiset.exe $TMPDIR
 cp ../qtenki/release/qtenki.exe $TMPDIR
 cp ../qtenki/gpl.txt $TMPDIR/license.txt
 cp ../../libusb/bin/libusb0.dll $TMPDIR
