@@ -9,7 +9,7 @@ LDFLAGS=-lm $(LIBUSB_LDFLAGS)
 
 PREFIX=/usr/local
 
-PROGS=usbtenkiget usbtenkisetup
+PROGS=usbtenkiget usbtenkiset
 
 .PHONY : clean install
 

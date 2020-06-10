@@ -22,7 +22,7 @@ while true; do
 		exit 0
 	fi
 
-	./usbtenkisetup -s $SERIAL set_rtd_cal -- $CUR || error_exit 1 "Could not set calibration value"
+	./usbtenkiset -s $SERIAL set_rtd_cal -- $CUR || error_exit 1 "Could not set calibration value"
 
 	VAL=`./usbtenkiget -i 0 -s $SERIAL`
 

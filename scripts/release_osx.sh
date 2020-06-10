@@ -47,9 +47,9 @@ mkdir osx_staging/.background
 cp osx_install_bg.png osx_staging/.background/bg.png
 
 cp ../client/usbtenkiget ./osx_staging/qtenki.app/Contents/MacOS
-cp ../client/usbtenkisetup ./osx_staging/qtenki.app/Contents/MacOS
+cp ../client/usbtenkiset ./osx_staging/qtenki.app/Contents/MacOS
 install_name_tool -add_rpath "@executable_path/../Frameworks" ./osx_staging/qtenki.app/Contents/MacOS/usbtenkiget
-install_name_tool -add_rpath "@executable_path/../Frameworks" ./osx_staging/qtenki.app/Contents/MacOS/usbtenkisetup
+install_name_tool -add_rpath "@executable_path/../Frameworks" ./osx_staging/qtenki.app/Contents/MacOS/usbtenkiset
 
 hdiutil create -srcfolder osx_staging -size 60m -fs HFS+ -volname "QTenki" -fsargs "-c c=64,a=16,e=16" -format UDRW tmp.dmg
 hdiutil attach tmp.dmg

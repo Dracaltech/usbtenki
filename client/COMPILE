@@ -37,7 +37,7 @@ Copy the libusb0.dll file to the client/ directory.
 
 In client/, do make -f Makefile.mingw
 
-usbtenkiget.exe and usbtenkisetup.exe should have been generated.
+usbtenkiget.exe and usbtenkiset.exe should have been generated.
 
 
 *******************************
