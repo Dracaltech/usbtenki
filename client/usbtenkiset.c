@@ -51,7 +51,7 @@ static void printUsage(void)
 	printf("    setadcchip  adc_id chip\n");
 	printf("    setserial   serial (6 characters)\n");
 	printf("    setref      ref_id (0=AVCC, 1=AREF)\n");
-	printf("    set_rtd_cal	value (-127 to +127 (percent / 100))\n");
+	printf("    set_rtd_cal	value (-32768 to 32767)\n");
 	printf("    em1_config  max_current  calibration\n");
 	printf("    do_zero          Device specific effect.\n");
 	printf("    dxc200_kz ppm    Set zero in known gas concentration (for DXC-200)\n");
