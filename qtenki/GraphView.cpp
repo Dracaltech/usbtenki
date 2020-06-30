@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QSettings>
+#include <QColorDialog>
 #include "GraphView.h"
 #include "ConfigCheckbox.h"
 #include "qcustomplot.h"
@@ -27,9 +28,10 @@ GraphView::GraphView()
 	plt->setRangeDrag(Qt::Horizontal);
 	plt->setRangeZoom(Qt::Horizontal);
 	plt->setInteractions(QCustomPlot::iRangeZoom | QCustomPlot::iRangeDrag);
-
+	//plt->setInteractions(QCustomPlot::iRangeZoom | QCustomPlot::iRangeDrag | QCustomPlot::iSelectLegend);
 
 	connect(plt, SIGNAL(titleClick(QMouseEvent*)), this, SLOT(editTitle()));
+	connect(plt, SIGNAL(legendClick(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent *)), this, SLOT(editLegend(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent *)));
 	
 	QFont legendFont = font();
 	legendFont.setPointSize(9);
@@ -143,6 +145,38 @@ GraphView::GraphView()
 
 GraphView::~GraphView(void)
 {
+}
+
+void GraphView::editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event)
+{
+	int i;
+	int index=-1;
+
+	if (!item)
+		return;
+
+	// plt->legend (QCPLegend*)
+	for (int i=0; i<plt->legend->itemCount(); i++) {
+		if (item == plt->legend->item(i)) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index >= 0) {
+		QCPGraph *gr;
+		gr = plt->graph(index);
+		if (gr) {
+			QColor color;
+			color = QColorDialog::getColor(gr->pen().color());
+			if (color.isValid()) {
+				QPen p(color);
+				p.setWidth(2);
+				gr->setPen(p);
+				replot();
+			}
+		}
+	}
 }
 
 void GraphView::editTitle()

@@ -32,7 +32,8 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		void resetGraph(void);
 		void saveGraph(void);
 		void replot(void);
-		void editTitle();
+		void editTitle(void);
+		void editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event);
 	
 	private slots:
 		void intervalChanged(int i);
