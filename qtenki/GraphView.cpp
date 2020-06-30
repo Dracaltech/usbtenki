@@ -273,20 +273,29 @@ void GraphView::refreshView()
 		g_tenkisources->convertToUnits(sd->chn_data, &chndata);
 		QString alias = sd->q_alias;
 		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
+		QString name = QString::fromUtf8(sd->name);
 		QString d;
+
+		// Decide what shall be the name of the graph in the
+		// legend. Use alias by default, fallback to SOURCE:ID
+		QString displayname = alias;
+		if (alias.length()==0) {
+			displayname = name;
+		}
 
 		// Ok, now we have our value.
 		// Find if there is a pre-existing graph
 		if (src_graphs.at(i)) {
 			gr = src_graphs.at(i);
-			if (alias.compare(gr->name()) != 0) {
+			if (displayname.compare(gr->name()) != 0) {
 				// Name changed
-				gr->setName(alias);
+				gr->setName(displayname);
 			}
+		
 		} else {
 			// Create it on the fly
 			gr = plt->addGraph();
-			gr->setName(alias);
+			gr->setName(displayname);
 
 			QPen p(colors[i%NUM_DEFAULT_COLORS]);
 			p.setWidth(2);
