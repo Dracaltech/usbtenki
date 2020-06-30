@@ -242,16 +242,19 @@ void GraphView::refreshView()
 	struct USBTenki_channel chndata;
 	QSettings settings;
 	QCPGraph *gr;
-	QColor colors[10] = {
+#define NUM_DEFAULT_COLORS	12
+	QColor colors[NUM_DEFAULT_COLORS] = {
 		Qt::green,
 		Qt::blue,
-		QColor(177,92,0),
-		Qt::darkBlue,
+		Qt::red,
+		QColor(255,133,26), // orange
+		Qt::cyan,
+		Qt::magenta,
+		QColor(255,200,255), // pink
 		Qt::darkMagenta,
 		Qt::darkRed,
 		Qt::darkYellow,
-		Qt::darkGray,
-		Qt::cyan,
+		Qt::gray,
 		Qt::black,
 	};
 
@@ -285,7 +288,7 @@ void GraphView::refreshView()
 			gr = plt->addGraph();
 			gr->setName(alias);
 
-			QPen p(colors[i%10]);
+			QPen p(colors[i%NUM_DEFAULT_COLORS]);
 			p.setWidth(2);
 
 			gr->setPen(p);
