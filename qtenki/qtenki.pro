@@ -23,8 +23,9 @@ unix:!macx {
 	PKGCONFIG+=libusb-1.0
 }
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport script
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport 
 
+QT += script
 
 # Input
 
