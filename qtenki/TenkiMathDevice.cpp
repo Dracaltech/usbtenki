@@ -1,5 +1,7 @@
 #include <QDebug>
 #include <QSettings>
+#include <QRegExp>
+#include <QStringList>
 #include "TenkiMathDevice.h"
 #include "../common/usbtenki_cmds.h"
 #include "globals.h"
