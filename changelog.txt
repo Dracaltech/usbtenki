@@ -1,3 +1,9 @@
+Version -
+   - [QTenki] Provide better default graph colors
+   - [QTenki] Add a way to change graph colors
+   - [QTenki] Use SOURCE:ID (instead of blank space) in the graph legend when there is no alias
+   for a given source.
+
 Version 2.1.18 - June 10, 2020
    - Add support for concentration unit conversion (ppm, ppb, percent)
    - Default concentration units for DXC-200 is now Percent.

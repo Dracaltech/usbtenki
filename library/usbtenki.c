@@ -1309,6 +1309,9 @@ const char *chipToString(int id)
 			return "IR light intensity";
 		case USBTENKI_CHIP_HEXCOLOR:
 			return "Hexadecimal color";
+
+		case USBTENKI_CHIP_MATH:
+			return "Math";
 	}
 	return "unknown";
 }
@@ -1479,6 +1482,9 @@ const char *chipToShortString(int id)
 
 		case USBTENKI_CHIP_HEXCOLOR:
 			return "Color";
+
+		case USBTENKI_CHIP_MATH:
+			return "Math";
 	}
 	return "unknown";
 }

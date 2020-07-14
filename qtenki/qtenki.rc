@@ -10,7 +10,7 @@ BEGIN
 	BEGIN
 		BLOCK "040904E4"
 		BEGIN
-			VALUE "CompanyName",	"raphnet technologies\0"
+			VALUE "CompanyName",	"Dracal technologies inc.\0"
 			VALUE "FileDescription","qtenki executable\0"
 			VALUE "FileVersion",	USBTENKI_VERSION_STR0
 			VALUE "ProductName",	"QTenki (usbtenki)\0"

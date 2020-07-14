@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QSettings>
+#include <QColorDialog>
 #include "GraphView.h"
 #include "ConfigCheckbox.h"
 #include "qcustomplot.h"
@@ -27,9 +28,10 @@ GraphView::GraphView()
 	plt->setRangeDrag(Qt::Horizontal);
 	plt->setRangeZoom(Qt::Horizontal);
 	plt->setInteractions(QCustomPlot::iRangeZoom | QCustomPlot::iRangeDrag);
-
+	//plt->setInteractions(QCustomPlot::iRangeZoom | QCustomPlot::iRangeDrag | QCustomPlot::iSelectLegend);
 
 	connect(plt, SIGNAL(titleClick(QMouseEvent*)), this, SLOT(editTitle()));
+	connect(plt, SIGNAL(legendClick(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent *)), this, SLOT(editLegend(QCPLegend*, QCPAbstractLegendItem*, QMouseEvent *)));
 	
 	QFont legendFont = font();
 	legendFont.setPointSize(9);
@@ -145,6 +147,38 @@ GraphView::~GraphView(void)
 {
 }
 
+void GraphView::editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event)
+{
+	int i;
+	int index=-1;
+
+	if (!item)
+		return;
+
+	// plt->legend (QCPLegend*)
+	for (int i=0; i<plt->legend->itemCount(); i++) {
+		if (item == plt->legend->item(i)) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index >= 0) {
+		QCPGraph *gr;
+		gr = plt->graph(index);
+		if (gr) {
+			QColor color;
+			color = QColorDialog::getColor(gr->pen().color());
+			if (color.isValid()) {
+				QPen p(color);
+				p.setWidth(2);
+				gr->setPen(p);
+				replot();
+			}
+		}
+	}
+}
+
 void GraphView::editTitle()
 {
 	QString new_title;
@@ -242,16 +276,19 @@ void GraphView::refreshView()
 	struct USBTenki_channel chndata;
 	QSettings settings;
 	QCPGraph *gr;
-	QColor colors[10] = {
+#define NUM_DEFAULT_COLORS	12
+	QColor colors[NUM_DEFAULT_COLORS] = {
 		Qt::green,
 		Qt::blue,
-		QColor(177,92,0),
-		Qt::darkBlue,
+		Qt::red,
+		QColor(255,133,26), // orange
+		Qt::cyan,
+		Qt::magenta,
+		QColor(255,200,255), // pink
 		Qt::darkMagenta,
 		Qt::darkRed,
 		Qt::darkYellow,
-		Qt::darkGray,
-		Qt::cyan,
+		Qt::gray,
 		Qt::black,
 	};
 
@@ -270,22 +307,31 @@ void GraphView::refreshView()
 		g_tenkisources->convertToUnits(sd->chn_data, &chndata);
 		QString alias = sd->q_alias;
 		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
+		QString name = QString::fromUtf8(sd->name);
 		QString d;
+
+		// Decide what shall be the name of the graph in the
+		// legend. Use alias by default, fallback to SOURCE:ID
+		QString displayname = alias;
+		if (alias.length()==0) {
+			displayname = name;
+		}
 
 		// Ok, now we have our value.
 		// Find if there is a pre-existing graph
 		if (src_graphs.at(i)) {
 			gr = src_graphs.at(i);
-			if (alias.compare(gr->name()) != 0) {
+			if (displayname.compare(gr->name()) != 0) {
 				// Name changed
-				gr->setName(alias);
+				gr->setName(displayname);
 			}
+		
 		} else {
 			// Create it on the fly
 			gr = plt->addGraph();
-			gr->setName(alias);
+			gr->setName(displayname);
 
-			QPen p(colors[i%10]);
+			QPen p(colors[i%NUM_DEFAULT_COLORS]);
 			p.setWidth(2);
 
 			gr->setPen(p);

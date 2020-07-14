@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <string.h>
 #include "usbtenki_units.h"
+#include "globals.h"
 
 TenkiSources::TenkiSources()
 {
@@ -35,6 +36,8 @@ TenkiSources::TenkiSources()
 	// after we first generate names in DashSensor(). It shows the wrong color for
 	// about on update cycle.
 	use_iec_thermocouple_colors = settings.value("data/thermocouple_color_system").toInt();
+
+	g_mathDevice = new TenkiMathDevice();
 }
 
 TenkiSources::~TenkiSources()
@@ -142,6 +145,14 @@ int TenkiSources::init()
 {
 	usbtenki_init();
 	scanForDevices();
+
+	if (g_mathDevice) {
+		//printf("Adding math device\n");
+		device_list.append(g_mathDevice);
+		addDeviceSources(g_mathDevice);
+		emit newDeviceFound(g_mathDevice);
+	}
+
 	return 0;
 }
 
@@ -175,9 +186,11 @@ int TenkiSources::addDeviceSources(TenkiDevice *td)
 {
 	int chn = td->getNumChannels();
 
+//qDebug() << "addDeviceSources for " << td->getSerial();
+
 	for (int i=0; i<chn; i++) {
 		if (!td->isChannelHidden(i)) {
-			addDeviceSource(td, i, &td->channel_data[i]);
+			addDeviceSource(td, i, td->getChannelData(i));
 		}
 	}
 
@@ -201,7 +214,7 @@ int TenkiSources::addDeviceSource(TenkiDevice *td, int chn_id, struct USBTenki_c
 
 	sprintf(sd->name, "%s:%02X", serial, chn_id);
 	sd->q_name = QString::fromLocal8Bit(sd->name);
-	printf("TenkiSources: Registering source '%s'\n", sd->name);
+//	printf("TenkiSources: Registering source '%s'\n", sd->name);
 
 	sd->td = td;
 	sd->chn_id = chn_id;

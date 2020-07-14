@@ -1,6 +1,7 @@
 #include <iostream>
 #include "BigLabel.h"
 #include "globals.h"
+#include "usbtenki_cmds.h"
 
 #include <QSettings>
 #include <QFont>
@@ -41,7 +42,11 @@ void BigLabel::refresh()
 	}
 	else
 	{
-		g_tenkisources->convertToUnits(sd->chn_data, &chndata);
+		if (sd->chn_data->chip_id == USBTENKI_CHIP_MATH) {
+			memcpy(&chndata, sd->chn_data, sizeof(USBTenki_channel));
+		} else {
+			g_tenkisources->convertToUnits(sd->chn_data, &chndata);
+		}
 
 		QString units = QString::fromUtf8(unitToString(chndata.converted_unit, 0));
 
@@ -62,7 +67,7 @@ void BigLabel::refresh()
 			final_text += units;
 		}
 
-		if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
+		if (sd->td->getStatus() != TENKI_DEVICE_STATUS_OK) {
 			final_text += " (error)";
 		}
 	}

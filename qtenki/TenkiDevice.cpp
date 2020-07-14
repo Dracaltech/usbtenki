@@ -5,6 +5,14 @@
 #include "../common/usbtenki_cmds.h"
 #include "globals.h"
 
+TenkiDevice::TenkiDevice()
+{
+	serno = NULL;
+	num_channels = 0;
+	memset(&tenki_info, 0 ,sizeof(tenki_info));
+	memset(&channel_data, 0 ,sizeof(channel_data));
+}
+
 TenkiDevice::TenkiDevice(const char *serial)
 {
 	serno = strdup(serial);
@@ -24,9 +32,22 @@ TenkiDevice::TenkiDevice(const char *serial)
 
 TenkiDevice::~TenkiDevice()
 {
-	usbtenki_closeDevice(tenki_hdl);
-	tenki_hdl = 0;
-	free(serno);
+	if (tenki_hdl) {
+		usbtenki_closeDevice(tenki_hdl);
+		tenki_hdl = 0;
+	}
+	if (serno) {
+		free(serno);
+	}
+}
+
+void TenkiDevice::setSerial(const char *serial)
+{
+	if (serno) {
+		free(serno);
+	}
+
+	serno = strdup(serial);
 }
 
 void TenkiDevice::initChannels()
@@ -117,12 +138,19 @@ int TenkiDevice::isChannelHidden(int id)
 
 const char *TenkiDevice::getSerial(void)
 {
-	return tenki_info.str_serial;
+	return serno;
+
+	//return tenki_info.str_serial;
 }
 
 int TenkiDevice::getNumChannels(void)
 {
 	return num_channels;
+}
+
+int TenkiDevice::getStatus(void)
+{
+	return status;
 }
 
 USBTenki_channel *TenkiDevice::getChannelData(int id)

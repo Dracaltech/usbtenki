@@ -55,6 +55,7 @@ class SimpleLogger : public QThread
 		void logLineEnd();
 		void colTitles();
 		void tsTitlesPre(int step);
+		void appendMathEquations();
 
 	public slots:
 		void doLog();

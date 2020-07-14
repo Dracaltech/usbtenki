@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
 	//app.setStyle(new QCleanlooksStyle());
 	
-	QFile file(":raphnet.qss");
+	QFile file(":qtenki.qss");
 	file.open(QFile::ReadOnly);
 	QString stylesheet = QLatin1String(file.readAll());
 	app.setStyleSheet(stylesheet);

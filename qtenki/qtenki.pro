@@ -23,7 +23,8 @@ unix:!macx {
 	PKGCONFIG+=libusb-1.0
 }
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport script
+
 
 # Input
 
@@ -32,7 +33,8 @@ HEADERS += ../library/usbtenki.h ../library/convert_type_k.h ../common/usbtenki_
 			DataSourceCheckBox.h SimpleLogger.h MainWindow.h BigView.h GraphView.h BigLabel.h SourceAliasEdit.h \
 			PowerPreference.h CurrentPreference.h TemperaturePreference.h PressurePreference.h FrequencyPreference.h ConfigCheckbox.h \
 			VoltagePreference.h ConfigPanel.h SelectableColor.h globals.h qcustomplot.h GraphLegendPreference.h single_application.h LengthPreference.h \
-			MinMaxResettable.h ThermocoupleColorPreference.h ConcentrationPreference.h
+			MinMaxResettable.h ThermocoupleColorPreference.h ConcentrationPreference.h DashSensorDevice.h TenkiMathDevice.h DashSensorMath.h EditButton.h \
+			MathEditDialog.h UnitsDropDown.h
 
 
 SOURCES += ../library/usbtenki.c ../library/convertRaw.c ../library/convert_type_k.c main.cpp \
@@ -40,5 +42,6 @@ SOURCES += ../library/usbtenki.c ../library/convertRaw.c ../library/convert_type
 			TenkiDevice.cpp Logger.cpp DataSourceCheckBox.cpp About.cpp MainWindow.cpp BigView.cpp GraphView.cpp \
 			PowerPreference.cpp CurrentPreference.cpp VoltagePreference.cpp TemperaturePreference.cpp PressurePreference.cpp FrequencyPreference.cpp ConfigCheckbox.cpp \
 			SourceAliasEdit.cpp BigLabel.cpp ConfigPanel.cpp SelectableColor.cpp globals.cpp qcustomplot.cpp GraphLegendPreference.cpp single_application.cpp \
-			LengthPreference.cpp MinMaxResettable.cpp ThermocoupleColorPreference.cpp ConcentrationPreference.cpp
+			LengthPreference.cpp MinMaxResettable.cpp ThermocoupleColorPreference.cpp ConcentrationPreference.cpp DashSensorDevice.cpp TenkiMathDevice.cpp DashSensorMath.cpp \
+			EditButton.cpp MathEditDialog.cpp UnitsDropDown.cpp
 

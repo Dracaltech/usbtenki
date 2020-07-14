@@ -22,6 +22,10 @@ void MinMaxResettable::submitValue(float value)
 {
 	QString d;
 
+	// Ignore NaN values
+	if (value != value)
+		return;
+
 	if (empty) {
 		cur_min = cur_max = value;
 		empty = false;
@@ -47,3 +51,4 @@ void MinMaxResettable::submitValue(float value)
 		}
 	}
 }
+

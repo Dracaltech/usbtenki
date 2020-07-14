@@ -2,11 +2,13 @@
 #include <QDebug>
 #include <QVBoxLayout>
 #include "TenkiDashboard.h"
-#include "DashSensor.h"
+#include "DashSensorDevice.h"
+#include "DashSensorMath.h"
+#include "globals.h"
 
 TenkiDashboard::TenkiDashboard()
 {
-	mainLabel = new QLabel();	
+	mainLabel = new QLabel();
 	mainLabel->setText("Connected sensor(s):");
 
 	vbox = new QVBoxLayout;
@@ -17,6 +19,7 @@ TenkiDashboard::TenkiDashboard()
 	nosensorsLabel = new QLabel(tr("No sensor connected, driver not installed or permission denied.<br>Please refer to the manual for instructions."));
 	vbox->addWidget(nosensorsLabel);
 
+	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 }
 
 TenkiDashboard::~TenkiDashboard()
@@ -36,9 +39,16 @@ void TenkiDashboard::addTenkiDevice(TenkiDevice *td)
 {
 	DashSensor *ds;
 
-	ds = new DashSensor(td);
-	addDashSensor(ds);
-	sensors.append(ds);
+	if (td == g_mathDevice) {
+		ds = new DashSensorMath( static_cast<TenkiMathDevice*>(td) );
+		addDashSensor(ds);
+		sensors.append(ds);
+	}
+	else {
+		ds = new DashSensorDevice(td);
+		addDashSensor(ds);
+		sensors.append(ds);
+	}
 }
 
 void TenkiDashboard::removeTenkiDevice(TenkiDevice *td)
