@@ -2,6 +2,7 @@
 #include "../common/usbtenki_version.h"
 #include <QtGui>
 #include "globals.h"
+#include "usbtenki_cmds.h"
 //#include <QHostInfo>
 
 SimpleLogger::SimpleLogger(TenkiSources *ts, QString output_file, int interval_ms, enum SimpleLogger::FileFormat fmt, enum SimpleLogger::DecimalType dt, enum SimpleLogger::TimeStampFormat tfmt, enum SimpleLogger::OnError onerr)
@@ -80,7 +81,32 @@ void SimpleLogger::writeHeader()
 	file->write(comments.toLocal8Bit());
 	file->write("\n");
 
+	appendMathEquations();
+
 	file->write("#\n");
+}
+
+// Add math equations to the header for any math channel being logged.
+void SimpleLogger::appendMathEquations()
+{
+	for (int i=0; i<sources.size(); i++)
+	{
+		struct sourceDescription *sd;
+
+		sd = tenkisources->getSourceByName(sources.at(i));
+		if (!sd)
+			continue;
+
+		if (sd->chn_data->chip_id == USBTENKI_CHIP_MATH) {
+
+			file->write("# Equation for " + sources.at(i).toLocal8Bit() + " : ");
+
+			file->write(g_mathDevice->getChannelEquation(sd->chn_id).toLocal8Bit());
+
+			file->write("\n");
+
+		}
+	}
 }
 
 void SimpleLogger::run()
@@ -247,7 +273,13 @@ void SimpleLogger::colTitles()
 		struct USBTenki_channel tmp;
 
 		sd = tenkisources->getSourceByName(sources.at(i));
-		tenkisources->convertToUnits(sd->chn_data, &tmp);
+		if (sd->chn_data->chip_id == USBTENKI_CHIP_MATH) {
+			// math data is logged as is - the user selected units, we do not
+			// convert them.
+			memcpy(&tmp, sd->chn_data, sizeof(tmp));
+		} else {
+			tenkisources->convertToUnits(sd->chn_data, &tmp);
+		}
 
 		logItem(sd->chipShortString + " - " +
 		QString::fromLocal8Bit(unitToString(tmp.converted_unit,1))
@@ -329,7 +361,7 @@ void SimpleLogger::doLog()
 			emit logMessage("Source '" + sources.at(i)+ "' not found");
 		} else {
 			// device level error
-			if (sd->td->status != TENKI_DEVICE_STATUS_OK) {
+			if (sd->td->getStatus() != TENKI_DEVICE_STATUS_OK) {
 				// call log error with a value. Knowing the converted data
 				// will stay at it's last value, this makes it possible for
 				// the OnError/RepeatPrevious function to work.
@@ -343,7 +375,13 @@ void SimpleLogger::doLog()
 					emit logMessage("ERROR: An error occured on '" +sources.at(i) + "': " + usbtenki_getChannelStatusString(sd->chn_data) + ".");
 				} else {
 					struct USBTenki_channel tmp;
-					tenkisources->convertToUnits(sd->chn_data, &tmp);
+					if (sd->chn_data->chip_id == USBTENKI_CHIP_MATH) {
+						// math data is logged as is - the user selected units, we do not
+						// convert them.
+						memcpy(&tmp, sd->chn_data, sizeof(tmp));
+					} else {
+						tenkisources->convertToUnits(sd->chn_data, &tmp);
+					}
 					logValue(tmp.converted_data, i==(sources.size()-1));
 				}
 			}

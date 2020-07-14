@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QList>
+#include <QLabel>
+#include <QVBoxLayout>
 #include "DashSensor.h"
 #include "TenkiSources.h"
 #include "TenkiDevice.h"
@@ -21,7 +23,7 @@ class TenkiDashboard : public QWidget, public TenkiDeviceAddRemove
 
 	public slots:
 		void refreshView(void);
-	
+
 	private:
 		QLabel *mainLabel;
 		QVBoxLayout *vbox;

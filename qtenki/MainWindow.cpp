@@ -27,6 +27,7 @@ MainWindow::MainWindow()
 	QVBoxLayout *layout = new QVBoxLayout();
 
 	tw = new QTabWidget();
+	tw->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
 	QHBoxLayout *bot_lay = new QHBoxLayout();
 	QWidget *bot_btns = new QWidget();
@@ -67,7 +68,6 @@ MainWindow::MainWindow()
 	dash_container_layout->addWidget(td);
 	dash_container_layout->addStretch();
 
-
 	g_tenkisources->syncDevicesTo(td);
 	QObject::connect(g_tenkisources, SIGNAL(captureCycleCompleted()), td, SLOT(refreshView()));
 
@@ -92,12 +92,15 @@ MainWindow::MainWindow()
 
 	QScrollArea *scr_logger = new QScrollArea();
 	scr_logger->setWidget(logger);
+	scr_logger->setWidgetResizable(true);
 
 	QScrollArea *scr_cfgPanel = new QScrollArea();
 	scr_cfgPanel->setWidget(cfgPanel);
+	scr_cfgPanel->setWidgetResizable(true);
 
 	QScrollArea *scr_dash = new QScrollArea();
 	scr_dash->setWidget(dash_container);
+	scr_dash->setWidgetResizable(true);
 
 	/* Tabs */
 	tw->addTab(scr_dash, QIcon(":sensors.png"), QObject::tr("Sources"));

@@ -299,6 +299,7 @@
 #define USBTENKI_CHIP_SHT31_T_EXTERNAL	0xB2
 #define USBTENKI_CHIP_SHT31_RH_EXTERNAL	0xB3
 
+#define USBTENKI_CHIP_MATH		0xFE
 #define USBTENKI_CHIP_NONE		0xFF
 
 /* High channel numbers used in client. Not
