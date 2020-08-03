@@ -7,6 +7,7 @@
 #include <QColorDialog>
 #include "GraphView.h"
 #include "ConfigCheckbox.h"
+#include "GraphLineStyleDialog.h"
 #include "qcustomplot.h"
 #include "globals.h"
 
@@ -167,14 +168,31 @@ void GraphView::editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMous
 		QCPGraph *gr;
 		gr = plt->graph(index);
 		if (gr) {
+			GraphLineStyleDialog *ls_dialog = new GraphLineStyleDialog();
+			ls_dialog->setCurrentSettings(gr->pen());
+			ls_dialog->exec();
+
+			if (ls_dialog->apply) {
+				qDebug("Applying change");
+				gr->setPen(ls_dialog->getCurrentSettings());
+
+			} else {
+				qDebug("Change cancelled");
+			}
+
+			delete ls_dialog;
+
+			/*
 			QColor color;
 			color = QColorDialog::getColor(gr->pen().color());
 			if (color.isValid()) {
 				QPen p(color);
 				p.setWidth(2);
+				p.setStyle(Qt::DashLine);
 				gr->setPen(p);
 				replot();
 			}
+			*/
 		}
 	}
 }
