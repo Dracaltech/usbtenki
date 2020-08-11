@@ -11,6 +11,8 @@
 #include "qcustomplot.h"
 #include "globals.h"
 
+#define DEFAULT_GRAPH_LINE_WIDTH	2
+
 GraphView::GraphView()
 {
 	QSettings settings;
@@ -148,6 +150,17 @@ GraphView::~GraphView(void)
 {
 }
 
+int GraphView::findGraphIndex(QCPGraph *graph)
+{
+	int i;
+
+	for (i=0; i<src_graphs.size(); i++) {
+		if (src_graphs.at(i) == graph)
+			return i;
+	}
+	return -1;
+}
+
 void GraphView::editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMouseEvent *event)
 {
 	int i;
@@ -175,6 +188,11 @@ void GraphView::editLegend(QCPLegend *legend, QCPAbstractLegendItem *item, QMous
 			if (ls_dialog->apply) {
 				qDebug("Applying change");
 				gr->setPen(ls_dialog->getCurrentSettings());
+
+				int graphidx = findGraphIndex(gr);
+				if (graphidx >= 0) {
+					saveGraphPen(sources.at(graphidx), ls_dialog->getCurrentSettings());
+				}
 
 			} else {
 				qDebug("Change cancelled");
@@ -294,21 +312,6 @@ void GraphView::refreshView()
 	struct USBTenki_channel chndata;
 	QSettings settings;
 	QCPGraph *gr;
-#define NUM_DEFAULT_COLORS	12
-	QColor colors[NUM_DEFAULT_COLORS] = {
-		Qt::green,
-		Qt::blue,
-		Qt::red,
-		QColor(255,133,26), // orange
-		Qt::cyan,
-		Qt::magenta,
-		QColor(255,200,255), // pink
-		Qt::darkMagenta,
-		Qt::darkRed,
-		Qt::darkYellow,
-		Qt::gray,
-		Qt::black,
-	};
 
 	for (int i=0; i<sources.size(); i++)
 	{
@@ -349,8 +352,7 @@ void GraphView::refreshView()
 			gr = plt->addGraph();
 			gr->setName(displayname);
 
-			QPen p(colors[i%NUM_DEFAULT_COLORS]);
-			p.setWidth(2);
+			QPen p = determineGraphPen(i, name);
 
 			gr->setPen(p);
 			src_graphs.replace(i, gr);
@@ -371,6 +373,49 @@ void GraphView::refreshView()
 
 	replot();
 	x_count++;
+}
+
+void GraphView::saveGraphPen(QString sourcename, QPen pen)
+{
+	QSettings settings;
+	QString key = "graphStyle/" + sourcename + "pen";
+
+	settings.setValue(key, pen);
+}
+
+QPen GraphView::determineGraphPen(int index, QString sourcename)
+{
+	#define NUM_DEFAULT_COLORS	12
+	QColor colors[NUM_DEFAULT_COLORS] = {
+		Qt::green,
+		Qt::blue,
+		Qt::red,
+		QColor(255,133,26), // orange
+		Qt::cyan,
+		Qt::magenta,
+		QColor(255,200,255), // pink
+		Qt::darkMagenta,
+		Qt::darkRed,
+		Qt::darkYellow,
+		Qt::gray,
+		Qt::black,
+	};
+	QSettings settings;
+	QString key = "graphStyle/" + sourcename + "pen";
+
+	// If a setting does not already exist, choose a color
+	// from the palete above, and create the setting.
+	QVariant v = settings.value(key);
+	if (v.isNull()) {
+		QPen pen(colors[index%NUM_DEFAULT_COLORS]);
+		pen.setWidth(DEFAULT_GRAPH_LINE_WIDTH);
+		settings.setValue(key, pen);
+	}
+
+	// Now load the setting created above, or a pre-existing setting.
+	QPen pen = settings.value(key).value<QPen>();
+
+	return pen;
 }
 
 void GraphView::replot(void)

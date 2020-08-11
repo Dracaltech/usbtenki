@@ -40,6 +40,9 @@ class GraphView : public QWidget, public TenkiSourceAddRemove
 		void pause_unpause(void);
 
 	private:
+		int findGraphIndex(QCPGraph *graph);
+		void saveGraphPen(QString sourcename, QPen pen);
+		QPen determineGraphPen(int index, QString sourcename);
 		void fancyTime(QString *s, unsigned long long ms);
 		void refreshWindowtime(void);
 		QTimer *sample_timer;
