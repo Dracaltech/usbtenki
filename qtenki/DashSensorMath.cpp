@@ -11,6 +11,8 @@
 #include "usbtenki_cmds.h"
 #include "EditButton.h"
 
+// #define RESET_MIN_MAX_ON_EQUATION_EDIT
+
 DashSensorMath::DashSensorMath(TenkiMathDevice *td)
 {
 	int col =0;
@@ -30,6 +32,9 @@ DashSensorMath::DashSensorMath(TenkiMathDevice *td)
 
 	layout->setColumnStretch(col, 2);
 	layout->addWidget(new QLabel("<b>Equation</b>"), 0, col++);
+
+	// Leave a blank column for the edit button
+	col++;
 
 	layout->addWidget(new QLabel("<b>Result</b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
@@ -75,9 +80,11 @@ void DashSensorMath::addChannel(int chn, int row)
 	USBTenki_channel ch;
 	QString a, b, c, d, e, f, g;
 	QLabel *value_label, *unit_label;
-	QLabel *tmp_label;
+	//QLabel *tmp_label;
+	QLineEdit *eqedit;
 	QPushButton *rst;
 	QPushButton *editbtn;
+	MinMaxResettable *min, *max;
 	int col=0;
 
 	g_tenkisources->convertToUnits(tenki_device->getChannelData(chn), &ch);
@@ -89,19 +96,19 @@ void DashSensorMath::addChannel(int chn, int row)
 	f.sprintf("%s:%02X", tenki_device->getSerial(), chn);
 	layout->addWidget(new QLabel(f), row, col++);
 
+	// Equation editor
 	b = tenki_device->getChannelEquation(chn);
-	tmp_label = new QLabel(b);
-	tmp_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-	equations.append(tmp_label);
-
+	eqedit = new QLineEdit(b);
+	equations.append(eqedit);
 	chip_ids.append(ch.chip_id);
+	layout->addWidget(eqedit, row, col++);
+	connect(eqedit, SIGNAL(editingFinished()), this, SLOT(equationEdited()));
 
-//	tmp_label->setWordWrap(true);
-//	tmp_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	layout->addWidget(tmp_label, row, col++);
-
-//	c = QString::fromLocal8Bit(chipToShortString(ch.chip_id));
-//	layout->addWidget(new QLabel(c), row, col++);
+	// Edit button
+	editbtn = new EditButton("Edit", chn);
+	editbtn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	layout->addWidget(editbtn, row, col++);
+	connect(editbtn, SIGNAL(buttonIdClicked(int)), this, SLOT(editClicked(int)));
 
 	// Current value
 	g_tenkisources->formatValue(&d, ch.converted_data);
@@ -145,12 +152,6 @@ void DashSensorMath::addChannel(int chn, int row)
 	QObject::connect(rst, SIGNAL(clicked()), min, SLOT(reset()));
 	QObject::connect(rst, SIGNAL(clicked()), max, SLOT(reset()));
 
-	// Edit button
-	editbtn = new EditButton("Edit", chn);
-	editbtn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	layout->addWidget(editbtn, row, col++);
-	connect(editbtn, SIGNAL(buttonIdClicked(int)), this, SLOT(editClicked(int)));
-
 	channel_id.append(chn);
 }
 
@@ -178,9 +179,6 @@ void DashSensorMath::refresh()
 	for (int i=0; i<values.size(); i++) {
 		QString d,e;
 
-		equations.at(i)->setText(tenki_device->getChannelEquation(i));
-
-
 		cdat = tenki_device->getChannelData(channel_id.at(i));
 		if (!cdat) {
 			values.at(i)->setText("Error");
@@ -207,6 +205,27 @@ void DashSensorMath::refresh()
 
 }
 
+// Called when one of the equations in this DashSensorMath object has potentially been edited
+void DashSensorMath::equationEdited()
+{
+	for (int i=0; i<equations.size(); i++) {
+		QString cur_eq = equations.at(i)->text();
+
+		if (0 == QString::compare(cur_eq, g_mathDevice->getChannelEquation(i))) {
+			continue;
+		}
+
+//		qDebug() << "Changed: " << cur_eq;
+
+		g_mathDevice->setChannelEquation(i, cur_eq);
+#ifdef RESET_MIN_MAX_ON_EQUATION_EDIT
+		maximums.at(i)->reset();
+		minimums.at(i)->reset();
+#endif
+	}
+}
+
+
 void DashSensorMath::editClicked(int id)
 {
 	editDialog = new MathEditDialog(this, id);
@@ -215,6 +234,10 @@ void DashSensorMath::editClicked(int id)
 	delete editDialog;
 	editDialog = NULL;
 
-	max->reset();
-	min->reset();
+#ifdef RESET_MIN_MAX_ON_EQUATION_EDIT
+	maximums.at(id)->reset();
+	minimums.at(id)->reset();
+#endif
+
+	equations.at(id)->setText(g_mathDevice->getChannelEquation(id));
 }
