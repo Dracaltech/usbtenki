@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <QDebug>
-#include <QPushButton>
 #include <QSettings>
+#include <QMessageBox>
 #include <QLineEdit>
 #include "DashSensorDevice.h"
 #include "TenkiDevice.h"
@@ -12,10 +12,11 @@
 
 DashSensorDevice::DashSensorDevice(TenkiDevice *td)
 {
-	int col =0;
+	int col=0, i;
+
 	title = QString::fromLocal8Bit(td->getSerial());
 	setTitle(title);
-	setObjectName("source"); // selector for stylesheet	
+	setObjectName("source"); // selector for stylesheet
 	tenki_device = td;
 
 	layout = new QGridLayout();
@@ -48,7 +49,7 @@ DashSensorDevice::DashSensorDevice(TenkiDevice *td)
 	layout->addWidget(new QLabel("<b></b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
 
-	for (int i=0; i<tenki_device->getNumChannels(); i++)
+	for (i=0; i<tenki_device->getNumChannels(); i++)
 	{
 		if (tenki_device->isChannelHidden(i)) {
 			continue;
@@ -56,6 +57,11 @@ DashSensorDevice::DashSensorDevice(TenkiDevice *td)
 
 		addChannel(i, i+1);			
 	}
+
+	infobtn = new QPushButton(QIcon(":help-about.png"), tr("About"));
+	layout->addWidget(infobtn, i + 1, 0);
+	connect(infobtn, SIGNAL(clicked(bool)), this, SLOT(infoClicked(bool)));
+
 
 	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 }
@@ -248,4 +254,28 @@ void DashSensorDevice::refresh()
 	//	qDebug() << d;
 	}
 
+}
+
+void DashSensorDevice::infoClicked(bool checked)
+{
+	QMessageBox msgBox;
+	int major, minor;
+
+	(void)checked;
+
+	tenki_device->getFirmwareVersion(&major, &minor);
+
+	QString text =	"<html><body><h1>" + QString(tenki_device->getProductName()) + "</h1>" +
+					"Firmware version: " + QString::number(major) + "." + QString::number(minor) + "<br>" +
+					"Serial number: " + QString(tenki_device->getSerial()) + "<br>" +
+					"Channels: " + QString::number(tenki_device->getNumChannels()) +
+
+					"</body></html>";
+
+	msgBox.setWindowTitle("About sensor " + title );
+	msgBox.setText(text);
+	msgBox.setStandardButtons(QMessageBox::Ok);
+	msgBox.setIcon(QMessageBox::Information);
+
+	msgBox.exec();
 }

@@ -8,6 +8,7 @@
 #include <QList>
 #include <QMap>
 #include <QString>
+#include <QLineEdit>
 
 #include "TenkiDevice.h"
 #include "MinMaxResettable.h"
@@ -28,21 +29,24 @@ class DashSensorMath : public DashSensor
 
 	private slots:
 		void editClicked(int id);
+		void equationEdited();
+		void helpClicked(bool);
 
 	private:
 		void addChannel(int channel, int row);
 		QString title;
 		QGridLayout *layout;
-		QList<QLabel*> equations;
+		QList<QLineEdit*> equations;
 		QList<QLabel*> values;
 		QList<QLabel*> units;
 		QList<MinMaxResettable*> minimums;
 		QList<MinMaxResettable*> maximums;
 		QList<int> channel_id;
 		QList<int> chip_ids;
-		MinMaxResettable *min, *max;
+//		MinMaxResettable *min, *max;
 
 		MathEditDialog *editDialog;
+		QPushButton *helpbtn;
 
 		void recolorizeThermocouple(void);
 		int prev_iec;
