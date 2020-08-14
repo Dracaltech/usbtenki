@@ -157,3 +157,16 @@ USBTenki_channel *TenkiDevice::getChannelData(int id)
 {
 	return &channel_data[id];
 }
+
+const char *TenkiDevice::getProductName(void)
+{
+	return tenki_info.str_prodname;
+}
+
+void TenkiDevice::getFirmwareVersion(int *major, int *minor)
+{
+	if (major)
+		*major = tenki_info.major;
+	if (minor)
+		*minor = tenki_info.minor;
+}

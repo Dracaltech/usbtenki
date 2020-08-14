@@ -17,6 +17,8 @@ class TenkiDevice
 		~TenkiDevice();
 
 		const char *getSerial(void);
+		const char *getProductName(void);
+		void getFirmwareVersion(int *major, int *minor);
 		int getNumChannels(void);
 		USBTenki_channel *getChannelData(int id);
 		int isChannelHidden(int id);

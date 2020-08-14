@@ -7,6 +7,7 @@
 #include <QString>
 #include <QList>
 #include <QMap>
+#include <QPushButton>
 
 #include "TenkiDevice.h"
 #include "MinMaxResettable.h"
@@ -23,6 +24,9 @@ class DashSensorDevice : public DashSensor
 		TenkiDevice *tenki_device;
 		void refresh();
 
+	private slots:
+		void infoClicked(bool);
+
 	private:
 		void addChannel(int channel, int row);
 		QString title;
@@ -34,6 +38,8 @@ class DashSensorDevice : public DashSensor
 		QList<MinMaxResettable*> maximums;
 		QList<int> channel_id;
 		QList<int> chip_ids;
+
+		QPushButton *infobtn;
 
 		void recolorizeThermocouple(void);
 		int prev_iec;

@@ -238,8 +238,6 @@ void DashSensorMath::helpClicked(bool checked)
 	HTMLViewer *viewer;
 	(void)checked;
 
-	QMessageBox msgBox;
-
 	viewer = new HTMLViewer(":mathhelp.html", "Help");
 	viewer->exec();
 
