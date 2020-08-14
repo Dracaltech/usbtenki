@@ -30,6 +30,7 @@ class DashSensorMath : public DashSensor
 	private slots:
 		void editClicked(int id);
 		void equationEdited();
+		void helpClicked(bool);
 
 	private:
 		void addChannel(int channel, int row);
@@ -45,6 +46,7 @@ class DashSensorMath : public DashSensor
 //		MinMaxResettable *min, *max;
 
 		MathEditDialog *editDialog;
+		QPushButton *helpbtn;
 
 		void recolorizeThermocouple(void);
 		int prev_iec;

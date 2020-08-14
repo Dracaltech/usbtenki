@@ -17,5 +17,7 @@
 	<file>icon16x16.png</file>
 	<file>dracal.png</file>
 	<file>qtenki.qss</file>
+	<file>help-about.png</file>
+	<file>mathhelp.html</file>
 </qresource>
 </RCC>

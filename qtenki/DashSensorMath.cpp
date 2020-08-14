@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QLineEdit>
+#include <QMessageBox>
 #include "DashSensorMath.h"
 #include "TenkiDevice.h"
 #include "SourceAliasEdit.h"
@@ -10,16 +11,18 @@
 #include "globals.h"
 #include "usbtenki_cmds.h"
 #include "EditButton.h"
+#include "HTMLViewer.h"
 
 // #define RESET_MIN_MAX_ON_EQUATION_EDIT
 
 DashSensorMath::DashSensorMath(TenkiMathDevice *td)
 {
-	int col =0;
+	int col = 0, i;
 	title = QString::fromLocal8Bit(td->getSerial());
 	setTitle(title);
 	setObjectName("source"); // selector for stylesheet	
 	tenki_device = td;
+
 
 	layout = new QGridLayout();
 
@@ -60,15 +63,19 @@ DashSensorMath::DashSensorMath(TenkiMathDevice *td)
 	layout->addWidget(new QLabel("<b></b>"), 0, col++);
 	layout->setColumnMinimumWidth(col, 4);
 
-	for (int i=0; i<tenki_device->getNumChannels(); i++)
+	for (i=0; i<tenki_device->getNumChannels(); i++)
 	{
 		if (tenki_device->isChannelHidden(i)) {
 			continue;
 		}
 
-		addChannel(i, i+1);			
+		addChannel(i, i+1);
 	}
 
+
+	helpbtn = new QPushButton(QIcon(":help-about.png"), tr("Help"));
+	layout->addWidget(helpbtn, i + 1, 0);
+	connect(helpbtn, SIGNAL(clicked(bool)), this, SLOT(helpClicked(bool)));
 
 
 	setLayout(layout);
@@ -225,6 +232,19 @@ void DashSensorMath::equationEdited()
 	}
 }
 
+
+void DashSensorMath::helpClicked(bool checked)
+{
+	HTMLViewer *viewer;
+	(void)checked;
+
+	QMessageBox msgBox;
+
+	viewer = new HTMLViewer(":mathhelp.html", "Help");
+	viewer->exec();
+
+	delete viewer;
+}
 
 void DashSensorMath::editClicked(int id)
 {
