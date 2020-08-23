@@ -358,8 +358,10 @@ void GraphView::refreshView()
 			src_graphs.replace(i, gr);
 		}
 
-		if (chndata.status == USBTENKI_CHN_STATUS_VALID) {
-			gr->addData(x_count, chndata.converted_data);
+		if (chndata.status == USBTENKI_CHN_STATUS_VALID &&
+			(chndata.converted_data == chndata.converted_data )	) // ! Nan
+		{
+				gr->addData(x_count, chndata.converted_data);
 		}
 		else {
 //			gr->setDataKeyError(x_count);
