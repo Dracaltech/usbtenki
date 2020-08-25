@@ -4,7 +4,8 @@ Since version 2.1.14, libusb 1.0 is used by default.
 
 Requirements:
  - libusb-1.0-0-dev
- - libqt4-dev (or qt5)
+ - libqt5-dev
+ - qt5script-dev (Since 2.1.19)
  - Standard compilation tools (make, gcc, g++)
 
 Once you have all the required libraries installed, all you need to do is:
