@@ -27,6 +27,7 @@ function build_commandline_tools
 function build_qtenki
 {
 	$QMAKE -makefile -o ../qtenki/Makefile ../qtenki/qtenki.pro || errorexit 1 "Qmake error"
+	make -C ../qtenki clean || errorexit 1 "Command-line tool pre-build cleanup failed"
 	make -C ../qtenki -f ../qtenki/Makefile release -j2 || errorexit 1 "QTenki build error"
 }
 
