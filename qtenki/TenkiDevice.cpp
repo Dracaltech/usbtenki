@@ -148,6 +148,19 @@ int TenkiDevice::getNumChannels(void)
 	return num_channels;
 }
 
+int TenkiDevice::getVisibleChannels(void)
+{
+	int i, nc = getNumChannels(), vc = 0;
+
+	for (i=0; i<nc; i++) {
+		if (!isChannelHidden(i)) {
+			vc++;
+		}
+	}
+
+	return vc;
+}
+
 int TenkiDevice::getStatus(void)
 {
 	return status;

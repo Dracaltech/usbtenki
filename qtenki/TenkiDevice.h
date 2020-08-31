@@ -22,6 +22,7 @@ class TenkiDevice
 		int getNumChannels(void);
 		USBTenki_channel *getChannelData(int id);
 		int isChannelHidden(int id);
+		int getVisibleChannels(void);
 
 		int getStatus();
 

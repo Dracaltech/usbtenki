@@ -268,7 +268,7 @@ void DashSensorDevice::infoClicked(bool checked)
 	QString text =	"<html><body><h1>" + QString(tenki_device->getProductName()) + "</h1>" +
 					"Firmware version: " + QString::number(major) + "." + QString::number(minor) + "<br>" +
 					"Serial number: " + QString(tenki_device->getSerial()) + "<br>" +
-					"Channels: " + QString::number(tenki_device->getNumChannels()) +
+					"Channels: " + QString::number(tenki_device->getVisibleChannels()) +
 
 					"</body></html>";
 
