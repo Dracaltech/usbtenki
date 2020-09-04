@@ -1,4 +1,4 @@
-Version -
+Version - 2.1.19 - September 4, 2020
    - [QTenki] Add support for mathematical equations
    - [Qtenki] Add an About button to display sensor model, serial and firmware version.
    - [QTenki] Provide better default graph colors
